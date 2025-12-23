@@ -1,8 +1,8 @@
 export default function SearchBox() {
   return (
-    <header className="flex flex-start w-[100vw] px-4 py-4">
+    <header className="flex flex-start w-screen px-4 py-4">
       <div className="flex w-[320px] items-center gap-3 rounded-full bg-white/90 px-4 py-2 shadow-lg ring-1 ring-gray-200">
-        <figure className="flex h-9 w-9 flex-shrink-0 items-center justify-center text-gray-800">
+        <figure className="flex h-9 w-9 items-center justify-center text-gray-800">
           <svg
             aria-hidden="true"
             viewBox="0 0 24 24"
