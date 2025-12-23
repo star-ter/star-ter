@@ -82,7 +82,7 @@
 apps/web/
   └── src/
       └── components/
-          └── ui/
+          └── features/
               ├── AIChatSidebar.tsx      # 메인 사이드바 컴포넌트
               ├── ChatSuggestionCard.tsx # 추천 질문 카드 컴포넌트
               └── ChatInput.tsx          # 채팅 입력창 컴포넌트
