@@ -5,6 +5,7 @@ export default function MapBox() {
   return (
     <section className="w-[100vw] h-[100vh] flex flex-col justify-between items-center">
       <SearchBox></SearchBox>
+      <BottomMenuBox></BottomMenuBox>
     </section>
   );
 }
