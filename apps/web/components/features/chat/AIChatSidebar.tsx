@@ -1,8 +1,9 @@
 'use client';
 
-import { useActionState, useState, useCallback, useEffect } from 'react';
+import { useActionState, useState, useCallback, useEffect, useOptimistic, useRef } from 'react';
 import { Sparkles, BarChart3, Store, ArrowUp } from 'lucide-react';
 import { sendMessageAction } from '@/actions/chat';
+import { ChatMessage } from '@/services/chat/types';
 
 /**
  * AI Chat Sidebar Component
@@ -12,6 +13,36 @@ export default function AIChatSidebar() {
   const [state, formAction, isPending] = useActionState(sendMessageAction, {
     messages: [],
   });
+
+  // Optimistic UI State
+  const [optimisticMessages, addOptimisticMessage] = useOptimistic(
+    state.messages || [],
+    (currentMessages: ChatMessage[], newMessage: ChatMessage) => [
+      ...currentMessages,
+      newMessage,
+    ]
+  );
+
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const handleSendMessage = async (formData: FormData) => {
+    const message = formData.get('message') as string;
+    if (!message || message.trim() === '') return;
+
+    // Optimistic Update: Show user message immediately
+    addOptimisticMessage({
+      id: Date.now().toString(),
+      role: 'user',
+      content: message,
+      timestamp: new Date(),
+    });
+
+    // Reset form immediately
+    formRef.current?.reset();
+
+    // Call server action
+    await formAction(formData);
+  };
 
   // Resizing Logic
   const [width, setWidth] = useState(400);
@@ -75,9 +106,9 @@ export default function AIChatSidebar() {
       {/* Main Content Area */}
       <div className="flex flex-1 flex-col overflow-y-auto p-6 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
         {/* Messages */}
-        {state.messages && state.messages.length > 0 ? (
+        {optimisticMessages && optimisticMessages.length > 0 ? (
           <div className="space-y-4">
-            {state.messages.map((msg: any, idx: number) => (
+            {optimisticMessages.map((msg: ChatMessage, idx: number) => (
               <div
                 key={idx}
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
@@ -144,7 +175,7 @@ export default function AIChatSidebar() {
 
       {/* Input Area */}
       <div className="p-4 bg-gray-200">
-        <form action={formAction} className="relative group">
+        <form ref={formRef} action={handleSendMessage} className="relative group">
           <textarea
             name="message"
             placeholder="AI Coach에 메시지 보내기"
