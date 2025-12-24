@@ -1,5 +1,5 @@
-import ExamPlayground from "@/components/exam-playground";
+import Kakaomap from '@/components/kakaomap';
 
 export default function Home() {
-  return <ExamPlayground />;
+  return <Kakaomap />;
 }
