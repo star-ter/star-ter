@@ -3,9 +3,13 @@ import BottomMenuBox from '../bottom-menu/BottomMenuBox';
 
 export default function MapBox() {
   return (
-    <section className="w-screen h-screen flex flex-col justify-between items-center">
-      <SearchBox></SearchBox>
-      <BottomMenuBox></BottomMenuBox>
+    <section className="w-full h-full flex flex-col justify-between items-center pointer-events-none">
+      <div className="pointer-events-auto">
+        <SearchBox />
+      </div>
+      <div className="pointer-events-auto">
+        <BottomMenuBox />
+      </div>
     </section>
   );
 }
