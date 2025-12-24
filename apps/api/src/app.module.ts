@@ -1,10 +1,17 @@
 import { Module } from '@nestjs/common';
-import { ExamModule } from './exam/exam.module';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 
+import { SgisModule } from './sgis/sgis.module';
+import { VworldModule } from './vworld/vworld.module';
+
 @Module({
-  imports: [ConfigModule.forRoot({ envFilePath: '.env' }), PrismaModule, ExamModule],
+  imports: [
+    ConfigModule.forRoot({ envFilePath: '.env' }),
+    PrismaModule,
+    SgisModule,
+    VworldModule,
+  ],
   controllers: [],
   providers: [],
 })
