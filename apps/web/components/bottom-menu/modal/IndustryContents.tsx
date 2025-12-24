@@ -6,6 +6,16 @@ import { MdMenuBook } from 'react-icons/md';
 import { IoIosBed } from 'react-icons/io';
 
 import PillButton from '../PillButton';
+import IndustryItem from './IndustryItem';
+
+const items = [
+  { label: '음식', iconLabel: GiForkKnifeSpoon },
+  { label: '소매', iconLabel: IoBag },
+  { label: '서비스', iconLabel: RiCustomerServiceFill },
+  { label: '오락', iconLabel: IoLogoGameControllerB },
+  { label: '교육', iconLabel: MdMenuBook },
+  { label: '숙박', iconLabel: IoIosBed },
+];
 
 export default function IndustryContents({ onClose }: { onClose: () => void }) {
   return (
@@ -18,54 +28,9 @@ export default function IndustryContents({ onClose }: { onClose: () => void }) {
         지도에 표시할 업종을 선택하세요
       </p>
       <div className="flex gap-[16px] mt-3">
-        <div className="industry-btn flex flex-col items-center group cursor-pointer">
-          <figure className="icon">
-            <GiForkKnifeSpoon className="h-10 w-10 text-gray-400 transition group-hover:text-gray-800" />
-          </figure>
-          <p className="text-gray-400 transition group-hover:text-gray-800">
-            음식
-          </p>
-        </div>
-        <div className="industry-btn flex flex-col items-center group cursor-pointer">
-          <figure className="icon">
-            <IoBag className="h-10 w-10 text-gray-400 transition group-hover:text-gray-800" />
-          </figure>
-          <p className="text-gray-400 transition group-hover:text-gray-800">
-            소메
-          </p>
-        </div>
-        <div className="industry-btn flex flex-col items-center group cursor-pointer">
-          <figure className="icon">
-            <RiCustomerServiceFill className="h-10 w-10 text-gray-400 transition group-hover:text-gray-800" />
-          </figure>
-          <p className="text-gray-400 transition group-hover:text-gray-800">
-            서비스
-          </p>
-        </div>
-        <div className="industry-btn flex flex-col items-center group cursor-pointer">
-          <figure className="icon">
-            <IoLogoGameControllerB className="h-10 w-10 text-gray-400 transition group-hover:text-gray-800" />
-          </figure>
-          <p className="text-gray-400 transition group-hover:text-gray-800">
-            오락
-          </p>
-        </div>
-        <div className="industry-btn flex flex-col items-center group cursor-pointer">
-          <figure className="icon">
-            <MdMenuBook className="h-10 w-10 text-gray-400 transition group-hover:text-gray-800" />
-          </figure>
-          <p className="text-gray-400 transition group-hover:text-gray-800">
-            교육
-          </p>
-        </div>
-        <div className="industry-btn flex flex-col items-center group cursor-pointer">
-          <figure className="icon">
-            <IoIosBed className="h-10 w-10 text-gray-400 transition group-hover:text-gray-800" />
-          </figure>
-          <p className="text-gray-400 transition group-hover:text-gray-800">
-            숙박
-          </p>
-        </div>
+        {items.map(({ label, iconLabel }) => (
+          <IndustryItem key={label} label={label} iconLabel={iconLabel} />
+        ))}
       </div>
     </section>
   );
