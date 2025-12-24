@@ -1,15 +1,11 @@
+import PillButton from '../PillButton';
+
 export default function CompareContents({ onClose }: { onClose: () => void }) {
   return (
     <section>
       <div className="flex items-center justify-between">
         <h3 className="text-base font-semibold text-gray-900">비교</h3>
-        <button
-          className="rounded-full bg-white/90 px-3 py-1 text-sm font-medium text-gray-800 shadow-sm ring-1 ring-gray-200 transition hover:bg-gray-100"
-          type="button"
-          onClick={onClose}
-        >
-          닫기
-        </button>
+        <PillButton label="닫기" onClick={onClose}></PillButton>
       </div>
       <p className="mt-3 text-sm leading-relaxed text-gray-400">
         비교할 두 영역을 클릭해서 마커를 남기거나, 아래 입력창에 검색하세요.
@@ -30,7 +26,7 @@ export default function CompareContents({ onClose }: { onClose: () => void }) {
           />
         </div>
       </div>
-      <button className="mt-4 w-full rounded-xl border bg-gray-900 px-4 py-2 text-sm text-white transition hover:bg-gray-800">
+      <button className="mt-4 w-full rounded-xl border bg-gray-900 px-4 py-2 text-sm text-white transition hover:bg-gray-800 cursor-pointer">
         두 구역 분석 비교
       </button>
     </section>
