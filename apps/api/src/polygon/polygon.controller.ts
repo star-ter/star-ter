@@ -7,14 +7,14 @@ export class PolygonController {
   constructor(private readonly polygonService: PolygonService) {}
 
   @Get('mock')
-  getMockData(@Query() query: GetPolygonDto): PolygonResponseDto {
+  getMockData(@Query() query: GetPolygonDto): PolygonResponseDto[] {
     return this.polygonService.getMockData(
       query.low_search ? Number(query.low_search) : undefined,
     );
   }
 
   @Get('mock/building')
-  getMockBuildingData() {
+  getMockBuildingData(): PolygonResponseDto[] {
     return this.polygonService.getMockBuildingData();
   }
 }
