@@ -8,7 +8,7 @@ import { IconType } from 'react-icons';
 
 import PillButton from '../PillButton';
 import IndustryItem from './IndustryItem';
-import { IndustryCategory } from '../types';
+import { IndustryCategory } from '../../../types/bottom-menu-types';
 
 interface Props {
   onClose: () => void;

@@ -1,13 +1,13 @@
 import PillButton from '../PillButton';
-import { CompareRequest } from '../types';
+import { CompareRequest } from '../../../types/bottom-menu-types';
 import { BiTargetLock } from 'react-icons/bi';
 
 interface Props {
   onClose: () => void;
   targetA: string;
   targetB: string;
-  onChangeTargetA: (value: string) => void;
-  onChangeTargetB: (value: string) => void;
+  changeTargetA: (value: string) => void;
+  changeTargetB: (value: string) => void;
   onPickLocation: (target: 'A' | 'B') => void;
   onCompare: (data: CompareRequest) => void;
 }
@@ -16,8 +16,8 @@ export default function CompareContents({
   onClose,
   targetA,
   targetB,
-  onChangeTargetA,
-  onChangeTargetB,
+  changeTargetA,
+  changeTargetB,
   onPickLocation,
   onCompare,
 }: Props) {
@@ -42,7 +42,7 @@ export default function CompareContents({
             type="text"
             placeholder="비교할 첫번 째 구역을 입력하세요."
             value={targetA}
-            onChange={(e) => onChangeTargetA(e.target.value)}
+            onChange={(e) => changeTargetA(e.target.value)}
           />
           <button
             onClick={() => onPickLocation('A')}
@@ -58,7 +58,7 @@ export default function CompareContents({
             type="text"
             placeholder="비교할 두번 째 구역을 입력하세요."
             value={targetB}
-            onChange={(e) => onChangeTargetB(e.target.value)}
+            onChange={(e) => changeTargetB(e.target.value)}
           />
           <button
             onClick={() => onPickLocation('B')}
