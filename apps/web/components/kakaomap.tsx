@@ -226,7 +226,7 @@ export default function Kakaomap({ polygonClick = (area: string) => {} }) {
 
         window.kakao.maps.event.addListener(polygon, 'click', () => {
           console.log(`Clicked: ${label}`);
-          setSelectedArea(props); 
+          setSelectedArea(props);
           if (clickRef.current) {
             clickRef.current(label);
           }
@@ -244,6 +244,9 @@ export default function Kakaomap({ polygonClick = (area: string) => {} }) {
         contentEl.onclick = () => {
           console.log('Clicked Overlay:', props);
           setSelectedArea(props);
+          if (clickRef.current) {
+            clickRef.current(name);
+          }
         };
 
         const customOverlay = new window.kakao.maps.CustomOverlay({
