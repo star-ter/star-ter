@@ -1,0 +1,113 @@
+name: Deploy to ECS (EC2) with GITHUB_SHA tag
+
+on:
+  push:
+    branches: ['main']
+  workflow_dispatch: {}
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+
+  # secrets로 이동
+  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+  ECS_TASK_EXEC_ROLE_ARN: ${{ secrets.ECS_TASK_EXEC_ROLE_ARN }}
+
+  # 비민감 값들은 vars 유지(원하면 이것들도 secrets로 옮겨도 됨)
+  ECR_WEB_REPO: ${{ vars.ECR_WEB_REPO }}
+  ECR_API_REPO: ${{ vars.ECR_API_REPO }}
+  ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+  ECS_WEB_SERVICE: ${{ vars.ECS_WEB_SERVICE }}
+  ECS_API_SERVICE: ${{ vars.ECS_API_SERVICE }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Build & Push web (amd64)
+        id: build_web
+        run: |
+          WEB_IMAGE="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_WEB_REPO}:${GITHUB_SHA}"
+          echo "WEB_IMAGE=$WEB_IMAGE" >> $GITHUB_OUTPUT
+          docker buildx build \
+            --platform linux/amd64 \
+            -t "$WEB_IMAGE" \
+            -f apps/web/Dockerfile \
+            . \
+            --push
+
+      - name: Build & Push api (amd64)
+        id: build_api
+        run: |
+          API_IMAGE="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_API_REPO}:${GITHUB_SHA}"
+          echo "API_IMAGE=$API_IMAGE" >> $GITHUB_OUTPUT
+          docker buildx build \
+            --platform linux/amd64 \
+            -t "$API_IMAGE" \
+            -f apps/api/Dockerfile \
+            . \
+            --push
+
+      - name: Prepare web taskdef (inject executionRoleArn)
+        run: |
+          jq --arg ROLE_ARN "$ECS_TASK_EXEC_ROLE_ARN" \
+            '.executionRoleArn = $ROLE_ARN' \
+            infra/ecs/taskdef-web.json > infra/ecs/taskdef-web.rendered.json
+
+      - name: Render web task definition
+        id: render_web
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: infra/ecs/taskdef-web.rendered.json
+          container-name: web
+          image: ${{ steps.build_web.outputs.WEB_IMAGE }}
+
+      - name: Deploy web service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render_web.outputs.task-definition }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          service: ${{ env.ECS_WEB_SERVICE }}
+          wait-for-service-stability: true
+
+      - name: Prepare api taskdef (inject executionRoleArn)
+        run: |
+          jq --arg ROLE_ARN "$ECS_TASK_EXEC_ROLE_ARN" \
+            '.executionRoleArn = $ROLE_ARN' \
+            infra/ecs/taskdef-api.json > infra/ecs/taskdef-api.rendered.json
+
+      - name: Render api task definition
+        id: render_api
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: infra/ecs/taskdef-api.rendered.json
+          container-name: api
+          image: ${{ steps.build_api.outputs.API_IMAGE }}
+
+      - name: Deploy api service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render_api.outputs.task-definition }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          service: ${{ env.ECS_API_SERVICE }}
+          wait-for-service-stability: true
