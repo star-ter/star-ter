@@ -2,15 +2,10 @@
 
 import Script from 'next/script';
 import { useEffect, useRef, useState } from 'react';
-import proj4 from 'proj4';
+import { initProj4, convertCoord } from '../utils/map-utils';
+import { KakaoMap, KakaoPolygon, GeoJSONFeature } from '../types/map-types';
 
-// Define SGIS Layout (UTM-K)
-if (typeof window !== 'undefined' && !proj4.defs('EPSG:5179')) {
-  proj4.defs(
-    'EPSG:5179',
-    '+proj=tmerc +lat_0=38 +lon_0=127.5 +k=0.9996 +x_0=1000000 +y_0=2000000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
-  );
-}
+initProj4();
 
 declare global {
   interface Window {
@@ -21,19 +16,10 @@ declare global {
 export default function Kakaomap() {
   const mapRef = useRef<HTMLDivElement>(null);
   const [loaded, setLoaded] = useState(false);
-  const polygonsRef = useRef<any[]>([]);
+  const polygonsRef = useRef<KakaoPolygon[]>([]);
   const lastLevelGroupRef = useRef<string | null>(null);
 
-  // Use the NestJS Backend URL
-  const API_BASE_URL = 'http://localhost:4000';
-
-  useEffect(() => {
-    if (loaded && window.kakao && window.kakao.maps && mapRef.current) {
-      window.kakao.maps.load(() => {
-        initMap();
-      });
-    }
-  }, [loaded]);
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   const initMap = () => {
     const container = mapRef.current;
@@ -46,11 +32,10 @@ export default function Kakaomap() {
 
     const map = new window.kakao.maps.Map(container, options);
 
-    // Initial Load
     refreshLayer(map);
 
     // Debounce refresh
-    let timeoutId: any = null;
+    let timeoutId: NodeJS.Timeout | null = null;
     const debouncedRefresh = () => {
       if (timeoutId) clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
@@ -63,14 +48,17 @@ export default function Kakaomap() {
     window.kakao.maps.event.addListener(map, 'zoom_changed', debouncedRefresh);
   };
 
-  const refreshLayer = (map: any) => {
+  // 지도 줌 레벨에 따라 폴리곤 함수 호출.
+  /* @param map Kakao 지도 객체 */
+  // 지도 줌 레벨에 따라 폴리곤 함수 호출.
+  /* @param map Kakao 지도 객체 */
+  const refreshLayer = (map: KakaoMap) => {
     const level = map.getLevel();
     console.log(`Current Zoom Level: ${level}`);
 
     let currentGroup = '';
     if (level >= 7) currentGroup = 'GU';
-    else if (level >= 5) currentGroup = 'DONG';
-    else if (level >= 3) currentGroup = 'USER';
+    else if (level >= 4) currentGroup = 'DONG';
     else currentGroup = 'BUILDING';
 
     if (
@@ -84,66 +72,42 @@ export default function Kakaomap() {
     lastLevelGroupRef.current = currentGroup;
 
     if (level >= 7) {
-      fetchCombinedBoundary(map, 1, 'Gu'); // Seoul(11) Only
-    } else if (level >= 5) {
-      fetchCombinedBoundary(map, 2, 'Dong'); // Seoul(11) Dong
-    } else if (level >= 3) {
-      fetchUserArea(map, '4'); // Jipgyegu
+      fetchCombinedBoundary(map, 1);
+    } else if (level >= 4) {
+      fetchCombinedBoundary(map, 2);
     } else {
-      // V-World Building
-      fetchVWorldBuilding(map);
+      fetchBuildingMock(map);
     }
   };
 
-  const fetchVWorldBuilding = (map: any) => {
-    const bounds = map.getBounds();
-    const sw = bounds.getSouthWest();
-    const ne = bounds.getNorthEast();
+  // 건물 Mock 데이터를 비동기로 호출하고 지도에 그리는 함수.
+  /* @param map Kakao 지도 객체 */
+  const fetchBuildingMock = async (map: KakaoMap) => {
+    console.log(`Fetching Building Mock Data...`);
 
-    // V-World also uses EPSG:4326 (WGS84) for requests usually, or could be 3857.
-    // However, the service implementation expects raw coordinates.
-    // Based on legacy code usage: "minx=sw.getLng()..." it seems to send WGS84.
-    const minx = sw.getLng();
-    const miny = sw.getLat();
-    const maxx = ne.getLng();
-    const maxy = ne.getLat();
+    try {
+      const res = await fetch(`${API_BASE_URL}/polygon/mock/building`);
+      const data = await res.json();
 
-    console.log(`Fetching V-World Building Data...`);
-
-    fetch(
-      `${API_BASE_URL}/vworld/building?minx=${minx}&miny=${miny}&maxx=${maxx}&maxy=${maxy}`,
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        // V-World response structure: response.result.featureCollection.features
-        if (
-          data.response &&
-          data.response.status === 'OK' &&
-          data.response.result &&
-          data.response.result.featureCollection &&
-          data.response.result.featureCollection.features
-        ) {
-          const features = data.response.result.featureCollection.features;
-          console.log(`Received ${features.length} V-World buildings`);
-          drawPolygons(map, features, 'vworld_building');
-        } else {
-          console.warn(
-            'V-World API No Data or Error:',
-            JSON.stringify(data, null, 2),
-          );
-        }
-      })
-      .catch((err) => console.error('V-World Fetch Error:', err));
+      if (data.features) {
+        console.log(`Received ${data.features.length} buildings`);
+        drawPolygons(map, data.features, 'vworld_building');
+      } else {
+        console.warn('Building Mock No Data or Error:', JSON.stringify(data));
+      }
+    } catch (err) {
+      console.error('Building Mock Fetch Error:', err);
+    }
   };
 
-  const fetchCombinedBoundary = async (
-    map: any,
-    lowSearch: number,
-    label: string,
-  ) => {
-    console.log(`Fetching Combined Boundary (${label})...`);
+  // 구/동 Mock 데이터를 비동기로 호출하고 지도에 그리는 함수.
+  /* @param map Kakao 지도 객체
+   * @param lowSearch 1: 구(Gu), 2: 동(Dong)
+   */
+  const fetchCombinedBoundary = async (map: KakaoMap, lowSearch: number) => {
+    console.log(`Fetching Combined Boundary...`);
     try {
-      const url = `${API_BASE_URL}/sgis/boundary?low_search=${lowSearch}&adm_cd=11`;
+      const url = `${API_BASE_URL}/polygon/mock?low_search=${lowSearch}`;
 
       const response = await fetch(url);
       const data = await response.json();
@@ -157,62 +121,24 @@ export default function Kakaomap() {
     }
   };
 
-  const fetchUserArea = (map: any, cd: string) => {
-    const bounds = map.getBounds();
-    const sw = bounds.getSouthWest();
-    const ne = bounds.getNorthEast();
-
-    // Convert WGS84 (Kakao) -> UTM-K (SGIS) using proj4
-    const [minx, miny] = proj4('EPSG:4326', 'EPSG:5179', [
-      sw.getLng(),
-      sw.getLat(),
-    ]);
-    const [maxx, maxy] = proj4('EPSG:4326', 'EPSG:5179', [
-      ne.getLng(),
-      ne.getLat(),
-    ]);
-
-    console.log(`Fetching UserArea (cd=${cd})...`);
-
-    fetch(
-      `${API_BASE_URL}/sgis/userarea?minx=${minx}&miny=${miny}&maxx=${maxx}&maxy=${maxy}&cd=${cd}`,
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.features) {
-          console.log(`Received ${data.features.length} features (cd=${cd})`);
-          drawPolygons(map, data.features, 'user');
-        } else if (data.status === 412) {
-          console.warn(
-            'Area too large via UserAPI. Switching to Dong fallback.',
-          );
-          fetchCombinedBoundary(map, 2, 'Dong (Fallback)');
-        }
-      })
-      .catch((err) => console.error('Fetch Error:', err));
-  };
-
+  // GeoJSON Feature 데이터를 기반으로 폴리곤을 생성하여 지도에 그리는 함수.
+  /* @param map Kakao 지도 객체
+   * @param features GeoJSON Features 배열
+   * @param type 'admin' (행정구역) 또는 'vworld_building' (건물) - 스타일 결정용
+   */
   const drawPolygons = (
-    map: any,
-    features: any[],
-    type: 'admin' | 'user' | 'vworld_building',
+    map: KakaoMap,
+    features: GeoJSONFeature[],
+    type: 'admin' | 'vworld_building',
   ) => {
     // Clear existing
     polygonsRef.current.forEach((poly) => poly.setMap(null));
     polygonsRef.current = [];
 
-    features.forEach((feature: any) => {
+    features.forEach((feature: GeoJSONFeature) => {
       const geometry = feature.geometry;
       const props = feature.properties;
       const paths: any[] = [];
-
-      const convertCoord = (x: number, y: number) => {
-        if (x > 180) {
-          const [lng, lat] = proj4('EPSG:5179', 'EPSG:4326', [x, y]);
-          return new window.kakao.maps.LatLng(lat, lng);
-        }
-        return new window.kakao.maps.LatLng(y, x);
-      };
 
       if (geometry.type === 'Polygon') {
         const ring = geometry.coordinates[0];
@@ -228,30 +154,16 @@ export default function Kakaomap() {
       }
 
       paths.forEach((path) => {
-        const isUserArea = type === 'user';
+        let strokeColor = '#4A90E2';
+        let fillColor = '#D1E8FF';
+        let fillOpacity = 0.5;
+        const strokeOpacity = 0.8;
+        const strokeWeight = 2;
 
-        let strokeColor = '#2c5bf0';
-        let fillColor = '#a0cfff';
-        let fillOpacity = 0.4;
-        let strokeOpacity = 0.8;
-        let strokeWeight = 2;
-
-        if (isUserArea) {
-          strokeColor = '#ff0000';
-          fillColor = '#ffcccc';
-          fillOpacity = 0.2;
-          strokeWeight = 1;
-        } else if (type === 'vworld_building') {
+        if (type === 'vworld_building') {
           strokeColor = '#FF8C00';
           fillColor = '#FFA500';
           fillOpacity = 0.5;
-        }
-
-        if (type === 'admin') {
-          strokeColor = '#4A90E2';
-          fillColor = '#D1E8FF';
-          fillOpacity = 0.5;
-          strokeWeight = 2;
         }
 
         const polygon = new window.kakao.maps.Polygon({
@@ -265,7 +177,8 @@ export default function Kakaomap() {
         polygon.setMap(map);
         polygonsRef.current.push(polygon);
 
-        const label = props.adm_nm || props.tot_oa_cd || 'Unknown';
+        const label =
+          props.adm_nm || props.tot_oa_cd || props.buld_nm || 'Unknown';
 
         // Simple click event
         window.kakao.maps.event.addListener(polygon, 'click', () => {
@@ -274,6 +187,14 @@ export default function Kakaomap() {
       });
     });
   };
+
+  useEffect(() => {
+    if (loaded && window.kakao && window.kakao.maps && mapRef.current) {
+      window.kakao.maps.load(() => {
+        initMap();
+      });
+    }
+  }, [loaded]);
 
   return (
     <>
@@ -284,7 +205,7 @@ export default function Kakaomap() {
       />
       <div
         ref={mapRef}
-        className="w-full h-[400px] border border-gray-200 rounded-lg"
+        className="w-full h-100 border border-gray-200 rounded-lg"
         style={{ width: '100vw', height: '100vh' }}
       />
     </>
