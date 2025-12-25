@@ -4,6 +4,7 @@ import Script from 'next/script';
 import { useEffect, useRef, useState } from 'react';
 import { initProj4, convertCoord } from '../utils/map-utils';
 import { KakaoMap, KakaoPolygon, GeoJSONFeature } from '../types/map-types';
+import polylabel from '@mapbox/polylabel';
 
 initProj4();
 
@@ -13,11 +14,15 @@ declare global {
   }
 }
 
+import InfoBar from './sidebar/InfoBar';
+
 export default function Kakaomap({ polygonClick = (area: string) => {} }) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [loaded, setLoaded] = useState(false);
+  const [selectedArea, setSelectedArea] = useState<any>(null); // State for sidebar
   const polygonsRef = useRef<KakaoPolygon[]>([]);
   const lastLevelGroupRef = useRef<string | null>(null);
+  const customOverlaysRef = useRef<any[]>([]);
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -137,14 +142,21 @@ export default function Kakaomap({ polygonClick = (area: string) => {} }) {
     features: GeoJSONFeature[],
     type: 'admin' | 'vworld_building',
   ) => {
-    // Clear existing
+    // Clear existing polygons and overlays
     polygonsRef.current.forEach((poly) => poly.setMap(null));
     polygonsRef.current = [];
+    customOverlaysRef.current.forEach((overlay) => overlay.setMap(null));
+    customOverlaysRef.current = [];
 
     features.forEach((feature: GeoJSONFeature) => {
       const geometry = feature.geometry;
       const props = feature.properties;
+
+      // 이름 정보가 없으면 아예 그리지 않음
+      // if (!props.adm_nm && !props.buld_nm) return;
+
       const paths: any[] = [];
+      let centerPoint: any = null;
 
       if (geometry.type === 'Polygon') {
         const ring = geometry.coordinates[0];
@@ -156,7 +168,32 @@ export default function Kakaomap({ polygonClick = (area: string) => {} }) {
         geometry.coordinates.forEach((poly: any) => {
           const path = poly[0].map((c: any) => convertCoord(c[0], c[1]));
           paths.push(path);
+          if (!centerPoint && (!props.x || !props.y)) {
+            try {
+              const [lng, lat] = polylabel(poly, 1.0);
+              centerPoint = convertCoord(lng, lat);
+            } catch (error) {
+              console.warn('Polylabel failed, using simple average:', error);
+              let sumLat = 0,
+                sumLng = 0;
+              path.forEach((p: any) => {
+                sumLat += p.getLat();
+                sumLng += p.getLng();
+              });
+              centerPoint = new window.kakao.maps.LatLng(
+                sumLat / path.length,
+                sumLng / path.length,
+              );
+            }
+          }
         });
+      }
+
+      let position;
+      if (props.x && props.y) {
+        position = convertCoord(Number(props.x), Number(props.y));
+      } else if (centerPoint) {
+        position = centerPoint;
       }
 
       paths.forEach((path) => {
@@ -183,17 +220,41 @@ export default function Kakaomap({ polygonClick = (area: string) => {} }) {
         polygon.setMap(map);
         polygonsRef.current.push(polygon);
 
+        // Click event to open sidebar
         const label =
           props.adm_nm || props.tot_oa_cd || props.buld_nm || 'Unknown';
 
         window.kakao.maps.event.addListener(polygon, 'click', () => {
           console.log(`Clicked: ${label}`);
-
+          setSelectedArea(props); 
           if (clickRef.current) {
             clickRef.current(label);
           }
         });
       });
+
+      // 커스텀 마커 생성
+      if (position) {
+        const name = props.adm_nm || props.buld_nm || '데이터없음';
+        const shortName = name.split(' ').pop(); // '서울특별시 관악구 행운동' -> '행운동'
+
+        const contentEl = document.createElement('div');
+        contentEl.innerHTML = `<div style="text-align: center; white-space: nowrap; padding: 4px 8px; background: white; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-size: 12px; font-weight: bold; color: #333; cursor: pointer;">${shortName}</div>`;
+
+        contentEl.onclick = () => {
+          console.log('Clicked Overlay:', props);
+          setSelectedArea(props);
+        };
+
+        const customOverlay = new window.kakao.maps.CustomOverlay({
+          position: position,
+          content: contentEl,
+          yAnchor: 1,
+        });
+
+        customOverlay.setMap(map);
+        customOverlaysRef.current.push(customOverlay);
+      }
     });
   };
 
@@ -206,17 +267,20 @@ export default function Kakaomap({ polygonClick = (area: string) => {} }) {
   }, [loaded]);
 
   return (
-    <>
+    <div className="relative w-full h-full">
       <Script
         src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY}&autoload=false`}
         strategy="afterInteractive"
         onLoad={() => setLoaded(true)}
       />
+
+      <InfoBar data={selectedArea} onClose={() => setSelectedArea(null)} />
+
       <div
         ref={mapRef}
-        className="w-full h-100 border border-gray-200 rounded-lg"
+        className="w-full h-100 bg-gray-100" // Removed borders for full screen feel
         style={{ width: '100vw', height: '100vh' }}
       />
-    </>
+    </div>
   );
 }
