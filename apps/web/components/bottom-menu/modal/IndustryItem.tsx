@@ -1,9 +1,9 @@
-import { ComponentType } from 'react';
+import { ElementType } from 'react';
 
 type IndustryItemProps = {
   label: string;
-  iconLabel: ComponentType<{ className?: string }>; // react-icons면 IconType도 가능
-  iconClass: string;
+  iconLabel: ElementType;
+  iconClass?: string;
 };
 const defaultIconClass =
   'h-10 w-10 text-gray-400 transition group-hover:text-gray-800';
