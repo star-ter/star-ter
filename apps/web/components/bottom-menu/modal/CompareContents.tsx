@@ -1,5 +1,5 @@
 import PillButton from '../PillButton';
-import { CompareRequest } from '../types';
+import { CompareRequest } from '../../../types/bottom-menu-types';
 import { BiTargetLock } from 'react-icons/bi';
 
 interface Props {

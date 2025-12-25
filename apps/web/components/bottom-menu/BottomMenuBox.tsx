@@ -7,7 +7,10 @@ import AreaContents from './modal/AreaContents';
 import PopulationContents from './modal/PopulationContents';
 import IndustryContents from './modal/IndustryContents';
 import CompareContents from './modal/CompareContents';
-import { IndustryCategory, CompareRequest } from './types';
+import {
+  IndustryCategory,
+  CompareRequest,
+} from '../../types/bottom-menu-types';
 
 type ActiveType = 'area' | 'population' | 'industry' | 'compare';
 
