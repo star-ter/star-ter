@@ -3,7 +3,7 @@
 import Script from 'next/script';
 import { useEffect, useRef, useState } from 'react';
 import { initProj4, convertCoord } from '../utils/map-utils';
-import { KakaoMap, KakaoPolygon, GeoJSONFeature } from '../types/map-types';
+import { KakaoMap, KakaoPolygon, CustomArea } from '../types/map-types';
 import polylabel from '@mapbox/polylabel';
 
 initProj4();
@@ -100,9 +100,11 @@ export default function Kakaomap({ polygonClick = (area: string) => {} }) {
       const res = await fetch(`${API_BASE_URL}/polygon/mock/building`);
       const data = await res.json();
 
-      if (data.features) {
-        console.log(`Received ${data.features.length} buildings`);
-        drawPolygons(map, data.features, 'vworld_building');
+      const features = data;
+
+      if (Array.isArray(features)) {
+        console.log(`Received ${features.length} buildings`);
+        drawPolygons(map, features, 'vworld_building');
       } else {
         console.warn('Building Mock No Data or Error:', JSON.stringify(data));
       }
@@ -123,23 +125,23 @@ export default function Kakaomap({ polygonClick = (area: string) => {} }) {
       const response = await fetch(url);
       const data = await response.json();
 
-      if (data.features) {
-        console.log(`Drawing ${data.features.length} features`);
-        drawPolygons(map, data.features, 'admin');
+      if (Array.isArray(data)) {
+        console.log(`Drawing ${data.length} features`);
+        drawPolygons(map, data, 'admin');
       }
     } catch (err) {
       console.error('Combined Boundary Fetch Error:', err);
     }
   };
 
-  // GeoJSON Feature 데이터를 기반으로 폴리곤을 생성하여 지도에 그리는 함수.
+  // 통합된 폴리곤 그리기 함수 (GeoJSON/CustomArea  모두 처리)
   /* @param map Kakao 지도 객체
-   * @param features GeoJSON Features 배열
+   * @param features 데이터 배열 (모두 CustomArea 구조로 가정, GeoJSON 호환성 유지)
    * @param type 'admin' (행정구역) 또는 'vworld_building' (건물) - 스타일 결정용
    */
   const drawPolygons = (
     map: KakaoMap,
-    features: GeoJSONFeature[],
+    features: CustomArea[],
     type: 'admin' | 'vworld_building',
   ) => {
     // Clear existing polygons and overlays
@@ -148,47 +150,48 @@ export default function Kakaomap({ polygonClick = (area: string) => {} }) {
     customOverlaysRef.current.forEach((overlay) => overlay.setMap(null));
     customOverlaysRef.current = [];
 
-    features.forEach((feature: GeoJSONFeature) => {
-      const geometry = feature.geometry;
-      const props = feature.properties;
-
-      // 이름 정보가 없으면 아예 그리지 않음
-      // if (!props.adm_nm && !props.buld_nm) return;
-
+    features.forEach((feature: CustomArea) => {
+      // polygons 제외한 나머지 속성만 props로 추출
+      const { polygons, ...props } = feature;
       const paths: any[] = [];
       let centerPoint: any = null;
 
-      if (geometry.type === 'Polygon') {
-        const ring = geometry.coordinates[0];
-        if (ring) {
-          const path = ring.map((c: any) => convertCoord(c[0], c[1]));
-          paths.push(path);
+      if (polygons && Array.isArray(polygons)) {
+        let rings: any[] = [];
+        const isMultiPolygon = Array.isArray(polygons[0]?.[0]?.[0]);
+
+        if (isMultiPolygon) {
+          // 4 Levels
+          polygons.forEach((poly: any) => {
+            if (Array.isArray(poly)) {
+              poly.forEach((ring: any) => rings.push(ring));
+            }
+          });
+        } else {
+          // 3 Levels
+          rings = polygons;
         }
-      } else if (geometry.type === 'MultiPolygon') {
-        geometry.coordinates.forEach((poly: any) => {
-          const path = poly[0].map((c: any) => convertCoord(c[0], c[1]));
+
+        rings.forEach((ring: any) => {
+          const path = ring.map((c: number[]) => convertCoord(c[0], c[1]));
           paths.push(path);
-          if (!centerPoint && (!props.x || !props.y)) {
+
+          // 좌표(x,y)가 없는 경우(건물 등) 중심점 계산
+          if (!props.x || !props.y) {
             try {
-              const [lng, lat] = polylabel(poly, 1.0);
-              centerPoint = convertCoord(lng, lat);
-            } catch (error) {
-              console.warn('Polylabel failed, using simple average:', error);
-              let sumLat = 0,
-                sumLng = 0;
-              path.forEach((p: any) => {
-                sumLat += p.getLat();
-                sumLng += p.getLng();
-              });
-              centerPoint = new window.kakao.maps.LatLng(
-                sumLat / path.length,
-                sumLng / path.length,
-              );
+              // Calculate center for the first ring (simplified)
+              if (!centerPoint) {
+                const [lng, lat] = polylabel([ring], 1.0);
+                centerPoint = convertCoord(lng, lat);
+              }
+            } catch (e) {
+              // fallback
             }
           }
         });
       }
 
+      // 3. 마커 위치 결정
       let position;
       if (props.x && props.y) {
         position = convertCoord(Number(props.x), Number(props.y));
@@ -196,6 +199,7 @@ export default function Kakaomap({ polygonClick = (area: string) => {} }) {
         position = centerPoint;
       }
 
+      // 4. 그리기
       paths.forEach((path) => {
         let strokeColor = '#4A90E2';
         let fillColor = '#D1E8FF';
@@ -211,19 +215,17 @@ export default function Kakaomap({ polygonClick = (area: string) => {} }) {
 
         const polygon = new window.kakao.maps.Polygon({
           path: path,
-          strokeWeight: strokeWeight,
-          strokeColor: strokeColor,
-          strokeOpacity: strokeOpacity,
-          fillColor: fillColor,
-          fillOpacity: fillOpacity,
+          strokeWeight,
+          strokeColor,
+          strokeOpacity,
+          fillColor,
+          fillOpacity,
         });
         polygon.setMap(map);
         polygonsRef.current.push(polygon);
 
-        // Click event to open sidebar
-        const label =
-          props.adm_nm || props.tot_oa_cd || props.buld_nm || 'Unknown';
-
+        // Click Event
+        const label = props.adm_nm || props.buld_nm || 'Unknown';
         window.kakao.maps.event.addListener(polygon, 'click', () => {
           console.log(`Clicked: ${label}`);
           setSelectedArea(props);
@@ -233,10 +235,10 @@ export default function Kakaomap({ polygonClick = (area: string) => {} }) {
         });
       });
 
-      // 커스텀 마커 생성
+      // 5. 마커(오버레이)
       if (position) {
         const name = props.adm_nm || props.buld_nm || '데이터없음';
-        const shortName = name.split(' ').pop(); // '서울특별시 관악구 행운동' -> '행운동'
+        const shortName = name.split(' ').pop();
 
         const contentEl = document.createElement('div');
         contentEl.innerHTML = `<div style="text-align: center; white-space: nowrap; padding: 4px 8px; background: white; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-size: 12px; font-weight: bold; color: #333; cursor: pointer;">${shortName}</div>`;
@@ -252,7 +254,7 @@ export default function Kakaomap({ polygonClick = (area: string) => {} }) {
         const customOverlay = new window.kakao.maps.CustomOverlay({
           position: position,
           content: contentEl,
-          yAnchor: 1,
+          yAnchor: 1, // 마커 밑부분이 좌표에 닿게
         });
 
         customOverlay.setMap(map);

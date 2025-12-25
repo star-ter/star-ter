@@ -9,24 +9,6 @@ export interface KakaoPolygon {
   setMap: (map: KakaoMap | null) => void;
 }
 
-export interface GeoJSONGeometry {
-  type: 'Polygon' | 'MultiPolygon';
-  coordinates: number[][][] | number[][][][]; // Polygon or MultiPolygon coordinates
-}
-
-export interface GeoJSONProperties {
-  adm_nm?: string;
-  buld_nm?: string;
-  tot_oa_cd?: string;
-  [key: string]: unknown;
-}
-
-export interface GeoJSONFeature {
-  type: string;
-  geometry: GeoJSONGeometry;
-  properties: GeoJSONProperties;
-}
-
 export interface InfoBarData {
   adm_nm?: string;
   buld_nm?: string;
@@ -34,5 +16,17 @@ export interface InfoBarData {
   tot_oa_cd?: string;
   x?: string | number;
   y?: string | number;
+  [key: string]: any;
+}
+
+export interface CustomArea {
+  adm_nm?: string;
+  buld_nm?: string;
+  adm_cd?: string;
+  tot_oa_cd?: string;
+  x?: string | number;
+  y?: string | number;
+  polygons: any[]; // 구체적으로는 number[][][] (Polygon) | number[][][][] (MultiPolygon) 이지만 유연성을 위해 any[]
+
   [key: string]: any;
 }
