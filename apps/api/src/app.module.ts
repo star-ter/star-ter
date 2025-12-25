@@ -11,7 +11,7 @@ import { PolygonModule } from './polygon/polygon.module';
     PrismaModule,
     PolygonModule,
   ],
-  controllers: [],
+  controllers: [HealthController],
   providers: [],
 })
 export class AppModule {}
