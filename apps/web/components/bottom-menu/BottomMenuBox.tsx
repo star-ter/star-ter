@@ -23,45 +23,51 @@ const MockIndustryCategory: IndustryCategory[] = [
   { id: 'hotel', label: '숙박', iconCode: 'hotel' },
 ];
 
-export default function BottomMenuBox() {
-  const [active, setActive] = useState<ActiveType | 'none'>('none');
+interface BottomMenuProps {
+  locationA: string;
+  locationB: string;
+  setLocationA: (area: string) => void;
+  setLocationB: (area: string) => void;
+  handlePickMode: (target: 'A' | 'B') => void;
+}
 
-  const [compareLocationA, setCompareLocationA] = useState('');
-  const [compareLocationB, setCompareLocationB] = useState('');
+export default function BottomMenuBox({
+  locationA = '',
+  locationB = '',
+  setLocationA,
+  setLocationB,
+  handlePickMode,
+}: BottomMenuProps) {
+  const [active, setActive] = useState<ActiveType | 'none'>('none');
 
   function modalClose() {
     setActive('none');
   }
 
-  const handleIndustry = (id: string) => {
-    console.log('Selected industry:', id);
+  function handleIndustry(id: string) {
+    console.log('업종 선택:', id);
     // TODO: 선택된 업종에 대한 데이터 가져오기
     modalClose();
-  };
+  }
 
-  const handleCompare = (data: CompareRequest) => {
-    console.log('Compare request:', data);
+  function handleCompare(data: CompareRequest) {
+    console.log('비교 요청:', data);
     // TODO: 비교 로직 실행
-  };
+  }
 
-  const handlePopulation = () => {
-    console.log('View population clicked');
+  function handlePopulation() {
+    console.log('유동인구 보기');
     // TODO: 유동인구 레이어 토글
-  };
+  }
 
-  const handlePickLocation = (target: 'A' | 'B') => {
-    console.log(`Pick location for ${target} started.`);
+  function handlePickLocation(target: 'A' | 'B') {
+    console.log(`${target}를 선택`);
     // TODO: 지도 선택 모드 활성화
 
-    // 1초 후 지도 클릭 시뮬레이션
-    setTimeout(() => {
-      const mockAddress =
-        target === 'A' ? '서울시 강남구 역삼동' : '서울시 송파구 잠실동';
-      console.log(`Picked location for ${target}: ${mockAddress}`);
-      if (target === 'A') setCompareLocationA(mockAddress);
-      else setCompareLocationB(mockAddress);
-    }, 1000);
-  };
+    if (handlePickMode) {
+      handlePickMode(target);
+    }
+  }
 
   const items: { label: string; value: ActiveType | 'none' }[] = [
     { label: '영역', value: 'area' },
@@ -87,10 +93,10 @@ export default function BottomMenuBox() {
       <CompareContents
         onClose={modalClose}
         onCompare={handleCompare}
-        targetA={compareLocationA}
-        targetB={compareLocationB}
-        onChangeTargetA={setCompareLocationA}
-        onChangeTargetB={setCompareLocationB}
+        targetA={locationA}
+        targetB={locationB}
+        changeTargetA={setLocationA}
+        changeTargetB={setLocationB}
         onPickLocation={handlePickLocation}
       />
     ),
@@ -106,7 +112,11 @@ export default function BottomMenuBox() {
           <PillButton
             key={value}
             label={label}
-            onClick={() => setActive(value)}
+            onClick={() => {
+              setActive(value);
+              setLocationA('');
+              setLocationB('');
+            }}
           />
         ))}
       </div>

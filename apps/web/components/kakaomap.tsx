@@ -13,13 +13,19 @@ declare global {
   }
 }
 
-export default function Kakaomap() {
+export default function Kakaomap({ polygonClick = (area: string) => {} }) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [loaded, setLoaded] = useState(false);
   const polygonsRef = useRef<KakaoPolygon[]>([]);
   const lastLevelGroupRef = useRef<string | null>(null);
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+  const clickRef = useRef(polygonClick);
+
+  useEffect(() => {
+    clickRef.current = polygonClick;
+  }, [polygonClick]);
 
   const initMap = () => {
     const container = mapRef.current;
@@ -180,9 +186,12 @@ export default function Kakaomap() {
         const label =
           props.adm_nm || props.tot_oa_cd || props.buld_nm || 'Unknown';
 
-        // Simple click event
         window.kakao.maps.event.addListener(polygon, 'click', () => {
           console.log(`Clicked: ${label}`);
+
+          if (clickRef.current) {
+            clickRef.current(label);
+          }
         });
       });
     });
