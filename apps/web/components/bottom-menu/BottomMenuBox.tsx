@@ -78,6 +78,7 @@ export default function BottomMenuBox() {
         onClose={modalClose}
         categories={MockIndustryCategory}
         onSelect={handleIndustry}
+        isLoading={false}
       />
     ),
     compare: (

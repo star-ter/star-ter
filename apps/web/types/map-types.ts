@@ -26,3 +26,13 @@ export interface GeoJSONFeature {
   geometry: GeoJSONGeometry;
   properties: GeoJSONProperties;
 }
+
+export interface InfoBarData {
+  adm_nm?: string;
+  buld_nm?: string;
+  adm_cd?: string;
+  tot_oa_cd?: string;
+  x?: string | number;
+  y?: string | number;
+  [key: string]: any;
+}
