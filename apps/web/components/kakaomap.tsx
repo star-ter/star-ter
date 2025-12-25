@@ -16,7 +16,7 @@ declare global {
 
 import InfoBar from './sidebar/InfoBar';
 
-export default function Kakaomap() {
+export default function Kakaomap({ polygonClick = (area: string) => {} }) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [loaded, setLoaded] = useState(false);
   const [selectedArea, setSelectedArea] = useState<any>(null); // State for sidebar
@@ -25,6 +25,12 @@ export default function Kakaomap() {
   const customOverlaysRef = useRef<any[]>([]);
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+  const clickRef = useRef(polygonClick);
+
+  useEffect(() => {
+    clickRef.current = polygonClick;
+  }, [polygonClick]);
 
   const initMap = () => {
     const container = mapRef.current;
@@ -215,9 +221,15 @@ export default function Kakaomap() {
         polygonsRef.current.push(polygon);
 
         // Click event to open sidebar
+        const label =
+          props.adm_nm || props.tot_oa_cd || props.buld_nm || 'Unknown';
+
         window.kakao.maps.event.addListener(polygon, 'click', () => {
-          console.log(`Clicked Area:`, props);
-          setSelectedArea(props); // Set state to open sidebar
+          console.log(`Clicked: ${label}`);
+          setSelectedArea(props); 
+          if (clickRef.current) {
+            clickRef.current(label);
+          }
         });
       });
 
