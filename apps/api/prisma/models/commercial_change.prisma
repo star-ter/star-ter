@@ -1,0 +1,48 @@
+//  commercial_change_{gu|dong|commercial}
+
+model CommercialChangeGu {
+    STDR_YYQU_CD        String //기준_년분기_코드
+    SIGNGU_CD           String //자치구_코드
+    SIGNGU_CD_NM        String //자치구_코드_명
+    TRDAR_CHNGE_IX      String //상권_변화_지표
+    TRDAR_CHNGE_IX_NM   String //상권_변화_지표_명
+    OPR_SALE_MT_AVRG    Int //운영_영업_개월_평균
+    CLS_SALE_MT_AVRG    Int //폐업_영업_개월_평균
+    SU_OPR_SALE_MT_AVRG Int //서울_운영_영업_개월_평균
+    SU_CLS_SALE_MT_AVRG Int //서울_폐업_영업_개월_평균
+
+    @@id([STDR_YYQU_CD, SIGNGU_CD])
+    @@map("commercial_change_gu")
+}
+
+model CommercialChangeDong {
+    STDR_YYQU_CD        String //기준_년분기_코드
+    ADSTRD_CD           String //행정동_코드
+    ADSTRD_CD_NM        String //행정동_코드_명
+    TRDAR_CHNGE_IX      String //상권_변화_지표
+    TRDAR_CHNGE_IX_NM   String //상권_변화_지표_명
+    OPR_SALE_MT_AVRG    Int //운영_영업_개월_평균
+    CLS_SALE_MT_AVRG    Int //폐업_영업_개월_평균
+    SU_OPR_SALE_MT_AVRG Int //서울_운영_영업_개월_평균
+    SU_CLS_SALE_MT_AVRG Int //서울_폐업_영업_개월_평균
+
+    @@id([STDR_YYQU_CD, ADSTRD_CD])
+    @@map("commercial_change_dong")
+}
+
+model CommercialChangeCommercial {
+    STDR_YYQU_CD        String //기준_년분기_코드
+    TRDAR_SE_CD         String //상권_구분_코드
+    TRDAR_SE_CD_NM      String //상권_구분_코드_명
+    TRDAR_CD            String //상권_코드
+    TRDAR_CD_NM         String //상권_코드_명
+    TRDAR_CHNGE_IX      String //상권_변화_지표
+    TRDAR_CHNGE_IX_NM   String //상권_변화_지표_명
+    OPR_SALE_MT_AVRG    Int //운영_영업_개월_평균
+    CLS_SALE_MT_AVRG    Int //폐업_영업_개월_평균
+    SU_OPR_SALE_MT_AVRG Int //서울_운영_영업_개월_평균
+    SU_CLS_SALE_MT_AVRG Int //서울_폐업_영업_개월_평균
+
+    @@id([STDR_YYQU_CD, TRDAR_CD])
+    @@map("commercial_change_commercial")
+}

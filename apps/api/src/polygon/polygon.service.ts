@@ -8,9 +8,9 @@ export class PolygonService {
 
   getAdminPolygonByLowSearch(lowSearch: number) {
     if (lowSearch == 2) {
-      return this.prisma.admin_area_dong.findMany();
+      return this.prisma.adminAreaDong.findMany();
     }
-    return this.prisma.admin_area_gu.findMany();
+    return this.prisma.adminAreaGu.findMany();
   }
 
   getBuildingPolygon() {
