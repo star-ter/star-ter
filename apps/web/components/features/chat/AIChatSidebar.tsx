@@ -263,8 +263,8 @@ export default function AIChatSidebar() {
                   const container = scrollContainerRef.current;
                   if (!container) return;
 
-                  // Check if user is near bottom (threshold 100px)
-                  const isNearBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
+                  // Check if user is near bottom (threshold 20px)
+                  const isNearBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 20;
 
                   if (isNearBottom) {
                     const startTime = Date.now();
