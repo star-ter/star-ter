@@ -14,6 +14,7 @@ export interface KakaoMap {
   setCenter: (latlng: KakaoLatLng) => void;
   getCenter: () => KakaoLatLng;
   getBounds: () => KakaoBounds;
+  setBounds: (bounds: KakaoBounds) => void;
 }
 
 export interface KakaoPolygon {
