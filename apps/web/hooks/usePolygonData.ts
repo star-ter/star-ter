@@ -50,11 +50,23 @@ export const usePolygonData = (
   }
 
   // 건물 데이터를 비동기로 호출하고 지도에 그리는 함수.
-  async function fetchBuildingMock(map: KakaoMap) {
-    console.log(`Fetching Building Mock Data...`);
+  async function fetchBuildingVworld(map: KakaoMap) {
+    console.log(`Fetching Building Data...`);
+
+    const bounds = map.getBounds();
+    const sw = bounds.getSouthWest();
+    const ne = bounds.getNorthEast();
+
+    // V-World API에 보낼 BBOX (minx, miny, maxx, maxy)
+    const minx = sw.getLng();
+    const miny = sw.getLat();
+    const maxx = ne.getLng();
+    const maxy = ne.getLat();
 
     try {
-      const res = await fetch(`${API_BASE_URL}/polygon/building`);
+      const res = await fetch(
+        `${API_BASE_URL}/polygon/building?minx=${minx}&miny=${miny}&maxx=${maxx}&maxy=${maxy}`,
+      );
       const data = await res.json();
 
       const features = data;
@@ -70,10 +82,10 @@ export const usePolygonData = (
           (data) => onPolygonClickRef.current(data),
         );
       } else {
-        console.warn('Building Mock No Data or Error:', JSON.stringify(data));
+        console.warn('Building API No Data or Error:', JSON.stringify(data));
       }
     } catch (err) {
-      console.error('Building Mock Fetch Error:', err);
+      console.error('Building API Fetch Error:', err);
     }
   }
 
@@ -83,7 +95,7 @@ export const usePolygonData = (
 
     let currentGroup = '';
     if (level >= 7) currentGroup = 'GU';
-    else if (level >= 4) currentGroup = 'DONG';
+    else if (level >= 5) currentGroup = 'DONG';
     else currentGroup = 'BUILDING';
 
     if (
@@ -98,10 +110,10 @@ export const usePolygonData = (
 
     if (level >= 7) {
       fetchCombinedBoundary(map, 1);
-    } else if (level >= 4) {
+    } else if (level >= 5) {
       fetchCombinedBoundary(map, 2);
     } else {
-      fetchBuildingMock(map);
+      fetchBuildingVworld(map);
     }
   }
 

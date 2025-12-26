@@ -34,13 +34,20 @@ export default function InfoBar({
 
   if (data) {
     // 지도 데이터가 있는 경우
-    const name = data.adm_nm || data.buld_nm || '정보 없음';
-    const nameParts = name.split(' ');
-    title = nameParts[nameParts.length - 1]; // e.g. "삼성동" or "강남구"
-    subTitle =
-      nameParts.length > 1
-        ? nameParts.slice(0, nameParts.length - 1).join(' ')
-        : '';
+    if (data.buld_nm) {
+      // 건물명이 있으면 최우선 표시
+      title = data.buld_nm;
+      subTitle = data.adm_nm || '';
+    } else {
+      // 건물명이 없으면 행정구역명 파싱
+      const name = data.adm_nm || '정보 없음';
+      const nameParts = name.split(' ');
+      title = nameParts[nameParts.length - 1]; // e.g. "삼성동" or "강남구"
+      subTitle =
+        nameParts.length > 1
+          ? nameParts.slice(0, nameParts.length - 1).join(' ')
+          : '';
+    }
   } else if (selectedCategory) {
     // 업종만 선택된 경우
     title = selectedCategory.name;

@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { PolygonService } from './polygon.service';
-// import { BuildingPolygonResponse } from './dto/building-polygon-dto';
+import { BuildingPolygonResponse } from './dto/building-polygon-dto';
 import { AdminPolygonResponse } from './dto/admin-polygon-dto';
 
 @Controller('polygon')
@@ -14,9 +14,17 @@ export class PolygonController {
     return this.polygonService.getAdminPolygonByLowSearch(lowSearch);
   }
 
-  // TODO : 지금 현재 DB에 건물 데이터가 없어서 주석처리
-  // @Get('building')
-  // getBuildingPolygon(): BuildingPolygonResponse[] {
-  //   return this.polygonService.getBuildingPolygon();
-  // }
+  @Get('building')
+  async getBuildingPolygon(
+    @Query('minx') minx: string,
+    @Query('miny') miny: string,
+    @Query('maxx') maxx: string,
+    @Query('maxy') maxy: string,
+  ): Promise<BuildingPolygonResponse[]> {
+    if (!minx || !miny || !maxx || !maxy) {
+      // BBox가 없으면 빈 배열 혹은 에러 반환 (일단 빈 배열)
+      return [];
+    }
+    return this.polygonService.getBuildingPolygon(minx, miny, maxx, maxy);
+  }
 }
