@@ -74,20 +74,25 @@ export default function Kakaomap({
     // 여러 마커일 때 자동 bounds 맞춤
     if (markers.length > 1 || zoom === -1) {
       map.setBounds(bounds);
-      // 여유 공간 확보 및 왼쪽 오프셋 적용
+      
+      // 여유 공간 확보 및 왼쪽 오프셋 적용 (채팅 UI 고려)
       setTimeout(() => {
+        // 2단계 줌아웃
         const currentLevel = map.getLevel();
-        map.setLevel(currentLevel + 1); // 줌아웃
-        
-        // 중심점을 왼쪽으로 이동 (오른쪽 채팅 UI 때문에)
+        map.setLevel(currentLevel + 2);
+      }, 100);
+      
+      // 중심점 오른쪽 이동 → 마커가 화면 왼쪽에 표시됨
+      setTimeout(() => {
         const currentCenter = map.getCenter();
-        const offsetLng = currentCenter.getLng() - 0.02; // 왼쪽으로 약간 이동
+        // 경도를 증가 (중심을 동쪽으로) → 마커가 화면 왼쪽에
+        const offsetLng = currentCenter.getLng() + 0.01;
         const newCenter = new window.kakao.maps.LatLng(currentCenter.getLat(), offsetLng);
         map.setCenter(newCenter);
-      }, 100);
+      }, 200);
     } else if (center) {
-      // 단일 마커일 때 중심을 왼쪽으로 오프셋
-      const offsetLng = center.lng - 0.01; // 왼쪽으로 약간 이동
+      // 단일 마커일 때 중심을 오른쪽으로 오프셋
+      const offsetLng = center.lng + 0.01;
       const moveLatLng = new window.kakao.maps.LatLng(center.lat, offsetLng);
       map.setCenter(moveLatLng);
       if (zoom > 0) {

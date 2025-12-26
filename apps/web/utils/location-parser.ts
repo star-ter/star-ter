@@ -10,21 +10,31 @@
 export function extractLocations(text: string): string[] {
   const locations: string[] = [];
   
-  // 연결어로 분리: "이랑", "그리고", "랑", ",", "와", "과"
-  const connectors = /\s*(이랑|그리고|랑|,|와\s|과\s|하고)\s*/;
-  
-  // 위치 관련 키워드 제거
-  const cleanedText = text
+  // 1. 위치 관련 키워드/액션 제거
+  let cleanedText = text
     .replace(/(으로|로)\s*(가|이동|보내|옮겨|가고|이동하고).*$/g, '')
-    .replace(/\s*(보여|찾|검색|알려|어디|지도|위치|분석|비교).*$/g, '')
+    .replace(/\s*(보여줘|찾아줘|검색해줘|알려줘).*$/g, '')
+    .replace(/\s*(분석|비교|상권).*$/g, '')
     .trim();
   
-  // 연결어로 분리
-  const parts = cleanedText.split(connectors).filter(part => {
-    // 연결어 자체나 빈 문자열 제외
+  // 2. 연결어로 분리: "이랑", "그리고", "랑", ",", "와", "과"
+  const connectorPattern = /\s*(이랑|그리고|랑|,|와\s|과\s|하고)\s*/;
+  let parts = cleanedText.split(connectorPattern).filter(part => {
     return part && !['이랑', '그리고', '랑', ',', '와', '과', '하고'].includes(part.trim());
   });
   
+  // 3. 연결어로 분리된 게 1개뿐이면 공백 + 지역명 패턴으로 분리 시도
+  if (parts.length <= 1 && cleanedText.includes(' ')) {
+    // 지역명 패턴: 역, 길, 동, 구, 시장, 거리 등으로 끝나는 단어
+    const locationPattern = /(\S+(?:역|길|동|구|시장|거리|로|타워|센터|광장|공원))/g;
+    const matches = cleanedText.match(locationPattern);
+    
+    if (matches && matches.length > 1) {
+      parts = matches;
+    }
+  }
+  
+  // 4. 각 파트 정제 및 유효성 검사
   for (const part of parts) {
     const cleaned = cleanLocationName(part);
     if (cleaned && cleaned.length >= 2 && !isCommonWord(cleaned)) {
