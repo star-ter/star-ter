@@ -1,13 +1,29 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 
 export default function SearchBox() {
   const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        // SearchBox 외부 클릭 시 포커스 해제
+        inputRef.current?.blur();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <header className="flex flex-start w-screen px-4 py-4 pointer-events-none">
       <div 
+        ref={containerRef}
         onClick={() => inputRef.current?.focus()}
         className="pointer-events-auto group flex h-12 w-12 hover:w-[320px] focus-within:w-[320px] items-center gap-3 rounded-full bg-white/50 hover:bg-white/90 focus-within:bg-white/90 shadow-lg ring-1 ring-gray-200 transition-all duration-500 ease-in-out overflow-hidden px-3 cursor-pointer"
       >
