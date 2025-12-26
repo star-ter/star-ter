@@ -7,6 +7,7 @@ import ComparisonOverlay from '@/components/comparison/ComparisonOverlay';
 
 import { useSidebarStore } from '@/stores/useSidebarStore';
 import { useComparisonStore } from '@/stores/useComparisonStore';
+import { IndustryCategory } from '@/types/bottom-menu-types';
 
 export default function Home() {
   const { isOpen, width, isResizing } = useSidebarStore();
@@ -15,6 +16,8 @@ export default function Home() {
   const [locationA, setLocationA] = useState('');
   const [locationB, setLocationB] = useState('');
   const [pickTarget, setPickTarget] = useState('');
+  const [selectedCategory, setSelectedCategory] =
+    useState<IndustryCategory | null>(null);
 
   // 비교 마커 첫번째인지 두번째인지 판단
   function handlePickMode(target: 'A' | 'B') {
@@ -88,6 +91,13 @@ export default function Home() {
         }}
       >
         <Kakaomap polygonClick={mapClick} />
+    <div className="relative w-screen h-screen overflow-hidden">
+      <div className="absolute inset-0 z-0">
+        <Kakaomap
+          polygonClick={mapClick}
+          selectedCategory={selectedCategory}
+          onClearCategory={() => setSelectedCategory(null)}
+        />
       </div>
       <div className="fixed inset-0 z-10 pointer-events-none">
         <MapBox
@@ -97,6 +107,7 @@ export default function Home() {
           setLocationB={setLocationB}
           handlePickMode={handlePickMode}
           onCompare={handleCompareRequest}
+          onSelectCategory={setSelectedCategory}
         />
       </div>
     </div>
