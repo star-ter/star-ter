@@ -109,9 +109,10 @@ export default function AIChatSidebar() {
   }, [isResizing, resize, stopResizing]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
+    messagesEndRef.current?.scrollIntoView({ behavior });
   };
 
   useEffect(() => {
@@ -177,7 +178,10 @@ export default function AIChatSidebar() {
           </header>
 
           {/* Main Content Area */}
-          <div className="flex flex-1 flex-col overflow-y-auto p-6 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+          <div 
+            ref={scrollContainerRef}
+            className="flex flex-1 flex-col overflow-y-auto p-6 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
+          >
             {/* Messages */}
             {optimisticMessages && optimisticMessages.length > 0 ? (
               <div className="space-y-4">
@@ -255,7 +259,26 @@ export default function AIChatSidebar() {
                 name="message"
                 placeholder="AI Coach에 메시지 보내기"
                 className="w-full resize-none rounded-2xl border border-gray-300 bg-white p-3 text-sm text-gray-800 placeholder:text-gray-400 focus:border-blue-200 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-all duration-300 ease-in-out h-14 pb-3 group-focus-within:h-32 group-focus-within:pb-12"
-                rows={undefined}
+                onFocus={() => {
+                  const container = scrollContainerRef.current;
+                  if (!container) return;
+
+                  // Check if user is near bottom (threshold 100px)
+                  const isNearBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
+
+                  if (isNearBottom) {
+                    const startTime = Date.now();
+                    const duration = 400;
+                    const animateScroll = () => {
+                      const now = Date.now();
+                      scrollToBottom('auto');
+                      if (now - startTime < duration) {
+                        requestAnimationFrame(animateScroll);
+                      }
+                    };
+                    requestAnimationFrame(animateScroll);
+                  }
+                }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
