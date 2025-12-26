@@ -91,12 +91,19 @@ export default function Kakaomap({
         map.setCenter(newCenter);
       }, 200);
     } else if (center) {
-      // 단일 마커일 때 중심을 오른쪽으로 오프셋
-      const offsetLng = center.lng + 0.01;
-      const moveLatLng = new window.kakao.maps.LatLng(center.lat, offsetLng);
-      map.setCenter(moveLatLng);
-      if (zoom > 0) {
-        map.setLevel(zoom);
+      // zoom === -2: 중앙 정렬 (오프셋 없음) - 검색 박스용
+      if (zoom === -2) {
+        const moveLatLng = new window.kakao.maps.LatLng(center.lat, center.lng);
+        map.setCenter(moveLatLng);
+        map.setLevel(3);
+      } else {
+        // 단일 마커일 때 중심을 오른쪽으로 오프셋 (채팅용)
+        const offsetLng = center.lng + 0.01;
+        const moveLatLng = new window.kakao.maps.LatLng(center.lat, offsetLng);
+        map.setCenter(moveLatLng);
+        if (zoom > 0) {
+          map.setLevel(zoom);
+        }
       }
     }
 

@@ -23,7 +23,7 @@ interface MapStore {
   setSearchedLocation: (location: string | null) => void;
   setIsMoving: (moving: boolean) => void;
   
-  moveToLocation: (coords: MapCoordinates, location: string, zoom?: number) => void;
+  moveToLocation: (coords: MapCoordinates, location: string, zoom?: number, centered?: boolean) => void;
   moveToLocations: (locations: MapMarker[]) => void;
   clearMarkers: () => void;
   reset: () => void;
@@ -41,10 +41,10 @@ export const useMapStore = create<MapStore>((set) => ({
   setSearchedLocation: (location) => set({ searchedLocation: location }),
   setIsMoving: (moving) => set({ isMoving: moving }),
 
-  moveToLocation: (coords, location, zoom = 3) => {
+  moveToLocation: (coords, location, zoom = 3, centered = false) => {
     set({
       center: coords,
-      zoom,
+      zoom: centered ? -2 : zoom, // -2는 "중앙 정렬, 오프셋 없음" 신호
       searchedLocation: location,
       isMoving: true,
       markers: [{ id: '1', coords, name: location }],
