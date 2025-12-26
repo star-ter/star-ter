@@ -8,15 +8,23 @@ import { useKakaoMap } from '../hooks/useKakaoMap';
 import { usePolygonData } from '../hooks/usePolygonData';
 import { usePopulationLayer } from '../hooks/usePopulationLayer';
 import { usePopulationVisual } from '../hooks/usePopulationVisual';
+import { IndustryCategory } from '../types/bottom-menu-types';
 
 initProj4();
 
-interface Props {
+interface KakaomapProps {
   polygonClick?: (area: string) => void;
   population: ReturnType<typeof usePopulationVisual>;
+  selectedCategory?: IndustryCategory | null;
+  onClearCategory?: () => void;
 }
 
-export default function Kakaomap({ polygonClick = (_area: string) => {}, population }: Props) {
+export default function Kakaomap({
+  polygonClick = (_area: string) => {},
+  population,
+  selectedCategory = null,
+  onClearCategory = () => {},
+}: KakaomapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [selectedArea, setSelectedArea] = useState<InfoBarData | null>(null);
 
@@ -27,7 +35,7 @@ export default function Kakaomap({ polygonClick = (_area: string) => {}, populat
   usePolygonData(map, (data: InfoBarData) => {
     setSelectedArea(data);
     if (polygonClick) {
-      const label = data.adm_nm || data.buld_nm || 'Unknown';
+      const label = data.buld_nm || data.adm_nm || 'Unknown';
       polygonClick(label);
     }
   });
@@ -44,7 +52,16 @@ export default function Kakaomap({ polygonClick = (_area: string) => {}, populat
 
   return (
     <div className="relative w-full h-full">
-      <InfoBar data={selectedArea} onClose={() => setSelectedArea(null)} />
+      <InfoBar
+        data={selectedArea}
+        selectedCategory={selectedCategory}
+        onClose={() => {
+          setSelectedArea(null);
+          if (selectedCategory) {
+            onClearCategory();
+          }
+        }}
+      />
 
       <div
         ref={mapRef}

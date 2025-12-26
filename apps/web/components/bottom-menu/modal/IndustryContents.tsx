@@ -1,14 +1,16 @@
+import { FaBuilding } from 'react-icons/fa'; // 부동산업
+import { MdMenuBook, MdScience } from 'react-icons/md'; // 전문/과학
+import { MdSupportAgent } from 'react-icons/md'; // 시설관리
+import { FaHospital } from 'react-icons/fa'; // 보건
 import { GiForkKnifeSpoon } from 'react-icons/gi';
 import { IoBag } from 'react-icons/io5';
 import { RiCustomerServiceFill } from 'react-icons/ri';
-import { IoLogoGameControllerB } from 'react-icons/io';
-import { MdMenuBook } from 'react-icons/md';
-import { IoIosBed } from 'react-icons/io';
+import { IoIosBed, IoLogoGameControllerB } from 'react-icons/io';
 import { IconType } from 'react-icons';
+import { IndustryCategory } from '../../../types/bottom-menu-types';
 
 import PillButton from '../PillButton';
 import IndustryItem from './IndustryItem';
-import { IndustryCategory } from '../../../types/bottom-menu-types';
 
 interface Props {
   onClose: () => void;
@@ -18,12 +20,16 @@ interface Props {
 }
 
 const IconMap: Record<string, IconType> = {
-  food: GiForkKnifeSpoon,
-  retail: IoBag,
-  service: RiCustomerServiceFill,
-  game: IoLogoGameControllerB,
-  education: MdMenuBook,
-  hotel: IoIosBed,
+  I2: GiForkKnifeSpoon, // 음식
+  G2: IoBag, // 소매
+  S2: RiCustomerServiceFill, // 서비스
+  R2: IoLogoGameControllerB, // 오락
+  P1: MdMenuBook, // 교육
+  I1: IoIosBed, // 숙박
+  L1: FaBuilding, // 부동산
+  M1: MdScience, // 전문/과학
+  N1: MdSupportAgent, // 시설관리
+  Q1: FaHospital, // 보건
 };
 
 export default function IndustryContents({
@@ -50,15 +56,16 @@ export default function IndustryContents({
         지도에 표시할 업종을 선택하세요
       </p>
       <div className="flex gap-[16px] mt-3 overflow-x-auto pb-2">
-        {categories.map(({ id, label, iconCode }) => {
-          const Icon = IconMap[iconCode] ?? IoBag;
+        {categories.map(({ code, name }) => {
+          // code가 'food', 'retail' 등과 일치하므로 이를 키로 사용
+          const Icon = IconMap[code] ?? IoBag;
           return (
             <div
-              key={id}
-              onClick={() => onSelect(id)}
+              key={code}
               className="cursor-pointer"
+              onClick={() => onSelect(code)}
             >
-              <IndustryItem label={label} iconLabel={Icon} />
+              <IndustryItem label={name} iconLabel={Icon} />
             </div>
           );
         })}

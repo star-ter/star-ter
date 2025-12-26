@@ -1,6 +1,7 @@
 import SearchBox from '../search/SearchBox';
 import BottomMenuBox from '../bottom-menu/BottomMenuBox';
 import { usePopulationVisual } from '../../hooks/usePopulationVisual';
+import { IndustryCategory } from '../../types/bottom-menu-types';
 
 interface MapBoxProps {
   locationA: string;
@@ -9,6 +10,8 @@ interface MapBoxProps {
   setLocationB: (area: string) => void;
   handlePickMode: (target: 'A' | 'B') => void;
   population: ReturnType<typeof usePopulationVisual>;
+  onCompare?: () => void;
+  onSelectCategory: (category: IndustryCategory | null) => void;
 }
 
 export default function MapBox({
@@ -18,6 +21,8 @@ export default function MapBox({
   setLocationB,
   handlePickMode,
   population,
+  onCompare,
+  onSelectCategory,
 }: MapBoxProps) {
   return (
     <section className="w-full h-full flex flex-col justify-between items-center pointer-events-none">
@@ -32,6 +37,8 @@ export default function MapBox({
           setLocationB={setLocationB}
           handlePickMode={handlePickMode}
           population={population}
+          onCompare={onCompare}
+          onSelectCategory={onSelectCategory}
         />
       </div>
     </section>
