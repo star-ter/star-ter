@@ -3,7 +3,7 @@ import { ReactElement, useState } from 'react';
 
 import ModalCard from './modal/ModalCard';
 import PillButton from './PillButton';
-import AreaContents from './modal/AreaContents';
+// import AreaContents from './modal/AreaContents';
 import PopulationContents from './modal/PopulationContents';
 import IndustryContents from './modal/IndustryContents';
 import CompareContents from './modal/CompareContents';
@@ -13,7 +13,7 @@ import {
 } from '../../types/bottom-menu-types';
 import { IndustryData } from '../../mocks/industry';
 
-type ActiveType = 'area' | 'population' | 'industry' | 'compare';
+type ActiveType = /* 'area' | */ 'population' | 'industry' | 'compare';
 
 interface BottomMenuProps {
   locationA: string;
@@ -75,7 +75,7 @@ export default function BottomMenuBox({
   }
 
   const items: { label: string; value: ActiveType | 'none' }[] = [
-    { label: '영역', value: 'area' },
+    // { label: '영역', value: 'area' },
     { label: '유동인구', value: 'population' },
     { label: '업종', value: 'industry' },
     { label: '비교', value: 'compare' },
@@ -83,7 +83,7 @@ export default function BottomMenuBox({
   ];
 
   const contents: Record<ActiveType, ReactElement> = {
-    area: <AreaContents onClose={modalClose} />,
+    // population: <AreaContents onClose={modalClose} />,
     population: (
       <PopulationContents onClose={modalClose} onView={handlePopulation} />
     ),
@@ -119,6 +119,11 @@ export default function BottomMenuBox({
             key={value}
             label={label}
             onClick={() => {
+              if (active === value) {
+                modalClose();
+                return;
+              }
+
               setActive(value);
               setLocationA('');
               setLocationB('');
