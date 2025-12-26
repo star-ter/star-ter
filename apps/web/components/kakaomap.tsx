@@ -98,7 +98,7 @@ export default function Kakaomap({
         map.setLevel(3);
       } else {
         // 단일 마커일 때 중심을 오른쪽으로 오프셋 (채팅용)
-        const offsetLng = center.lng + 0.01;
+        const offsetLng = center.lng;
         const moveLatLng = new window.kakao.maps.LatLng(center.lat, offsetLng);
         map.setCenter(moveLatLng);
         if (zoom > 0) {

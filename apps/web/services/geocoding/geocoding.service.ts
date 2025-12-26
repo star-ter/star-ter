@@ -53,6 +53,7 @@ export async function geocodeAddress(
 
 /**
  * 키워드로 장소 검색 (주소 검색 실패 시 대안)
+ * 서울 지역으로 제한
  */
 async function geocodeByKeyword(
   keyword: string
@@ -66,20 +67,41 @@ async function geocodeByKeyword(
       try {
         const places = new window.kakao.maps.services.Places();
 
-        places.keywordSearch(keyword, (result: any, status: any) => {
-          if (status === window.kakao.maps.services.Status.OK && result.length > 0) {
-            const data = result[0];
-            resolve({
-              lat: parseFloat(data.y),
-              lng: parseFloat(data.x),
-              address: data.address_name || data.place_name,
-              roadAddress: data.road_address_name,
-              buildingName: data.place_name,
-            });
-          } else {
-            resolve(null);
+        // 서울 지역을 기준으로 검색 (서울시청 좌표)
+        const seoulCenter = new window.kakao.maps.LatLng(37.5665, 126.9780);
+        
+        places.keywordSearch(
+          keyword,
+          (result: any, status: any) => {
+            if (status === window.kakao.maps.services.Status.OK && result.length > 0) {
+              // 서울 지역 결과만 필터링 (주소에 '서울' 포함)
+              const seoulResults = result.filter((item: any) => 
+                item.address_name?.includes('서울') || 
+                item.road_address_name?.includes('서울')
+              );
+              
+              const data = seoulResults.length > 0 ? seoulResults[0] : null;
+              
+              if (data) {
+                resolve({
+                  lat: parseFloat(data.y),
+                  lng: parseFloat(data.x),
+                  address: data.address_name || data.place_name,
+                  roadAddress: data.road_address_name,
+                  buildingName: data.place_name,
+                });
+              } else {
+                resolve(null);
+              }
+            } else {
+              resolve(null);
+            }
+          },
+          {
+            location: seoulCenter,
+            radius: 20000, // 서울 중심 20km 반경
           }
-        });
+        );
       } catch (error) {
         console.error('Keyword search error:', error);
         resolve(null);

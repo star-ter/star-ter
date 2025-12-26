@@ -25,11 +25,13 @@ export function extractLocations(text: string): string[] {
   
   // 3. 연결어로 분리된 게 1개뿐이면 공백 + 지역명 패턴으로 분리 시도
   if (parts.length <= 1 && cleanedText.includes(' ')) {
-    // 지역명 패턴: 역, 길, 동, 구, 시장, 거리 등으로 끝나는 단어
-    const locationPattern = /(\S+(?:역|길|동|구|시장|거리|로|타워|센터|광장|공원))/g;
+    // 지역명 패턴: 역, 길, 동 등으로 끝나는 단어
+    // '구'는 '출구', '입구' 등에서 false positive 발생하므로 제외
+    const locationPattern = /(\S+(?:역|길|동|시장|거리|타워|센터|광장|공원))/g;
     const matches = cleanedText.match(locationPattern);
     
-    if (matches && matches.length > 1) {
+    // 매칭된 결과가 1개 이상이면 사용
+    if (matches && matches.length >= 1) {
       parts = matches;
     }
   }
@@ -85,9 +87,14 @@ function isAddressFormat(text: string): boolean {
  */
 function isCommonWord(word: string): boolean {
   const commonWords = [
+    // 일반 단어
     '안녕', '너', '나', '오늘', '어제', '내일',
     '뭐', '왜', '어떻게', '언제', '누구', '무엇',
     '좀', '해줘', '해', '줘', '알려', '보여',
+    // 비즈니스/분석 관련 (지역명 아님)
+    '매출', '분석', '상권', '비교', '추천', '메뉴',
+    '이동', '검색', '위치', '지도', '주변', '근처',
+    '가게', '점포', '업종', '통계', '데이터', '정보',
   ];
 
   return commonWords.includes(word);
