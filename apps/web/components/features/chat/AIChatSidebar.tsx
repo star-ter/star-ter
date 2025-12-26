@@ -164,7 +164,7 @@ export default function AIChatSidebar() {
           className="group absolute -left-3 top-0 z-50 flex h-full w-6 cursor-ew-resize justify-center bg-transparent"
           onMouseDown={startResizing}
         >
-          <div className="h-full w-1 transition-colors group-hover:bg-blue-400/50 group-active:bg-blue-600" />
+          <div className="my-6 w-1 transition-colors group-hover:bg-blue-400/50 group-active:bg-blue-600" />
         </div>
 
         {/* Wrapper for rounded corners content */}
