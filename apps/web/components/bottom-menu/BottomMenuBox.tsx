@@ -15,14 +15,13 @@ import { IndustryData } from '../../mocks/industry';
 
 type ActiveType = 'area' | 'population' | 'industry' | 'compare';
 
-
 interface BottomMenuProps {
   locationA: string;
   locationB: string;
   setLocationA: (area: string) => void;
   setLocationB: (area: string) => void;
   handlePickMode: (target: 'A' | 'B') => void;
-  onSelectCategory: (category: IndustryCategory) => void;
+  onSelectCategory: (category: IndustryCategory | null) => void;
 }
 
 export default function BottomMenuBox({
@@ -117,6 +116,9 @@ export default function BottomMenuBox({
               setActive(value);
               setLocationA('');
               setLocationB('');
+              if (value === 'none') {
+                onSelectCategory(null);
+              }
             }}
           />
         ))}

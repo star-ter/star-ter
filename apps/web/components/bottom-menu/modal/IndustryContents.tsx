@@ -60,7 +60,11 @@ export default function IndustryContents({
           // code가 'food', 'retail' 등과 일치하므로 이를 키로 사용
           const Icon = IconMap[code] ?? IoBag;
           return (
-            <div key={code} className="cursor-pointer">
+            <div
+              key={code}
+              className="cursor-pointer"
+              onClick={() => onSelect(code)}
+            >
               <IndustryItem label={name} iconLabel={Icon} />
             </div>
           );

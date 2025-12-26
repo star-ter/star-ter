@@ -6,10 +6,21 @@ import { InfoBarData } from '../types/map-types';
 import InfoBar from './sidebar/InfoBar';
 import { useKakaoMap } from '../hooks/useKakaoMap';
 import { usePolygonData } from '../hooks/usePolygonData';
+import { IndustryCategory } from '../types/bottom-menu-types';
 
 initProj4();
 
-export default function Kakaomap({ polygonClick = (_area: string) => {} }) {
+interface KakaomapProps {
+  polygonClick?: (area: string) => void;
+  selectedCategory?: IndustryCategory | null;
+  onClearCategory?: () => void;
+}
+
+export default function Kakaomap({
+  polygonClick = (_area: string) => {},
+  selectedCategory = null,
+  onClearCategory = () => {},
+}: KakaomapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [selectedArea, setSelectedArea] = useState<InfoBarData | null>(null);
 
@@ -27,7 +38,16 @@ export default function Kakaomap({ polygonClick = (_area: string) => {} }) {
 
   return (
     <div className="relative w-full h-full">
-      <InfoBar data={selectedArea} onClose={() => setSelectedArea(null)} />
+      <InfoBar
+        data={selectedArea}
+        selectedCategory={selectedCategory}
+        onClose={() => {
+          setSelectedArea(null);
+          if (selectedCategory) {
+            onClearCategory();
+          }
+        }}
+      />
 
       <div
         ref={mapRef}
