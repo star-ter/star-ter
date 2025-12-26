@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useState, useCallback, useEffect, useRef } from 'react';
+import { useActionState, useState, useCallback, useEffect, useRef, startTransition } from 'react';
 import { Sparkles, BarChart3, Store, ArrowUp, PanelRight } from 'lucide-react';
 import { sendMessageAction } from '@/actions/chat';
 import { ChatMessage } from '@/services/chat/types';
@@ -86,7 +86,9 @@ export default function AIChatSidebar() {
     // formData는 이미 reset되었으므로 새로 생성
     const newFormData = new FormData();
     newFormData.set('message', message);
-    await formAction(newFormData);
+    startTransition(() => {
+      formAction(newFormData);
+    });
   };
 
   // Resizing Logic
