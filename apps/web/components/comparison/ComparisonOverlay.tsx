@@ -1,6 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import AnalysisCard from './AnalysisCard';
+import { useSidebarStore } from '@/stores/useSidebarStore';
 
 interface ComparisonData {
   title: string;
@@ -23,6 +24,7 @@ export default function ComparisonOverlay({
   dataA,
   dataB,
 }: ComparisonOverlayProps) {
+  const { isOpen, width, isResizing } = useSidebarStore();
   const [hoveredTab, setHoveredTab] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'sales' | 'store' | 'population'>('sales');
 
@@ -63,7 +65,12 @@ export default function ComparisonOverlay({
   if (!isVisible) return null;
 
   return (
-    <div className="absolute inset-0 z-50 flex items-center justify-center animate-fade-in p-4 overflow-visible">
+    <div 
+      className={`absolute inset-0 z-50 flex items-center justify-center animate-fade-in p-4 overflow-visible ${
+        isResizing ? '' : 'transition-all duration-300 ease-in-out'
+      }`}
+      style={{ paddingRight: isOpen ? `${width + 32}px` : '16px' }} // 사이드바 너비만큼 우측 여백 확보 (+기본 패딩)
+    >
       
       <div className="relative flex flex-row gap-6 items-start justify-center flex-wrap">
         {/* Close Button X - Positioned Top-Right of the Card Container */}

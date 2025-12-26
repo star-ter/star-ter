@@ -108,13 +108,23 @@ export default function AIChatSidebar() {
     };
   }, [isResizing, resize, stopResizing]);
 
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [optimisticMessages, isPending]);
+
   return (
     <>
       {/* Toggle Button */}
       {/* Sidebar가 닫히면 버튼만 둥둥 떠있게 되므로, 항상 최상단에 고정합니다. */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-3 right-3 z-[60] flex h-10 w-10 items-center justify-center rounded-full bg-transparent text-blue-600 transition-all hover:bg-blue-50 active:scale-90"
+        className="fixed top-5 right-5 z-[60] flex h-10 w-10 items-center justify-center rounded-full bg-transparent text-blue-600 transition-all hover:bg-blue-50 active:scale-90"
         aria-label={isOpen ? 'Close Sidebar' : 'Open Sidebar'}
       >
         <svg
@@ -144,8 +154,8 @@ export default function AIChatSidebar() {
       {/* Sidebar Container */}
       <aside
         style={{ width: `${width}px` }}
-        className={`fixed top-0 right-0 z-50 flex h-screen flex-col bg-transparent transition-transform duration-300 ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
+        className={`fixed top-2 right-2 bottom-2 z-50 flex flex-col bg-transparent transition-transform duration-300 ${
+          isOpen ? 'translate-x-0' : 'translate-x-[calc(100%+20px)]'
         }`}
       >
         {/* Resizer Handle (Wider hit area with visible line) */}
@@ -157,9 +167,9 @@ export default function AIChatSidebar() {
         </div>
 
         {/* Wrapper for rounded corners content */}
-        <div className="flex h-full w-full flex-col overflow-hidden rounded-l-3xl border-l border-gray-200 bg-blue-200/25 shadow-xl isolate">
+        <div className="flex h-full w-full flex-col overflow-hidden rounded-3xl border-l border-gray-200 bg-blue-100/30 shadow-xl isolate backdrop-blur-xs">
           {/* Header */}
-          <header className="flex h-16 items-center border-b border-gray-200 bg-white px-6 rounded-tl-3xl">
+          <header className="flex h-16 items-center border-b border-gray-200/50 bg-white/80 px-6 rounded-t-3xl isolate backdrop-blur-xs">
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-blue-600" fill="currentColor" />
               <h2 className="text-xl font-semibold text-gray-800">AI Coach</h2>
@@ -196,6 +206,8 @@ export default function AIChatSidebar() {
                     </div>
                   </div>
                 )}
+                {/* Scroll Anchor */}
+                <div ref={messagesEndRef} />
               </div>
             ) : (
               /* Greeting & Suggestions*/

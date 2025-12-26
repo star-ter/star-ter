@@ -56,8 +56,7 @@ export default function Home() {
 
   return (
     <div 
-      className={`relative h-screen overflow-hidden ${isResizing ? '' : 'transition-all duration-300 ease-in-out'}`}
-      style={{ width: isOpen ? `calc(100vw - ${width}px)` : '100vw' }}
+      className="relative h-screen w-screen overflow-hidden"
     >
       {/* Comparison Overlay */}
       <ComparisonOverlay
