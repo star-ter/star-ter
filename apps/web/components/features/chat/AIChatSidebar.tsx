@@ -83,7 +83,10 @@ export default function AIChatSidebar() {
     }
 
     // 일반 메시지 - 서버 액션 호출
-    await formAction(formData);
+    // formData는 이미 reset되었으므로 새로 생성
+    const newFormData = new FormData();
+    newFormData.set('message', message);
+    await formAction(newFormData);
   };
 
   // Resizing Logic
