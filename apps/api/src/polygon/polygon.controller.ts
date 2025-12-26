@@ -1,6 +1,5 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { PolygonService } from './polygon.service';
-// import { BuildingPolygonResponse } from './dto/building-polygon-dto';
 import { AdminPolygonResponse } from './dto/admin-polygon-dto';
 
 @Controller('polygon')

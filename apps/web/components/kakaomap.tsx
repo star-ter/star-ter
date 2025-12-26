@@ -6,10 +6,17 @@ import { InfoBarData } from '../types/map-types';
 import InfoBar from './sidebar/InfoBar';
 import { useKakaoMap } from '../hooks/useKakaoMap';
 import { usePolygonData } from '../hooks/usePolygonData';
+import { usePopulationLayer } from '../hooks/usePopulationLayer';
+import { usePopulationVisual } from '../hooks/usePopulationVisual';
 
 initProj4();
 
-export default function Kakaomap({ polygonClick = (_area: string) => {} }) {
+interface Props {
+  polygonClick?: (area: string) => void;
+  population: ReturnType<typeof usePopulationVisual>;
+}
+
+export default function Kakaomap({ polygonClick = (_area: string) => {}, population }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [selectedArea, setSelectedArea] = useState<InfoBarData | null>(null);
 
@@ -24,6 +31,16 @@ export default function Kakaomap({ polygonClick = (_area: string) => {} }) {
       polygonClick(label);
     }
   });
+
+  // 3. 유동인구 격자 레이어 추가
+  usePopulationLayer(
+    map,
+    population.data,
+    population.genderFilter,
+    population.ageFilter,
+    population.getPopulationValue,
+    population.getColorByValue
+  );
 
   return (
     <div className="relative w-full h-full">

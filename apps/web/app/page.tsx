@@ -3,11 +3,15 @@ import { useState } from 'react';
 
 import Kakaomap from '@/components/kakaomap';
 import MapBox from '@/components/map/MapBox';
+import { usePopulationVisual } from '@/hooks/usePopulationVisual';
 
 export default function Home() {
   const [locationA, setLocationA] = useState('');
   const [locationB, setLocationB] = useState('');
   const [pickTarget, setPickTarget] = useState('');
+
+  // 유동인구 상태 통합
+  const population = usePopulationVisual();
 
   // 비교 마커 첫번째인지 두번째인지 판단
   function handlePickMode(target: 'A' | 'B') {
@@ -30,7 +34,7 @@ export default function Home() {
   return (
     <div className="relative w-screen h-screen overflow-hidden">
       <div className="absolute inset-0 z-0">
-        <Kakaomap polygonClick={mapClick} />
+        <Kakaomap polygonClick={mapClick} population={population} />
       </div>
       <div className="absolute inset-0 z-10 pointer-events-none">
         <MapBox
@@ -39,6 +43,7 @@ export default function Home() {
           setLocationA={setLocationA}
           setLocationB={setLocationB}
           handlePickMode={handlePickMode}
+          population={population}
         />
       </div>
     </div>

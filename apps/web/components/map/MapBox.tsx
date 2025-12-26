@@ -1,5 +1,6 @@
 import SearchBox from '../search/SearchBox';
 import BottomMenuBox from '../bottom-menu/BottomMenuBox';
+import { usePopulationVisual } from '../../hooks/usePopulationVisual';
 
 interface MapBoxProps {
   locationA: string;
@@ -7,6 +8,7 @@ interface MapBoxProps {
   setLocationA: (area: string) => void;
   setLocationB: (area: string) => void;
   handlePickMode: (target: 'A' | 'B') => void;
+  population: ReturnType<typeof usePopulationVisual>;
 }
 
 export default function MapBox({
@@ -15,6 +17,7 @@ export default function MapBox({
   setLocationA,
   setLocationB,
   handlePickMode,
+  population,
 }: MapBoxProps) {
   return (
     <section className="w-full h-full flex flex-col justify-between items-center pointer-events-none">
@@ -28,6 +31,7 @@ export default function MapBox({
           setLocationA={setLocationA}
           setLocationB={setLocationB}
           handlePickMode={handlePickMode}
+          population={population}
         />
       </div>
     </section>

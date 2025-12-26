@@ -23,12 +23,15 @@ const MockIndustryCategory: IndustryCategory[] = [
   { id: 'hotel', label: '숙박', iconCode: 'hotel' },
 ];
 
+import { usePopulationVisual } from '../../hooks/usePopulationVisual';
+
 interface BottomMenuProps {
   locationA: string;
   locationB: string;
   setLocationA: (area: string) => void;
   setLocationB: (area: string) => void;
   handlePickMode: (target: 'A' | 'B') => void;
+  population: ReturnType<typeof usePopulationVisual>;
 }
 
 export default function BottomMenuBox({
@@ -37,6 +40,7 @@ export default function BottomMenuBox({
   setLocationA,
   setLocationB,
   handlePickMode,
+  population,
 }: BottomMenuProps) {
   const [active, setActive] = useState<ActiveType | 'none'>('none');
 
@@ -80,7 +84,11 @@ export default function BottomMenuBox({
   const contents: Record<ActiveType, ReactElement> = {
     area: <AreaContents onClose={modalClose} />,
     population: (
-      <PopulationContents onClose={modalClose} onView={handlePopulation} />
+      <PopulationContents
+        onClose={modalClose}
+        onView={handlePopulation}
+        population={population}
+      />
     ),
     industry: (
       <IndustryContents
