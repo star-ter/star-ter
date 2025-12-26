@@ -1,30 +1,47 @@
+export interface KakaoLatLng {
+  getLat: () => number;
+  getLng: () => number;
+}
+
 export interface KakaoMap {
   getLevel: () => number;
   setLevel: (level: number) => void;
-  setCenter: (latlng: any) => void;
-  getCenter: () => any;
+  setCenter: (latlng: KakaoLatLng) => void;
+  getCenter: () => KakaoLatLng;
 }
 
 export interface KakaoPolygon {
   setMap: (map: KakaoMap | null) => void;
 }
 
-export interface InfoBarData {
-  adm_nm?: string;
-  buld_nm?: string;
-  adm_cd?: string;
-  x?: string | number;
-  y?: string | number;
-  [key: string]: any;
+export interface KakaoCustomOverlay {
+  setMap: (map: KakaoMap | null) => void;
 }
 
-export interface CustomArea {
+export interface InfoBarData {
   adm_nm?: string;
+  adm_cd?: string;
   buld_nm?: string;
+  // [key: string]: any;
+}
+
+// 행정구역 (구, 동)
+export interface AdminArea {
+  adm_nm: string;
+  adm_cd: string;
+  x?: string | number;
+  y?: string | number;
+  polygons: number[][][][] | number[][][] | number[][];
+  // [key: string]: any;
+}
+
+// 빌딩
+export interface BuildingArea {
+  buld_nm: string;
+  adm_nm?: string;
   adm_cd?: string;
   x?: string | number;
   y?: string | number;
-  polygons: any[]; // 구체적으로는 number[][][] (Polygon) | number[][][][] (MultiPolygon) 이지만 유연성을 위해 any[]
-
-  [key: string]: any;
+  polygons: number[][][][] | number[][][] | number[][];
+  // [key: string]: any;
 }
