@@ -11,17 +11,10 @@ import {
   IndustryCategory,
   CompareRequest,
 } from '../../types/bottom-menu-types';
+import { IndustryData } from '../../mocks/industry';
 
 type ActiveType = 'area' | 'population' | 'industry' | 'compare';
 
-const MockIndustryCategory: IndustryCategory[] = [
-  { id: 'food', label: '음식', iconCode: 'food' },
-  { id: 'retail', label: '소매', iconCode: 'retail' },
-  { id: 'service', label: '서비스', iconCode: 'service' },
-  { id: 'game', label: '오락', iconCode: 'game' },
-  { id: 'education', label: '교육', iconCode: 'education' },
-  { id: 'hotel', label: '숙박', iconCode: 'hotel' },
-];
 
 interface BottomMenuProps {
   locationA: string;
@@ -29,6 +22,7 @@ interface BottomMenuProps {
   setLocationA: (area: string) => void;
   setLocationB: (area: string) => void;
   handlePickMode: (target: 'A' | 'B') => void;
+  onSelectCategory: (category: IndustryCategory) => void;
 }
 
 export default function BottomMenuBox({
@@ -37,6 +31,7 @@ export default function BottomMenuBox({
   setLocationA,
   setLocationB,
   handlePickMode,
+  onSelectCategory,
 }: BottomMenuProps) {
   const [active, setActive] = useState<ActiveType | 'none'>('none');
 
@@ -45,7 +40,12 @@ export default function BottomMenuBox({
   }
 
   function handleIndustry(id: string) {
-    console.log('업종 선택:', id);
+    console.log('대분류 업종 코드 :', id);
+
+    const selected = IndustryData.find((item) => item.code === id);
+    if (selected) {
+      onSelectCategory(selected);
+    }
     // TODO: 선택된 업종에 대한 데이터 가져오기
     modalClose();
   }
@@ -85,7 +85,7 @@ export default function BottomMenuBox({
     industry: (
       <IndustryContents
         onClose={modalClose}
-        categories={MockIndustryCategory}
+        categories={IndustryData}
         onSelect={handleIndustry}
         isLoading={false}
       />
