@@ -144,7 +144,7 @@ export default function AIChatSidebar() {
       {/* Sidebar Container */}
       <aside
         style={{ width: `${width}px` }}
-        className={`fixed top-0 right-0 z-50 flex h-screen flex-col transition-transform duration-300 ${
+        className={`fixed top-0 right-0 z-50 flex h-screen flex-col bg-transparent transition-transform duration-300 ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -157,9 +157,9 @@ export default function AIChatSidebar() {
         </div>
 
         {/* Wrapper for rounded corners content */}
-        <div className="flex h-full w-full flex-col overflow-hidden rounded-l-3xl border-l border-gray-200 bg-gray-200 shadow-xl">
+        <div className="flex h-full w-full flex-col overflow-hidden rounded-l-3xl border-l border-gray-200 bg-blue-200/25 shadow-xl isolate">
           {/* Header */}
-          <header className="flex h-16 items-center border-b border-gray-200 bg-white px-6">
+          <header className="flex h-16 items-center border-b border-gray-200 bg-white px-6 rounded-tl-3xl">
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-blue-600" fill="currentColor" />
               <h2 className="text-xl font-semibold text-gray-800">AI Coach</h2>
@@ -237,7 +237,7 @@ export default function AIChatSidebar() {
           </div>
 
           {/* Input Area */}
-          <div className="p-4 bg-gray-200">
+          <div className="p-4 rounded-bl-3xl">
             <form ref={formRef} action={handleSendMessage} className="relative group">
               <textarea
                 name="message"
