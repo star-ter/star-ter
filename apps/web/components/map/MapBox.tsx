@@ -8,6 +8,7 @@ interface MapBoxProps {
   setLocationA: (area: string) => void;
   setLocationB: (area: string) => void;
   handlePickMode: (target: 'A' | 'B') => void;
+  onCompare?: () => void;
   onSelectCategory: (category: IndustryCategory | null) => void;
 }
 
@@ -17,6 +18,7 @@ export default function MapBox({
   setLocationA,
   setLocationB,
   handlePickMode,
+  onCompare,
   onSelectCategory,
 }: MapBoxProps) {
   return (
@@ -31,6 +33,7 @@ export default function MapBox({
           setLocationA={setLocationA}
           setLocationB={setLocationB}
           handlePickMode={handlePickMode}
+          onCompare={onCompare}
           onSelectCategory={onSelectCategory}
         />
       </div>

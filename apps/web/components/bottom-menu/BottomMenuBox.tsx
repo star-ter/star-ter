@@ -21,6 +21,7 @@ interface BottomMenuProps {
   setLocationA: (area: string) => void;
   setLocationB: (area: string) => void;
   handlePickMode: (target: 'A' | 'B') => void;
+  onCompare?: () => void;
   onSelectCategory: (category: IndustryCategory | null) => void;
 }
 
@@ -30,6 +31,7 @@ export default function BottomMenuBox({
   setLocationA,
   setLocationB,
   handlePickMode,
+  onCompare,
   onSelectCategory,
 }: BottomMenuProps) {
   const [active, setActive] = useState<ActiveType | 'none'>('none');
@@ -52,6 +54,10 @@ export default function BottomMenuBox({
   function handleCompare(data: CompareRequest) {
     console.log('비교 요청:', data);
     // TODO: 비교 로직 실행
+    if (onCompare) {
+      onCompare();
+    }
+    modalClose();
   }
 
   function handlePopulation() {
