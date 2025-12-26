@@ -3,11 +3,17 @@ export interface KakaoLatLng {
   getLng: () => number;
 }
 
+export interface KakaoBounds {
+  getSouthWest: () => KakaoLatLng;
+  getNorthEast: () => KakaoLatLng;
+}
+
 export interface KakaoMap {
   getLevel: () => number;
   setLevel: (level: number) => void;
   setCenter: (latlng: KakaoLatLng) => void;
   getCenter: () => KakaoLatLng;
+  getBounds: () => KakaoBounds;
 }
 
 export interface KakaoPolygon {

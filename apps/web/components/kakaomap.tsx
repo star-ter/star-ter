@@ -20,7 +20,7 @@ export default function Kakaomap({ polygonClick = (_area: string) => {} }) {
   usePolygonData(map, (data: InfoBarData) => {
     setSelectedArea(data);
     if (polygonClick) {
-      const label = data.adm_nm || data.buld_nm || 'Unknown';
+      const label = data.buld_nm || data.adm_nm || 'Unknown';
       polygonClick(label);
     }
   });

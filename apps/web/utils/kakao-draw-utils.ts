@@ -128,9 +128,18 @@ export function drawPolygons(
 
     // 5. 마커(오버레이)
     if (position) {
-      const buldNm = 'buld_nm' in props ? props.buld_nm : undefined;
-      const name = props.adm_nm || buldNm || '데이터없음';
-      const shortName = name.split(' ').pop();
+      const buldNm =
+        'buld_nm' in props && typeof props.buld_nm === 'string'
+          ? props.buld_nm
+          : undefined;
+
+      if (type === 'vworld_building') {
+        return;
+      }
+
+      // 건물 이름이 있으면 그걸 쓰고, 없으면 행정구역 명의 마지막 단어(예: 봉천동)를 씀
+      const shortName =
+        buldNm || (props.adm_nm || '').split(' ').pop() || '데이터없음';
 
       const contentEl = document.createElement('div');
       contentEl.innerHTML = `<div style="text-align: center; white-space: nowrap; padding: 4px 8px; background: white; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-size: 12px; font-weight: bold; color: #333; cursor: pointer;">${shortName}</div>`;
