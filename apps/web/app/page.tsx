@@ -3,11 +3,14 @@ import { useState } from 'react';
 
 import Kakaomap from '@/components/kakaomap';
 import MapBox from '@/components/map/MapBox';
+import { IndustryCategory } from '@/types/bottom-menu-types';
 
 export default function Home() {
   const [locationA, setLocationA] = useState('');
   const [locationB, setLocationB] = useState('');
   const [pickTarget, setPickTarget] = useState('');
+  const [selectedCategory, setSelectedCategory] =
+    useState<IndustryCategory | null>(null);
 
   // 비교 마커 첫번째인지 두번째인지 판단
   function handlePickMode(target: 'A' | 'B') {
@@ -30,7 +33,11 @@ export default function Home() {
   return (
     <div className="relative w-screen h-screen overflow-hidden">
       <div className="absolute inset-0 z-0">
-        <Kakaomap polygonClick={mapClick} />
+        <Kakaomap
+          polygonClick={mapClick}
+          selectedCategory={selectedCategory}
+          onClearCategory={() => setSelectedCategory(null)}
+        />
       </div>
       <div className="absolute inset-0 z-10 pointer-events-none">
         <MapBox
@@ -39,6 +46,7 @@ export default function Home() {
           setLocationA={setLocationA}
           setLocationB={setLocationB}
           handlePickMode={handlePickMode}
+          onSelectCategory={setSelectedCategory}
         />
       </div>
     </div>
