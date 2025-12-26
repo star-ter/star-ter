@@ -81,15 +81,7 @@ export default function Home() {
           storeCount: '0'
         }}
       />
-
-      <div 
-        className="absolute inset-0 z-0" 
-        onClick={() => {
-          if (document.activeElement instanceof HTMLElement) {
-            document.activeElement.blur();
-          }
-        }}
-      >
+      
         <Kakaomap polygonClick={mapClick} />
     <div className="relative w-screen h-screen overflow-hidden">
       <div className="absolute inset-0 z-0">
@@ -108,8 +100,9 @@ export default function Home() {
           handlePickMode={handlePickMode}
           onCompare={handleCompareRequest}
           onSelectCategory={setSelectedCategory}
-        />
+            />
+          </div>
+        </div>
       </div>
-    </div>
   );
 }
