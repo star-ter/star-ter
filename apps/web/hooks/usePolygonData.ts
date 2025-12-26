@@ -18,6 +18,11 @@ export const usePolygonData = (
   const lastLevelGroupRef = useRef<string | null>(null);
   const polygonsRef = useRef<KakaoPolygon[]>([]);
   const customOverlaysRef = useRef<KakaoCustomOverlay[]>([]);
+  const onPolygonClickRef = useRef(onPolygonClick);
+
+  useEffect(() => {
+    onPolygonClickRef.current = onPolygonClick;
+  }, [onPolygonClick]);
 
   // 구/동 데이터를 비동기로 호출하고 지도에 그리는 함수.
   async function fetchCombinedBoundary(map: KakaoMap, lowSearch: number) {
@@ -36,7 +41,7 @@ export const usePolygonData = (
           'admin',
           polygonsRef,
           customOverlaysRef,
-          onPolygonClick,
+          (data) => onPolygonClickRef.current(data),
         );
       }
     } catch (err) {
@@ -62,7 +67,7 @@ export const usePolygonData = (
           'vworld_building',
           polygonsRef,
           customOverlaysRef,
-          onPolygonClick,
+          (data) => onPolygonClickRef.current(data),
         );
       } else {
         console.warn('Building Mock No Data or Error:', JSON.stringify(data));
