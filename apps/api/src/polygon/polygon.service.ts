@@ -1,19 +1,19 @@
 import { Injectable } from '@nestjs/common';
-
-import { polygonGuMock } from './mock/polygon-gu-mock';
-import { polygonDongMock } from './mock/polygon-dong-mock';
 import { polygonBuildingMock } from './mock/polygon-building-mock';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class PolygonService {
-  getMockData(lowSearch?: number) {
+  constructor(private readonly prisma: PrismaService) {}
+
+  getAdminPolygonByLowSearch(lowSearch: number) {
     if (lowSearch == 2) {
-      return polygonDongMock;
+      return this.prisma.admin_area_dong.findMany();
     }
-    return polygonGuMock;
+    return this.prisma.admin_area_gu.findMany();
   }
 
-  getMockBuildingData() {
+  getBuildingPolygon() {
     return polygonBuildingMock;
   }
 }
