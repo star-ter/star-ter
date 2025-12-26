@@ -1,20 +1,21 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { PolygonService } from './polygon.service';
-import { GetPolygonDto, PolygonResponseDto } from './dto/polygon-dto';
+import { BuildingPolygonResponse } from './dto/building-polygon-dto';
+import { AdminPolygonResponse } from './dto/admin-polygon-dto';
 
 @Controller('polygon')
 export class PolygonController {
   constructor(private readonly polygonService: PolygonService) {}
 
-  @Get('mock')
-  getMockData(@Query() query: GetPolygonDto): PolygonResponseDto[] {
-    return this.polygonService.getMockData(
-      query.low_search ? Number(query.low_search) : undefined,
-    );
+  @Get('admin')
+  async getAdminPolygon(
+    @Query('low_search') lowSearch: number,
+  ): Promise<AdminPolygonResponse[]> {
+    return this.polygonService.getAdminPolygonByLowSearch(lowSearch);
   }
 
-  @Get('mock/building')
-  getMockBuildingData(): PolygonResponseDto[] {
-    return this.polygonService.getMockBuildingData();
+  @Get('building')
+  getBuildingPolygon(): BuildingPolygonResponse[] {
+    return this.polygonService.getBuildingPolygon();
   }
 }
