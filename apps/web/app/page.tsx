@@ -79,7 +79,14 @@ export default function Home() {
         }}
       />
 
-      <div className="absolute inset-0 z-0">
+      <div 
+        className="absolute inset-0 z-0" 
+        onClick={() => {
+          if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+          }
+        }}
+      >
         <Kakaomap polygonClick={mapClick} />
       </div>
       <div className="fixed inset-0 z-10 pointer-events-none">
