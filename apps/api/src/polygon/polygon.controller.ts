@@ -8,14 +8,14 @@ export class PolygonController {
   constructor(private readonly polygonService: PolygonService) {}
 
   @Get('admin')
-  async getAdminPolygon(
+  getAdminPolygon(
     @Query('low_search') lowSearch: number,
   ): Promise<AdminPolygonResponse[]> {
     return this.polygonService.getAdminPolygonByLowSearch(lowSearch);
   }
 
   @Get('building')
-  async getBuildingPolygon(
+  getBuildingPolygon(
     @Query('minx') minx: string,
     @Query('miny') miny: string,
     @Query('maxx') maxx: string,
@@ -23,7 +23,7 @@ export class PolygonController {
   ): Promise<BuildingPolygonResponse[]> {
     if (!minx || !miny || !maxx || !maxy) {
       // BBox가 없으면 빈 배열 혹은 에러 반환 (일단 빈 배열)
-      return [];
+      return Promise.resolve([]);
     }
     return this.polygonService.getBuildingPolygon(minx, miny, maxx, maxy);
   }
