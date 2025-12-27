@@ -26,13 +26,24 @@ export class MarketService {
     const polygon = query.polygon;
 
     this.logger.log(`[프론트으로부터 상권 분석 요청] Lat: ${lat}, Lng: ${lng}`);
+
+    let stores: any[] = [];
     if (polygon) {
       this.logger.log(`[폴리곤 WKT도 같이 받음] 길이: ${polygon.length}`);
       try {
         const externalStoreData = await this.fetchStoreDataFromOpenApi(polygon);
-        this.logger.log(
-          `[외부 데이터] ${JSON.stringify(externalStoreData, null, 2)}`,
-        );
+
+        // 데이터 구조 확인 및 매핑
+        if (externalStoreData.body && externalStoreData.body.items) {
+          stores = externalStoreData.body.items.map((item: any) => ({
+            name: item.bizesNm, // 상호명
+            category: item.indsLclsNm, // 상권업종대분류명
+            subcategory: item.ksicNm, // 표준산업분류명 (User Request)
+          }));
+          this.logger.log(`[데이터 매핑 완료] ${stores.length}개 업소`);
+        } else {
+          this.logger.warn('[외부 데이터] items가 없습니다.');
+        }
       } catch (error) {
         this.logger.error('Fetch 실패 외부 API', error);
       }
@@ -40,16 +51,21 @@ export class MarketService {
       this.logger.log('No polygon');
     }
 
+    // 데이터가 없으면 빈 배열 반환 (더미 데이터 제거)
+    if (stores.length === 0) {
+      this.logger.log('분석된 상가 데이터가 없습니다.');
+    }
+
     return {
-      isCommercialZone: false,
-      areaName: '일반 주거지역',
+      isCommercialZone: stores.length >= 10, // 임시 기준
+      areaName:
+        stores.length > 0
+          ? stores[0].ctprvnNm || '상권 분석 지역'
+          : '선택된 지역',
       estimatedRevenue: 45000000,
-      salesDescription: '거주민 중심의 안정적인 지역입니다.',
-      reviewSummary: { naver: '조용해요', google: 'Peaceful' },
-      stores: [
-        { name: '동네 세탁소', category: '서비스' },
-        { name: '편의점', category: '유통' },
-      ],
+      salesDescription: '선택하신 영역의 상가 정보입니다.',
+      reviewSummary: { naver: '데이터 분석 중...', google: 'Analyzing...' },
+      stores: stores,
       openingRate: 2.1,
       closureRate: 1.5,
     };

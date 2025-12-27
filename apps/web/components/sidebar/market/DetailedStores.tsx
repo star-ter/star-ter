@@ -1,13 +1,8 @@
+import { MarketAnalysisData } from '@/types/market-types';
 import React from 'react';
 
-interface Store {
-  name: string;
-  category: string;
-  // 추후 주소, 평점 등 상세 정보 추가 가능
-}
-
 interface Props {
-  stores: Store[];
+  stores: MarketAnalysisData['stores'];
   onBack: () => void;
 }
 
@@ -42,16 +37,14 @@ export default function DetailedStores({ stores, onBack }: Props) {
               </span>
             </div>
             
-            {/* 상세 정보 데모 (현재 데이터에는 없지만 UI 공간 확보) */}
+            {/* 상세 정보 */}
             <div className="space-y-2 mt-3 pt-3 border-t border-gray-100">
-               <div className="flex items-center text-sm text-gray-500">
-                  <span className="w-16 font-medium">영엽시간</span>
-                  <span>10:00 - 22:00 (예상)</span>
-               </div>
-               <div className="flex items-center text-sm text-gray-500">
-                  <span className="w-16 font-medium">휴무일</span>
-                  <span>연중무휴</span>
-               </div>
+               {store.subcategory && (
+                 <div className="flex items-center text-sm text-gray-600">
+                    <span className="w-24 font-medium text-gray-500">표준산업분류</span>
+                    <span>{store.subcategory}</span>
+                 </div>
+               )}
             </div>
           </div>
         ))}

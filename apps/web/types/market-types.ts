@@ -11,6 +11,7 @@ export interface MarketAnalysisData {
   stores: {
     name: string;
     category: string;
+    subcategory?: string;
   }[];
   openingRate: number;
   closureRate: number;
