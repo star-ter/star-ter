@@ -81,13 +81,14 @@ export default function Home() {
           storeCount: '0'
         }}
       />
-      
+
     <div className="relative w-screen h-screen overflow-hidden">
       <div className="absolute inset-0 z-0">
         <Kakaomap
           polygonClick={mapClick}
           selectedCategory={selectedCategory}
           onClearCategory={() => setSelectedCategory(null)}
+          disableInfoBar={!!pickTarget}
         />
       </div>
       <div className="fixed inset-0 z-10 pointer-events-none">

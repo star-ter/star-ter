@@ -12,6 +12,7 @@ import {
   CompareRequest,
 } from '../../types/bottom-menu-types';
 import { IndustryData } from '../../mocks/industry';
+import { useSidebarStore } from '../../stores/useSidebarStore';
 
 type ActiveType = /* 'area' | */ 'population' | 'industry' | 'compare';
 
@@ -35,6 +36,7 @@ export default function BottomMenuBox({
   onSelectCategory,
 }: BottomMenuProps) {
   const [active, setActive] = useState<ActiveType | 'none'>('none');
+  const { setIsOpen } = useSidebarStore();
 
   function modalClose() {
     setActive('none');
@@ -127,6 +129,11 @@ export default function BottomMenuBox({
               setActive(value);
               setLocationA('');
               setLocationB('');
+
+              if (value === 'compare') {
+                setIsOpen(false); // 비교 모드 선택 시 사이드바 닫기
+              }
+
               if (value === 'none') {
                 onSelectCategory(null);
               }
