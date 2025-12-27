@@ -42,6 +42,8 @@ export default function DetailContents({ data }: DetailContentsProps) {
     };
     if (data.x && data.y) {
       fetchMarketAnalysis();
+    } else {
+      console.warn('좌표(x, y) 정보가 없어 상권 분석을 진행할 수 없습니다.', data);
     }
   }, [data, API_BASE_URL]);
 
