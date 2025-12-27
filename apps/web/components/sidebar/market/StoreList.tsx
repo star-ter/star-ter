@@ -1,15 +1,13 @@
+import { MarketStore } from '@/types/market-types';
 import React from 'react';
 
 interface Props {
-  stores: {
-    name: string;
-    category: string;
-  }[];
+  stores: MarketStore[];
   onShowMore: () => void;
 }
 
 export default function StoreList({ stores, onShowMore }: Props) {
-  const INITIAL_COUNT = 2;
+  const INITIAL_COUNT = 4;
 
   const visibleStores = stores.slice(0, INITIAL_COUNT);
   const hasMore = stores.length > INITIAL_COUNT;
