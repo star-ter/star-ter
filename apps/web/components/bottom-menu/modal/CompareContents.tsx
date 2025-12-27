@@ -2,6 +2,7 @@ import PillButton from '../PillButton';
 import { CompareRequest } from '../../../types/bottom-menu-types';
 import { BiTargetLock } from 'react-icons/bi';
 import { useMapStore } from '../../../stores/useMapStore';
+import toast from 'react-hot-toast';
 
 interface Props {
   onClose: () => void;
@@ -49,7 +50,7 @@ export default function CompareContents({
         // 지도 이동 (중앙 정렬)
         moveToLocation(coords, keyword, 3, true);
       } else {
-        alert('검색 결과를 찾을 수 없습니다.');
+        toast.error('검색 결과를 찾을 수 없습니다.');
       }
     });
   };
