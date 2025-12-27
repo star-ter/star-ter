@@ -30,8 +30,8 @@ export interface InfoBarData {
   adm_nm?: string;
   adm_cd?: string;
   buld_nm?: string;
-  x?: string | number;
-  y?: string | number;
+  x: string | number;
+  y: string | number;
   // [key: string]: any;
 }
 
