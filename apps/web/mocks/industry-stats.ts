@@ -11,6 +11,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
     items: [
       {
         yr: '2024',
+        indutyMlsfcCd: 'G204',
         indutyMlsfcNm: '편의점',
         areaNm: '강남구',
         frcsCnt: 1200,
@@ -19,6 +20,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
       },
       {
         yr: '2024',
+        indutyMlsfcCd: 'G204',
         indutyMlsfcNm: '편의점',
         areaNm: '송파구',
         frcsCnt: 1100,
@@ -27,6 +29,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
       },
       {
         yr: '2024',
+        indutyMlsfcCd: 'G204',
         indutyMlsfcNm: '편의점',
         areaNm: '서초구',
         frcsCnt: 950,
@@ -35,6 +38,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
       },
       {
         yr: '2024',
+        indutyMlsfcCd: 'G204',
         indutyMlsfcNm: '슈퍼마켓',
         areaNm: '마포구',
         frcsCnt: 800,
@@ -43,6 +47,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
       },
       {
         yr: '2024',
+        indutyMlsfcCd: 'G208',
         indutyMlsfcNm: '옷가게',
         areaNm: '중구',
         frcsCnt: 2500,
@@ -61,6 +66,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
     items: [
       {
         yr: '2024',
+        indutyMlsfcCd: 'I201',
         indutyMlsfcNm: '한식',
         areaNm: '종로구',
         frcsCnt: 3500,
@@ -69,6 +75,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
       },
       {
         yr: '2024',
+        indutyMlsfcCd: 'I201',
         indutyMlsfcNm: '한식',
         areaNm: '강남구',
         frcsCnt: 4200,
@@ -77,6 +84,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
       },
       {
         yr: '2024',
+        indutyMlsfcCd: 'I210',
         indutyMlsfcNm: '카페',
         areaNm: '마포구',
         frcsCnt: 2800,
@@ -85,6 +93,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
       },
       {
         yr: '2024',
+        indutyMlsfcCd: 'I206',
         indutyMlsfcNm: '치킨',
         areaNm: '관악구',
         frcsCnt: 1500,
@@ -93,6 +102,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
       },
       {
         yr: '2024',
+        indutyMlsfcCd: 'I203',
         indutyMlsfcNm: '일식',
         areaNm: '용산구',
         frcsCnt: 800,
@@ -111,6 +121,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
     items: [
       {
         yr: '2024',
+        indutyMlsfcCd: 'S203',
         indutyMlsfcNm: '미용실',
         areaNm: '강남구',
         frcsCnt: 1800,
@@ -119,6 +130,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
       },
       {
         yr: '2024',
+        indutyMlsfcCd: 'S201',
         indutyMlsfcNm: '세탁소',
         areaNm: '노원구',
         frcsCnt: 600,
@@ -127,6 +139,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
       },
       {
         yr: '2024',
+        indutyMlsfcCd: 'S203',
         indutyMlsfcNm: '네일아트',
         areaNm: '마포구',
         frcsCnt: 900,
@@ -135,6 +148,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
       },
       {
         yr: '2024',
+        indutyMlsfcCd: 'S203',
         indutyMlsfcNm: '미용실',
         areaNm: '서초구',
         frcsCnt: 1200,
@@ -153,6 +167,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
     items: [
       {
         yr: '2024',
+        indutyMlsfcCd: 'R201',
         indutyMlsfcNm: 'PC방',
         areaNm: '관악구',
         frcsCnt: 400,
@@ -161,6 +176,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
       },
       {
         yr: '2024',
+        indutyMlsfcCd: 'R202',
         indutyMlsfcNm: '노래방',
         areaNm: '광진구',
         frcsCnt: 350,
@@ -169,6 +185,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
       },
       {
         yr: '2024',
+        indutyMlsfcCd: 'R203',
         indutyMlsfcNm: '당구장',
         areaNm: '송파구',
         frcsCnt: 300,
@@ -177,6 +194,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
       },
       {
         yr: '2024',
+        indutyMlsfcCd: 'R204',
         indutyMlsfcNm: '골프연습장',
         areaNm: '강남구',
         frcsCnt: 500,
@@ -195,6 +213,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
     items: [
       {
         yr: '2024',
+        indutyMlsfcCd: 'P103',
         indutyMlsfcNm: '입시학원',
         areaNm: '강남구',
         frcsCnt: 2000,
@@ -203,6 +222,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
       },
       {
         yr: '2024',
+        indutyMlsfcCd: 'P103',
         indutyMlsfcNm: '보습학원',
         areaNm: '양천구',
         frcsCnt: 1200,
@@ -211,6 +231,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
       },
       {
         yr: '2024',
+        indutyMlsfcCd: 'P105',
         indutyMlsfcNm: '어학원',
         areaNm: '서초구',
         frcsCnt: 800,
@@ -219,6 +240,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
       },
       {
         yr: '2024',
+        indutyMlsfcCd: 'P104',
         indutyMlsfcNm: '예체능학원',
         areaNm: '송파구',
         frcsCnt: 900,
@@ -237,6 +259,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
     items: [
       {
         yr: '2024',
+        indutyMlsfcCd: 'I101',
         indutyMlsfcNm: '호텔',
         areaNm: '중구',
         frcsCnt: 50,
@@ -245,6 +268,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
       },
       {
         yr: '2024',
+        indutyMlsfcCd: 'I102',
         indutyMlsfcNm: '모텔',
         areaNm: '영등포구',
         frcsCnt: 400,
@@ -253,6 +277,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
       },
       {
         yr: '2024',
+        indutyMlsfcCd: 'I105',
         indutyMlsfcNm: '게스트하우스',
         areaNm: '마포구',
         frcsCnt: 300,
@@ -271,6 +296,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
     items: [
       {
         yr: '2024',
+        indutyMlsfcCd: 'L101',
         indutyMlsfcNm: '부동산중개',
         areaNm: '강남구',
         frcsCnt: 3000,
@@ -279,6 +305,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
       },
       {
         yr: '2024',
+        indutyMlsfcCd: 'L101',
         indutyMlsfcNm: '부동산중개',
         areaNm: '송파구',
         frcsCnt: 2200,
@@ -287,6 +314,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
       },
       {
         yr: '2024',
+        indutyMlsfcCd: 'L102',
         indutyMlsfcNm: '부동산관리',
         areaNm: '영등포구',
         frcsCnt: 200,
@@ -305,6 +333,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
     items: [
       {
         yr: '2024',
+        indutyMlsfcCd: 'M101',
         indutyMlsfcNm: '세무회계',
         areaNm: '강남구',
         frcsCnt: 800,
@@ -313,6 +342,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
       },
       {
         yr: '2024',
+        indutyMlsfcCd: 'M101',
         indutyMlsfcNm: '법무사',
         areaNm: '서초구',
         frcsCnt: 600,
@@ -321,6 +351,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
       },
       {
         yr: '2024',
+        indutyMlsfcCd: 'M103',
         indutyMlsfcNm: '디자인',
         areaNm: '마포구',
         frcsCnt: 400,
@@ -339,6 +370,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
     items: [
       {
         yr: '2024',
+        indutyMlsfcCd: 'N103',
         indutyMlsfcNm: '청소방역',
         areaNm: '강서구',
         frcsCnt: 300,
@@ -347,6 +379,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
       },
       {
         yr: '2024',
+        indutyMlsfcCd: 'N102',
         indutyMlsfcNm: '여행사',
         areaNm: '중구',
         frcsCnt: 500,
@@ -365,6 +398,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
     items: [
       {
         yr: '2024',
+        indutyMlsfcCd: 'Q101',
         indutyMlsfcNm: '병원',
         areaNm: '강남구',
         frcsCnt: 800,
@@ -373,6 +407,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
       },
       {
         yr: '2024',
+        indutyMlsfcCd: 'Q103',
         indutyMlsfcNm: '약국',
         areaNm: '종로구',
         frcsCnt: 600,
@@ -381,6 +416,7 @@ export const INDUSTRY_STATS_MOCK: Record<string, IndustryStatResponse> = {
       },
       {
         yr: '2024',
+        indutyMlsfcCd: 'Q102',
         indutyMlsfcNm: '한의원',
         areaNm: '송파구',
         frcsCnt: 500,
