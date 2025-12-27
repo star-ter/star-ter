@@ -6,6 +6,7 @@ import MarketBadge from './market/MarketBadge';
 import ReviewSummary from './market/ReviewSummary';
 import StoreList from './market/StoreList';
 import VitalityStats from './market/VitalityStats';
+import { createMarketAnalysisUrl } from '@/utils/map-utils';
 
 interface DetailContentsProps {
   data: InfoBarData;
@@ -23,11 +24,13 @@ export default function DetailContents({ data }: DetailContentsProps) {
     const fetchMarketAnalysis = async () => {
       setLoading(true);
       setAnalysisData(null);
+
+      const finalUrl = createMarketAnalysisUrl(API_BASE_URL!, data.y, data.x, data.polygons);
+      console.log('최종 호출 URL:', finalUrl);
+
       try {
         console.log('Fetching analysis for:', data.y, data.x);
-        const res = await fetch(
-          `${API_BASE_URL}/market/analysis?latitude=${data.y}&longitude=${data.x}`
-        );
+        const res = await fetch(finalUrl);
         
         if (!res.ok) {
            throw new Error('Network response was not ok');
@@ -40,6 +43,8 @@ export default function DetailContents({ data }: DetailContentsProps) {
         setLoading(false);
       }
     };
+
+
     if (data.x && data.y) {
       fetchMarketAnalysis();
     } else {
