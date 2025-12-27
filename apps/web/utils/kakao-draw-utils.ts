@@ -122,7 +122,17 @@ export function drawPolygons(
       const label = props.adm_nm || buldNm || 'Unknown';
       window.kakao.maps.event.addListener(polygon, 'click', () => {
         console.log(`Clicked: ${label}`);
-        onPolygonClick(props as unknown as InfoBarData);
+
+        const x = centerPoint ? centerPoint.getLng() : 0;
+        const y = centerPoint ? centerPoint.getLat() : 0;
+
+        console.log(`중심점 삽입: ${x}, ${y}`);
+
+        onPolygonClick({
+          ...props,
+          x: x,
+          y: y,
+        } as unknown as InfoBarData);
       });
     });
 
