@@ -30,14 +30,14 @@ export default function Kakaomap({
 
   // 1. Load Map
   const { map } = useKakaoMap(mapRef);
-  const { setIsOpen } = useSidebarStore();
+  const { setInfoBarOpen } = useSidebarStore();
 
   // 2. Handle map data & logic
   usePolygonData(map, (data: InfoBarData) => {
     // 선택 모드가 아닐 때만 정보창 표시
     if (!disableInfoBar) {
       setSelectedArea(data);
-      setIsOpen(true); // 데이터가 선택되면 사이드바 열기
+      setInfoBarOpen(true); // 데이터가 선택되면 사이드바 열기
     }
     if (polygonClick) {
       const label = data.buld_nm || data.adm_nm || 'Unknown';
@@ -47,6 +47,7 @@ export default function Kakaomap({
 
   // 3. Map Store 연동 - 지도 중심 이동 및 마커 표시
   const { center, zoom, markers } = useMapStore();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const markersRef = useRef<any[]>([]);
 
   useEffect(() => {
@@ -66,7 +67,7 @@ export default function Kakaomap({
     markers.forEach((markerData) => {
       const position = new window.kakao.maps.LatLng(
         markerData.coords.lat,
-        markerData.coords.lng
+        markerData.coords.lng,
       );
 
       // 마커 생성 (인포윈도우 없이)
@@ -95,7 +96,10 @@ export default function Kakaomap({
         const currentCenter = map.getCenter();
         // 경도를 증가 (중심을 동쪽으로) → 마커가 화면 왼쪽에
         const offsetLng = currentCenter.getLng() + 0.01;
-        const newCenter = new window.kakao.maps.LatLng(currentCenter.getLat(), offsetLng);
+        const newCenter = new window.kakao.maps.LatLng(
+          currentCenter.getLat(),
+          offsetLng,
+        );
         map.setCenter(newCenter);
       }, 200);
     } else if (center) {
