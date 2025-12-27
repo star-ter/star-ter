@@ -55,7 +55,7 @@ export default function IndustryContents({
       <p className="mt-3 text-sm leading-relaxed text-gray-400">
         지도에 표시할 업종을 선택하세요
       </p>
-      <div className="flex gap-[16px] mt-3 overflow-x-auto pb-2">
+      <div className="grid grid-cols-5 gap-[12px] mt-3 overflow-x-auto pb-2">
         {categories.map(({ code, name }) => {
           // code가 'food', 'retail' 등과 일치하므로 이를 키로 사용
           const Icon = IconMap[code] ?? IoBag;
