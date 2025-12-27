@@ -1,11 +1,13 @@
 'use client';
 
-import { useActionState, useState, useCallback, useEffect, useOptimistic, useRef } from 'react';
+import { useActionState, useState, useCallback, useEffect, useRef, startTransition } from 'react';
 import { Sparkles, BarChart3, Store, ArrowUp, PanelRight } from 'lucide-react';
 import { sendMessageAction } from '@/actions/chat';
 import { ChatMessage } from '@/services/chat/types';
 import { useSidebarStore } from '@/stores/useSidebarStore';
 import { useComparisonStore } from '@/stores/useComparisonStore';
+import { useMapStore } from '@/stores/useMapStore';
+import { parseChatMessage } from './useChatHandler';
 
 /**
  * AI Chat Sidebar Component
@@ -16,16 +18,23 @@ export default function AIChatSidebar() {
     messages: [],
   });
 
-  // Optimistic UI State
-  const [optimisticMessages, addOptimisticMessage] = useOptimistic(
-    state.messages || [],
-    (currentMessages: ChatMessage[], newMessage: ChatMessage) => [
-      ...currentMessages,
-      newMessage,
-    ]
-  );
+  // 독립적인 채팅 메시지 상태 (초기화 방지)
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+
+  // 메시지 추가 함수
+  const addMessage = useCallback((message: ChatMessage) => {
+    setChatMessages((prev) => [...prev, message]);
+  }, []);
+
+  // 서버 응답 동기화 (formAction 결과가 있으면 반영)
+  useEffect(() => {
+    if (state.messages && state.messages.length > chatMessages.length) {
+      setChatMessages(state.messages);
+    }
+  }, [state.messages]);
   
   const { openComparison } = useComparisonStore();
+  const { moveToLocation, moveToLocations } = useMapStore();
 
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -34,7 +43,7 @@ export default function AIChatSidebar() {
     if (!message || message.trim() === '') return;
 
     // Optimistic Update: Show user message immediately
-    addOptimisticMessage({
+    addMessage({
       id: Date.now().toString(),
       role: 'user',
       content: message,
@@ -44,30 +53,42 @@ export default function AIChatSidebar() {
     // Reset form immediately
     formRef.current?.reset();
 
-    // DEMO: Trigger Comparison if user asks
-    if (message.includes('용산') && message.includes('종로') && message.includes('비교')) {
-      setTimeout(() => {
-        openComparison(
-          {
-             title: '용산역 중심 상권',
-             address: '서울 용산구 한강대로 23길',
-             estimatedSales: '약 320억 원',
-             salesChange: '+5.2%',
-             storeCount: '520',
-          },
-          {
-             title: '종각역 젊음의 거리',
-             address: '서울 종로구 종로 12길',
-             estimatedSales: '약 450억 원',
-             salesChange: '-1.2%',
-             storeCount: '680',
-          }
-        );
-      }, 800);
+    // 채팅 메시지 파싱 및 처리
+    const parseResult = await parseChatMessage(message);
+    
+    if (parseResult) {
+      // 지도 마커 표시
+      if (parseResult.markers && parseResult.markers.length > 0) {
+        if (parseResult.markers.length > 1) {
+          moveToLocations(parseResult.markers);
+        } else {
+          const marker = parseResult.markers[0];
+          moveToLocation(marker.coords, marker.name, 3);
+        }
+      }
+
+      // 비교 카드 UI 표시
+      if (parseResult.isComparison && parseResult.comparisonData) {
+        setTimeout(() => {
+          openComparison(parseResult.comparisonData![0], parseResult.comparisonData![1]);
+        }, 500);
+      }
+
+      // AI 응답 추가
+      if (parseResult.assistantMessage) {
+        addMessage(parseResult.assistantMessage);
+      }
+
+      return; // 파싱 처리 완료 시 종료
     }
 
-    // Call server action
-    await formAction(formData);
+    // 일반 메시지 - 서버 액션 호출
+    // formData는 이미 reset되었으므로 새로 생성
+    const newFormData = new FormData();
+    newFormData.set('message', message);
+    startTransition(() => {
+      formAction(newFormData);
+    });
   };
 
   // Resizing Logic
@@ -117,7 +138,7 @@ export default function AIChatSidebar() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [optimisticMessages, isPending]);
+  }, [chatMessages, isPending]);
 
   return (
     <>
@@ -164,7 +185,7 @@ export default function AIChatSidebar() {
           className="group absolute -left-3 top-0 z-50 flex h-full w-6 cursor-ew-resize justify-center bg-transparent"
           onMouseDown={startResizing}
         >
-          <div className="h-full w-1 transition-colors group-hover:bg-blue-400/50 group-active:bg-blue-600" />
+          <div className="my-6 w-1 transition-colors group-hover:bg-blue-400/50 group-active:bg-blue-600" />
         </div>
 
         {/* Wrapper for rounded corners content */}
@@ -183,9 +204,9 @@ export default function AIChatSidebar() {
             className="flex flex-1 flex-col overflow-y-auto p-6 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
           >
             {/* Messages */}
-            {optimisticMessages && optimisticMessages.length > 0 ? (
+            {chatMessages && chatMessages.length > 0 ? (
               <div className="space-y-4">
-                {optimisticMessages.map((msg: ChatMessage, idx: number) => (
+                {chatMessages.map((msg: ChatMessage, idx: number) => (
                   <div
                     key={idx}
                     className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}

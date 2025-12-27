@@ -46,10 +46,11 @@ export default function CompareContents({
           />
           <button
             onClick={() => onPickLocation('A')}
-            className="flex items-center justify-center w-[46px] rounded-xl border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200"
+            className="flex items-center justify-center w-[200px] rounded-xl border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200"
             title="지도에서 선택"
           >
-            <BiTargetLock size={20} />
+            <BiTargetLock size={18} />
+            <p className="ml-2 text-sm">지도에서 선택</p>
           </button>
         </div>
         <div className="location-2 flex gap-2">
@@ -62,10 +63,11 @@ export default function CompareContents({
           />
           <button
             onClick={() => onPickLocation('B')}
-            className="flex items-center justify-center w-[46px] rounded-xl border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200"
+            className="flex items-center justify-center w-[200px] rounded-xl border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200"
             title="지도에서 선택"
           >
-            <BiTargetLock size={20} />
+            <BiTargetLock size={18} />
+            <p className="ml-2 text-sm">지도에서 선택</p>
           </button>
         </div>
       </div>

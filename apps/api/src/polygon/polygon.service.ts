@@ -4,17 +4,25 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '../../generated/prisma/client';
 import { BuildingPolygonResponse } from './dto/building-polygon-dto';
+import { AdminPolygonResponse } from './dto/admin-polygon-dto';
 
 @Injectable()
 export class PolygonService {
   constructor(private readonly prisma: PrismaService) {}
 
-  getAdminPolygonByLowSearch(lowSearch: number) {
+  getAdminPolygonByLowSearch(
+    lowSearch: number,
+  ): Promise<AdminPolygonResponse[]> {
     if (lowSearch == 2) {
-      return this.prisma.admin_area_dong.findMany();
+      return this.prisma.adminAreaDong.findMany() as Promise<
+        AdminPolygonResponse[]
+      >;
     }
-    return this.prisma.admin_area_gu.findMany();
+    return this.prisma.adminAreaGu.findMany() as Promise<
+      AdminPolygonResponse[]
+    >;
   }
 
   async getBuildingPolygon(
@@ -96,7 +104,7 @@ export class PolygonService {
         return {
           buld_nm: props.buld_nm,
           adm_nm: fullAddr,
-          polygons: geometry.coordinates as any, // JsonValue 호환
+          polygons: geometry.coordinates as Prisma.JsonValue, // JsonValue 호환
           // x, y, adm_cd는 V-World API 응답에 명확치 않아 생략 (Nullable)
         } as BuildingPolygonResponse;
       });

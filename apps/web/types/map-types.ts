@@ -14,6 +14,7 @@ export interface KakaoMap {
   setCenter: (latlng: KakaoLatLng) => void;
   getCenter: () => KakaoLatLng;
   getBounds: () => KakaoBounds;
+  setBounds: (bounds: KakaoBounds) => void;
 }
 
 export interface KakaoPolygon {
@@ -28,6 +29,8 @@ export interface InfoBarData {
   adm_nm?: string;
   adm_cd?: string;
   buld_nm?: string;
+  x?: string | number;
+  y?: string | number;
   // [key: string]: any;
 }
 
