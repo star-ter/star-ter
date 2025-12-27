@@ -3,6 +3,8 @@ import { PolygonService } from './polygon.service';
 import { BuildingPolygonResponse } from './dto/building-polygon-dto';
 import { AdminPolygonResponse } from './dto/admin-polygon-dto';
 
+import { CommercialPolygonResponse } from './dto/commercial-polygon-dto';
+
 @Controller('polygon')
 export class PolygonController {
   constructor(private readonly polygonService: PolygonService) {}
@@ -26,5 +28,10 @@ export class PolygonController {
       return Promise.resolve([]);
     }
     return this.polygonService.getBuildingPolygon(minx, miny, maxx, maxy);
+  }
+
+  @Get('commercial')
+  getCommercialPolygon(): Promise<CommercialPolygonResponse[]> {
+    return this.polygonService.getCommercialPolygon();
   }
 }

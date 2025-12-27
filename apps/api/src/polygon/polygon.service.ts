@@ -7,10 +7,28 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '../../generated/prisma/client';
 import { BuildingPolygonResponse } from './dto/building-polygon-dto';
 import { AdminPolygonResponse } from './dto/admin-polygon-dto';
+import { CommercialPolygonResponse } from './dto/commercial-polygon-dto';
+import { commercialMock } from './commercialMock/commercialMock';
 
 @Injectable()
 export class PolygonService {
   constructor(private readonly prisma: PrismaService) {}
+
+  getCommercialPolygon(): Promise<CommercialPolygonResponse[]> {
+    const typedMock = commercialMock as unknown as CommercialPolygonResponse[];
+
+    return Promise.resolve(
+      typedMock.map((feature) => ({
+        properties: {
+          TRDAR_CD_N: feature.properties.TRDAR_CD_N,
+          TRDAR_SE_1: feature.properties.TRDAR_SE_1,
+          SIGNGU_CD_: feature.properties.SIGNGU_CD_,
+          ADSTRD_CD_: feature.properties.ADSTRD_CD_,
+        },
+        geometry: feature.geometry,
+      })),
+    );
+  }
 
   getAdminPolygonByLowSearch(
     lowSearch: number,
