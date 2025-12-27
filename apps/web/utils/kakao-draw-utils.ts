@@ -136,6 +136,9 @@ export function drawPolygons(
         } else if (typeName === '전통시장') {
           strokeColor = '#00C853'; // 진한 녹색
           fillColor = '#69F0AE'; // 밝은 민트색
+        } else if (typeName === '관광특구') {
+          strokeColor = '#00B0FF'; // 진한 하늘색
+          fillColor = '#40C4FF'; // 밝은 하늘색
         }
         fillOpacity = 0.4;
       }
