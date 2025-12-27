@@ -82,7 +82,6 @@ export default function Home() {
         }}
       />
       
-        <Kakaomap polygonClick={mapClick} />
     <div className="relative w-screen h-screen overflow-hidden">
       <div className="absolute inset-0 z-0">
         <Kakaomap
