@@ -126,8 +126,6 @@ export function drawPolygons(
         const x = centerPoint ? centerPoint.getLng() : 0;
         const y = centerPoint ? centerPoint.getLat() : 0;
 
-        console.log(`중심점 삽입: ${x}, ${y}`);
-
         onPolygonClick({
           ...props,
           x: x,
