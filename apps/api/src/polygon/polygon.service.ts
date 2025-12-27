@@ -27,7 +27,7 @@ export class PolygonService {
       trdar_cd_n, 
       signgu_cd_, 
       adstrd_cd_, 
-      ST_AsGeoJSON(geom) as geom 
+      ST_AsGeoJSON(ST_Simplify(geom,0.0001)) as geom 
     FROM seoul_commercial_area_grid
     WHERE ST_Intersects(geom, ST_MakeEnvelope(${minx}, ${miny}, ${maxx}, ${maxy}, 4326))
     `;
