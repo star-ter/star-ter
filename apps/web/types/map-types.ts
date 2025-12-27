@@ -31,6 +31,7 @@ export interface InfoBarData {
   buld_nm?: string;
   x: string | number;
   y: string | number;
+  polygons?: number[][][][] | number[][][] | number[][];
   // [key: string]: any;
 }
 

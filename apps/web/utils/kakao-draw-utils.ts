@@ -173,6 +173,7 @@ export function drawPolygons(
           ...props,
           x: x,
           y: y,
+          polygons: polygons,
         } as unknown as InfoBarData);
       });
     });
