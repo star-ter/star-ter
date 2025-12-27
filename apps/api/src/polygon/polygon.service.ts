@@ -8,6 +8,7 @@ import { Prisma } from '../../generated/prisma/client';
 import { BuildingPolygonResponse } from './dto/building-polygon-dto';
 import { AdminPolygonResponse } from './dto/admin-polygon-dto';
 import { CommercialPolygonResponse } from './dto/commercial-polygon-dto';
+import { VWorldResponse, VWorldFeature } from './dto/vworld-response.dto';
 import { commercialMock } from './commercialMock/commercialMock';
 
 @Injectable()
@@ -74,31 +75,6 @@ export class PolygonService {
         throw new InternalServerErrorException(
           `V-World API Error: ${response.statusText}`,
         );
-      }
-
-      // V-World API Response Types
-      interface VWorldFeature {
-        type: string;
-        geometry: {
-          type: string;
-          coordinates: number[][][] | number[][][][];
-        };
-        properties: {
-          buld_nm?: string;
-          [key: string]: unknown;
-        };
-      }
-
-      interface VWorldResponse {
-        response: {
-          status: string;
-          error?: { text: string };
-          result?: {
-            featureCollection?: {
-              features: VWorldFeature[];
-            };
-          };
-        };
       }
 
       const json = (await response.json()) as VWorldResponse;
