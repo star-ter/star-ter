@@ -1,8 +1,8 @@
-import { MarketAnalysisData } from '@/types/market-types';
+import { MarketStore } from '@/types/market-types';
 import React from 'react';
 
 interface Props {
-  stores: MarketAnalysisData['stores'];
+  stores: MarketStore[];
   onBack: () => void;
 }
 

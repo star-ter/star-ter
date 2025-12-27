@@ -1,10 +1,8 @@
+import { MarketStore } from '@/types/market-types';
 import React from 'react';
 
 interface Props {
-  stores: {
-    name: string;
-    category: string;
-  }[];
+  stores: MarketStore[];
   onShowMore: () => void;
 }
 

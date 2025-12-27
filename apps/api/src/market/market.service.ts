@@ -6,14 +6,10 @@ import {
 import {
   GetMarketAnalysisQueryDto,
   MarketAnalysisResponseDto,
+  MarketStore,
 } from './dto/market-analysis.dto';
 
-interface CommercialArea {
-  name: string;
-  lat: number;
-  lng: number;
-  radius: number;
-}
+import { OpenApiResponse, OpenApiStoreItem } from './dto/open-api.dto';
 
 @Injectable()
 export class MarketService {
@@ -27,19 +23,16 @@ export class MarketService {
 
     this.logger.log(`[프론트으로부터 상권 분석 요청] Lat: ${lat}, Lng: ${lng}`);
 
-    let stores: any[] = [];
+    let stores: MarketStore[] = [];
     if (polygon) {
       this.logger.log(`[폴리곤 WKT도 같이 받음] 길이: ${polygon.length}`);
       try {
         const externalStoreData = await this.fetchStoreDataFromOpenApi(polygon);
+        const items = externalStoreData.body?.items;
 
         // 데이터 구조 확인 및 매핑
-        if (externalStoreData.body && externalStoreData.body.items) {
-          stores = externalStoreData.body.items.map((item: any) => ({
-            name: item.bizesNm, // 상호명
-            category: item.indsLclsNm, // 상권업종대분류명
-            subcategory: item.ksicNm, // 표준산업분류명 (User Request)
-          }));
+        if (items && items.length > 0) {
+          stores = this.mapToMarketStores(items);
           this.logger.log(`[데이터 매핑 완료] ${stores.length}개 업소`);
         } else {
           this.logger.warn('[외부 데이터] items가 없습니다.');
@@ -58,20 +51,19 @@ export class MarketService {
 
     return {
       isCommercialZone: stores.length >= 10, // 임시 기준
-      areaName:
-        stores.length > 0
-          ? stores[0].ctprvnNm || '상권 분석 지역'
-          : '선택된 지역',
+      areaName: '선택된 지역',
       estimatedRevenue: 45000000,
       salesDescription: '선택하신 영역의 상가 정보입니다.',
-      reviewSummary: { naver: '데이터 분석 중...', google: 'Analyzing...' },
+      reviewSummary: { naver: '데이터 분석 중...' },
       stores: stores,
       openingRate: 2.1,
       closureRate: 1.5,
     };
   }
 
-  private async fetchStoreDataFromOpenApi(wkt: string): Promise<any> {
+  private async fetchStoreDataFromOpenApi(
+    wkt: string,
+  ): Promise<OpenApiResponse> {
     const BASE_URL =
       'https://apis.data.go.kr/B553077/api/open/sdsc2/storeListInPolygon';
     const SERVICE_KEY = process.env.SBIZ_API_KEY;
@@ -102,7 +94,15 @@ export class MarketService {
         `OpenAPI Error: ${response.status} ${response.statusText} - ${errorText}`,
       );
     }
-    const data = await response.json();
+    const data = (await response.json()) as OpenApiResponse;
     return data;
+  }
+
+  private mapToMarketStores(items: OpenApiStoreItem[]): MarketStore[] {
+    return items.map((item) => ({
+      name: item.bizesNm, // 상호명
+      category: item.indsLclsNm, // 상권업종대분류명
+      subcategory: item.ksicNm, // 표준산업분류명 (User Request)
+    }));
   }
 }

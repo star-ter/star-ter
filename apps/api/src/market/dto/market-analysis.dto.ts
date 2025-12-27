@@ -1,5 +1,11 @@
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
+export class MarketStore {
+  name: string;
+  category: string;
+  subcategory?: string;
+}
+
 export class GetMarketAnalysisQueryDto {
   @IsString()
   @IsNotEmpty()
@@ -22,13 +28,8 @@ export class MarketAnalysisResponseDto {
 
   reviewSummary: {
     naver: string;
-    google: string;
   };
-  stores: {
-    name: string;
-    category: string;
-    subcategory?: string;
-  }[];
+  stores: MarketStore[];
   openingRate: number;
   closureRate: number;
 }
