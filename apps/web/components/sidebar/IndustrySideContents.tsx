@@ -42,7 +42,10 @@ export default function IndustrySideContents({
     if (matchedStat) {
       // 1. 지역 매칭 성공: 해당 지역 매출
       revenue = matchedStat.arUnitAvrgSlsAmt;
-      displayAmountString = `${revenue.toLocaleString()} 천원`;
+      const revenueInOk = revenue / 100000;
+      displayAmountString = `${revenueInOk.toLocaleString(undefined, {
+        maximumFractionDigits: 2,
+      })} 억원`;
       description = `* ${matchedStat.areaNm} 지역의 실제 통계 데이터입니다.`;
     } else {
       // 2. 지역 선택 안함 OR 매칭 실패: 전체 평균
@@ -51,9 +54,10 @@ export default function IndustrySideContents({
         0,
       );
       revenue = totalRevenue / stats.items.length;
-      displayAmountString = `약 ${revenue.toLocaleString(undefined, {
-        maximumFractionDigits: 0,
-      })} 천원`;
+      const revenueInOk = revenue / 100000;
+      displayAmountString = `약 ${revenueInOk.toLocaleString(undefined, {
+        maximumFractionDigits: 2,
+      })}억 원`;
       description = areaName
         ? `* ${areaName} 지역 데이터가 없어 평균값을 표시합니다.`
         : '* 서울시 업종 평균 추정치입니다.';
@@ -93,7 +97,7 @@ export default function IndustrySideContents({
       {stats && stats.items.length > 0 ? (
         <div className="p-4">
           <h3 className="text-sm font-semibold text-gray-700 mb-3">
-            지역별 매출 순위 (TOP 10)
+            지역별 매출 순위
           </h3>
           <div className="space-y-3">
             {stats.items.slice(0, 10).map((item, index) => (
@@ -122,10 +126,12 @@ export default function IndustrySideContents({
                 </div>
                 <div className="text-right">
                   <div className="font-bold text-blue-600">
-                    {item.arUnitAvrgSlsAmt.toLocaleString()}
-                  </div>
-                  <div className="text-xs text-gray-400">
-                    {item.crrncyUnitCdNm}
+                    {(item.arUnitAvrgSlsAmt / 100000).toLocaleString(
+                      undefined,
+                      {
+                        maximumFractionDigits: 2,
+                      },
+                    )}억 원
                   </div>
                 </div>
               </div>
@@ -139,12 +145,12 @@ export default function IndustrySideContents({
       )}
 
       {/* 4. TODO Placeholder */}
-      <div className="mt-4 mx-4 p-4 bg-gray-50 border border-gray-200 rounded-lg mb-8">
+      {/* <div className="mt-4 mx-4 p-4 bg-gray-50 border border-gray-200 rounded-lg mb-8">
         <p className="text-sm text-gray-500 text-center">
           추정매출, 결제 시간대·요일·휴일여부, 성별 등의 정보가 들어올
           예정입니다.
         </p>
-      </div>
+      </div> */}
     </div>
   );
 }
