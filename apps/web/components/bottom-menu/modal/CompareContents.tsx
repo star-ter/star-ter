@@ -62,7 +62,7 @@ export default function CompareContents({
         <PillButton label="닫기" onClick={onClose}></PillButton>
       </div>
       <p className="mt-3 text-sm leading-relaxed text-gray-400">
-        비교할 두 영역을 클릭해서 마커를 남기거나, 아래 입력창에 검색하세요.
+        비교할 두 영역을 클릭하거나, 아래 입력창에 구/동 단위로 검색하세요.
       </p>
       <div className="mt-4 flex flex-col gap-3">
         <div className="location-1 flex gap-2">

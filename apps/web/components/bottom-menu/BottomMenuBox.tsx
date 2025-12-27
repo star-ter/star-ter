@@ -36,7 +36,7 @@ export default function BottomMenuBox({
   onSelectCategory,
 }: BottomMenuProps) {
   const [active, setActive] = useState<ActiveType | 'none'>('none');
-  const { setIsOpen } = useSidebarStore();
+  const { setInfoBarOpen, setIsOpen } = useSidebarStore();
 
   function modalClose() {
     setActive('none');
@@ -131,7 +131,8 @@ export default function BottomMenuBox({
               setLocationB('');
 
               if (value === 'compare') {
-                setIsOpen(false); // 비교 모드 선택 시 사이드바 닫기
+                setInfoBarOpen(false); // 비교 모드 선택 시 왼쪽 사이드바만 닫기
+                setIsOpen(false);
               }
 
               if (value === 'none') {

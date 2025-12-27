@@ -20,7 +20,7 @@ export default function InfoBar({
   onClose,
 }: InfoBarProps) {
   const [mounted, setMounted] = useState(false);
-  const { isOpen } = useSidebarStore();
+  const { isInfoBarOpen } = useSidebarStore();
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -28,7 +28,7 @@ export default function InfoBar({
   }, []);
 
   // 닫기 조건: 데이터도 없고, 선택된 업종도 없고, 사이드바 상태가 닫혀있으면
-  if (!mounted || (!data && !selectedCategory) || !isOpen) return null;
+  if (!mounted || (!data && !selectedCategory) || !isInfoBarOpen) return null;
 
   // 헤더 타이틀 계산
   let title: React.ReactNode = '';
