@@ -33,21 +33,12 @@ export default function IndustrySideContents({
     ? data.adm_nm || data.buld_nm || '정보 없음'
     : undefined;
 
-  // 1. 세부 업종 필터링 - [Backend TODO] Name 대신 Code로 매칭
   // 선택된 세부업종이 있으면 그것만 남기고, 없으면 전체(stats.items) 사용
   const filteredItems = React.useMemo(() => {
     if (!stats) return [];
     if (!selectedSubCode) return stats.items;
 
-    // 기존: 이름(Name)으로 매칭 (불안정: "당구/볼링" != "당구장")
-    // const selectedSubName = subCategories.find(
-    //   (sub) => sub.code === selectedSubCode,
-    // )?.name;
-    // if (!selectedSubName) return stats.items;
-    // return stats.items.filter((item) => item.indutyMlsfcNm === selectedSubName);
-
-    // 변경: 코드(Code)로 매칭 (권장)
-    // TODO: [Backend Integration] API 응답에 'indutyMlsfcCd'(업종코드)가 포함되어야 합니다.
+    // TODO: api 응답에 indutyMlsfcCd(업종코드)가 포함
     return stats.items.filter((item) => item.indutyMlsfcCd === selectedSubCode);
   }, [stats, selectedSubCode]);
 
@@ -93,7 +84,6 @@ export default function IndustrySideContents({
         : `* 서울시 ${subName} 업종 평균 추정치입니다.`;
     }
   } else if (selectedSubCode && stats) {
-    // 세부 업종을 선택했는데 데이터가 아예 없는 경우
     displayAmountString = '-';
     description = '* 해당 세부 업종의 데이터가 없습니다.';
   }
