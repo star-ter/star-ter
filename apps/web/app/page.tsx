@@ -85,13 +85,13 @@ export default function Home() {
           storeCount: '0'
         }}
       />
-      
       <div className="absolute inset-0 z-0">
         <Kakaomap
           polygonClick={mapClick}
           population={population}
           selectedCategory={selectedCategory}
           onClearCategory={() => setSelectedCategory(null)}
+          disableInfoBar={!!pickTarget}
         />
       </div>
       <div className="fixed inset-0 z-10 pointer-events-none">
@@ -106,6 +106,6 @@ export default function Home() {
           onSelectCategory={setSelectedCategory}
         />
       </div>
-      </div>
+    </div>
   );
 }

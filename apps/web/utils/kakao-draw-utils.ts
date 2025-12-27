@@ -2,6 +2,7 @@ import {
   KakaoMap,
   AdminArea,
   BuildingArea,
+  CommercialArea,
   KakaoLatLng,
   InfoBarData,
   KakaoPolygon,
@@ -25,8 +26,8 @@ interface Ref<T> {
  */
 export function drawPolygons(
   map: KakaoMap,
-  features: AdminArea[] | BuildingArea[],
-  type: 'admin' | 'vworld_building',
+  features: AdminArea[] | BuildingArea[] | CommercialArea[],
+  type: 'admin' | 'vworld_building' | 'commercial',
   polygonsRef: Ref<KakaoPolygon[]>,
   customOverlaysRef: Ref<KakaoCustomOverlay[]>,
   onPolygonClick: (data: InfoBarData) => void,
@@ -37,31 +38,43 @@ export function drawPolygons(
   customOverlaysRef.current.forEach((overlay) => overlay.setMap(null));
   customOverlaysRef.current = [];
 
-  features.forEach((feature: AdminArea | BuildingArea) => {
+  features.forEach((feature: AdminArea | BuildingArea | CommercialArea) => {
     const { polygons, ...props } = feature;
     const paths: KakaoLatLng[][] = [];
     let centerPoint: KakaoLatLng | null = null;
 
-    if (polygons && Array.isArray(polygons)) {
+    if (polygons && Array.isArray(polygons) && polygons.length > 0) {
       let rings: number[][][] = [];
-      const isMultiPolygon = Array.isArray((polygons as any)[0]?.[0]?.[0]);
+      const first = polygons[0];
 
-      if (isMultiPolygon) {
+      // Check depth to determine structure
+      let isLevel4 = false;
+      let isLevel2 = false;
+
+      if (Array.isArray(first)) {
+        const second = first[0];
+        if (Array.isArray(second)) {
+          const third = second[0];
+          if (Array.isArray(third)) {
+            isLevel4 = true;
+          }
+        } else if (typeof second === 'number') {
+          isLevel2 = true;
+        }
+      }
+
+      if (isLevel4) {
         // 4 Levels
         (polygons as number[][][][]).forEach((poly) => {
           if (Array.isArray(poly)) {
             poly.forEach((ring) => rings.push(ring));
           }
         });
-      } else if (
-        polygons.length > 0 &&
-        Array.isArray(polygons[0]) &&
-        typeof polygons[0][0] === 'number'
-      ) {
+      } else if (isLevel2) {
         // 2 Levels (Single Ring directly) - DB data case
         rings.push(polygons as unknown as number[][]);
       } else {
-        // 3 Levels
+        // 3 Levels (Default GeoJSON Polygon)
         rings = polygons as number[][][];
       }
 
@@ -70,7 +83,11 @@ export function drawPolygons(
         paths.push(path);
 
         // 건물의 중심점 계산
-        if (!props.x || !props.y) {
+        // x, y 정보가 없으면 polylabel로 계산
+        // x, y가 존재하는지 확인 (Type Guard)
+        const hasXY = 'x' in props && 'y' in props && props.x && props.y;
+
+        if (!hasXY) {
           try {
             // Calculate center for the first ring (simplified)
             if (!centerPoint) {
@@ -88,7 +105,9 @@ export function drawPolygons(
     let position;
     if ('x' in props && 'y' in props && props.x && props.y) {
       position = convertCoord(Number(props.x), Number(props.y));
-    } else if (centerPoint) {
+    }
+
+    if (!position && centerPoint) {
       position = centerPoint;
     }
 
@@ -104,6 +123,24 @@ export function drawPolygons(
         strokeColor = '#FF8C00';
         fillColor = '#FFA500';
         fillOpacity = 0.5;
+      } else if (type === 'commercial') {
+        const commercialProps = props as CommercialArea;
+        const typeName = commercialProps.TRDAR_SE_1;
+
+        if (typeName === '발달상권') {
+          strokeColor = '#D500F9'; // 강렬한 보라색
+          fillColor = '#E040FB'; // 밝은 보라색
+        } else if (typeName === '골목상권') {
+          strokeColor = '#FF6D00'; // 진한 오렌지
+          fillColor = '#FFAB40'; // 밝은 오렌지
+        } else if (typeName === '전통시장') {
+          strokeColor = '#00C853'; // 진한 녹색
+          fillColor = '#69F0AE'; // 밝은 민트색
+        } else if (typeName === '관광특구') {
+          strokeColor = '#00B0FF'; // 진한 하늘색
+          fillColor = '#40C4FF'; // 밝은 하늘색
+        }
+        fillOpacity = 0.4;
       }
 
       const polygon = new window.kakao.maps.Polygon({
@@ -118,42 +155,46 @@ export function drawPolygons(
       polygonsRef.current.push(polygon);
 
       // Click Event
-      const buldNm = 'buld_nm' in props ? props.buld_nm : undefined;
-      const label = props.adm_nm || buldNm || 'Unknown';
+      let label = 'Unknown';
+      if ('buld_nm' in props) label = (props as BuildingArea).buld_nm;
+      else if ('adm_nm' in props) label = (props as AdminArea).adm_nm;
+      else if ('TRDAR_CD_N' in props)
+        label = (props as CommercialArea).TRDAR_CD_N;
+
       window.kakao.maps.event.addListener(polygon, 'click', () => {
         console.log(`Clicked: ${label}`);
 
         const x = centerPoint ? centerPoint.getLng() : 0;
         const y = centerPoint ? centerPoint.getLat() : 0;
 
+        // TODO: InfoBar에 상권 정보(TRDAR_SE_1 등)가 포함된 props를 전달하는 부분.
+        // 현재 ...props로 모든 필드(TRDAR_SE_1, TRDAR_CD_N 등)가 넘어가고 있음.
         onPolygonClick({
           ...props,
           x: x,
           y: y,
+          polygons: polygons,
         } as unknown as InfoBarData);
       });
     });
 
     // 5. 마커(오버레이)
     if (position) {
-      const buldNm =
-        'buld_nm' in props && typeof props.buld_nm === 'string'
-          ? props.buld_nm
-          : undefined;
+      if (type === 'vworld_building') return;
 
-      if (type === 'vworld_building') {
-        return;
-      }
-
-      // 건물 이름이 있으면 그걸 쓰고, 없으면 행정구역 명의 마지막 단어(예: 봉천동)를 씀
-      const shortName =
-        buldNm || (props.adm_nm || '').split(' ').pop() || '데이터없음';
+      let shortName = '데이터없음';
+      if ('buld_nm' in props && props.buld_nm) shortName = props.buld_nm;
+      else if ('adm_nm' in props && props.adm_nm)
+        shortName = props.adm_nm.split(' ').pop() || '';
+      else if ('TRDAR_CD_N' in props && props.TRDAR_CD_N)
+        shortName = props.TRDAR_CD_N;
 
       const contentEl = document.createElement('div');
       contentEl.innerHTML = `<div style="text-align: center; white-space: nowrap; padding: 4px 8px; background: white; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-size: 12px; font-weight: bold; color: #333; cursor: pointer;">${shortName}</div>`;
 
       contentEl.onclick = () => {
         console.log('Clicked Overlay:', props);
+        // TODO: Overlay 클릭 시에도 InfoBar에 상권 정보 전달
         onPolygonClick(props as unknown as InfoBarData);
       };
 

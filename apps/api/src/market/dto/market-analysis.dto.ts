@@ -1,6 +1,17 @@
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+
 export class GetMarketAnalysisQueryDto {
+  @IsString()
+  @IsNotEmpty()
   latitude: string;
+
+  @IsString()
+  @IsNotEmpty()
   longitude: string;
+
+  @IsString()
+  @IsOptional()
+  polygon?: string;
 }
 
 export class MarketAnalysisResponseDto {

@@ -32,6 +32,7 @@ export interface InfoBarData {
   buld_nm?: string;
   x: string | number;
   y: string | number;
+  polygons?: number[][][][] | number[][][] | number[][];
   // [key: string]: any;
 }
 
@@ -78,4 +79,25 @@ declare global {
   interface Window {
     kakao: KakaoNamespace;
   }
+}
+
+// 상권
+export interface CommercialArea {
+  TRDAR_SE_1: string;
+  TRDAR_CD_N: string;
+  SIGNGU_CD_: string; // 구 정보
+  ADSTRD_CD_: string; // 동 정보
+  polygons: number[][][][] | number[][][] | number[][];
+}
+
+export interface CommercialApiResponse {
+  properties: {
+    TRDAR_SE_1: string;
+    TRDAR_CD_N: string;
+    SIGNGU_CD_: string;
+    ADSTRD_CD_: string;
+  };
+  geometry: {
+    coordinates: number[][][][] | number[][][] | number[][];
+  };
 }

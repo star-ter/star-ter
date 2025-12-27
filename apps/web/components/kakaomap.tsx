@@ -10,6 +10,7 @@ import { usePopulationLayer } from '../hooks/usePopulationLayer';
 import { usePopulationVisual } from '../hooks/usePopulationVisual';
 import { IndustryCategory } from '../types/bottom-menu-types';
 import { useMapStore } from '../stores/useMapStore';
+import { useSidebarStore } from '../stores/useSidebarStore';
 
 initProj4();
 
@@ -18,6 +19,7 @@ interface KakaomapProps {
   population: ReturnType<typeof usePopulationVisual>;
   selectedCategory?: IndustryCategory | null;
   onClearCategory?: () => void;
+  disableInfoBar?: boolean;
 }
 
 export default function Kakaomap({
@@ -25,16 +27,22 @@ export default function Kakaomap({
   population,
   selectedCategory = null,
   onClearCategory = () => {},
+  disableInfoBar = false,
 }: KakaomapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [selectedArea, setSelectedArea] = useState<InfoBarData | null>(null);
 
   // 1. Load Map
   const { map } = useKakaoMap(mapRef);
+  const { setInfoBarOpen } = useSidebarStore();
 
   // 2. Handle map data & logic
   usePolygonData(map, (data: InfoBarData) => {
-    setSelectedArea(data);
+    // 선택 모드가 아닐 때만 정보창 표시
+    if (!disableInfoBar) {
+      setSelectedArea(data);
+      setInfoBarOpen(true); // 데이터가 선택되면 사이드바 열기
+    }
     if (polygonClick) {
       const label = data.buld_nm || data.adm_nm || 'Unknown';
       polygonClick(label);
@@ -43,6 +51,7 @@ export default function Kakaomap({
 
   // 3. Map Store 연동 - 지도 중심 이동 및 마커 표시
   const { center, zoom, markers } = useMapStore();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const markersRef = useRef<any[]>([]);
 
   useEffect(() => {
@@ -58,13 +67,13 @@ export default function Kakaomap({
 
     // 새 마커 생성
     const bounds = new window.kakao.maps.LatLngBounds();
-    
+
     markers.forEach((markerData) => {
       const position = new window.kakao.maps.LatLng(
         markerData.coords.lat,
-        markerData.coords.lng
+        markerData.coords.lng,
       );
-      
+
       // 마커 생성 (인포윈도우 없이)
       const marker = new window.kakao.maps.Marker({
         position,
@@ -78,20 +87,23 @@ export default function Kakaomap({
     // 여러 마커일 때 자동 bounds 맞춤
     if (markers.length > 1 || zoom === -1) {
       map.setBounds(bounds);
-      
+
       // 여유 공간 확보 및 왼쪽 오프셋 적용 (채팅 UI 고려)
       setTimeout(() => {
         // 2단계 줌아웃
         const currentLevel = map.getLevel();
         map.setLevel(currentLevel + 2);
       }, 100);
-      
+
       // 중심점 오른쪽 이동 → 마커가 화면 왼쪽에 표시됨
       setTimeout(() => {
         const currentCenter = map.getCenter();
         // 경도를 증가 (중심을 동쪽으로) → 마커가 화면 왼쪽에
         const offsetLng = currentCenter.getLng() + 0.01;
-        const newCenter = new window.kakao.maps.LatLng(currentCenter.getLat(), offsetLng);
+        const newCenter = new window.kakao.maps.LatLng(
+          currentCenter.getLat(),
+          offsetLng,
+        );
         map.setCenter(newCenter);
       }, 200);
     } else if (center) {
