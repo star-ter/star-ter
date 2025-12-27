@@ -6,6 +6,7 @@ import {
   KakaoPolygon,
   KakaoCustomOverlay,
   InfoBarData,
+  CommercialApiResponse,
 } from '../types/map-types';
 import { drawPolygons } from '../utils/kakao-draw-utils';
 
@@ -89,6 +90,41 @@ export const usePolygonData = (
     }
   }
 
+  // 상권 데이터를 비동기로 호출하고 지도에 그리는 함수.
+  async function fetchCommercialData(map: KakaoMap) {
+    console.log(`Fetching Commercial Data...`);
+    try {
+      const response = await fetch(`${API_BASE_URL}/polygon/commercial`);
+      const data = await response.json();
+
+      if (Array.isArray(data)) {
+        console.log(`Received ${data.length} commercial areas`);
+
+        // GeoJSON Feature -> CommercialArea 매핑
+        const commercialAreas = (data as CommercialApiResponse[]).map(
+          (feature) => ({
+            TRDAR_SE_1: feature.properties.TRDAR_SE_1,
+            TRDAR_CD_N: feature.properties.TRDAR_CD_N,
+            SIGNGU_CD_: feature.properties.SIGNGU_CD_,
+            ADSTRD_CD_: feature.properties.ADSTRD_CD_,
+            polygons: feature.geometry.coordinates,
+          }),
+        );
+
+        drawPolygons(
+          map,
+          commercialAreas,
+          'commercial',
+          polygonsRef,
+          customOverlaysRef,
+          (data) => onPolygonClickRef.current(data),
+        );
+      }
+    } catch (err) {
+      console.error('Commercial API Fetch Error:', err);
+    }
+  }
+
   function refreshLayer(map: KakaoMap) {
     const level = map.getLevel();
     console.log(`Current Zoom Level: ${level}`);
@@ -96,13 +132,17 @@ export const usePolygonData = (
     let currentGroup = '';
     if (level >= 7) currentGroup = 'GU';
     else if (level >= 5) currentGroup = 'DONG';
+    else if (level >= 2) currentGroup = 'COMMERCIAL';
     else currentGroup = 'BUILDING';
 
     if (
       currentGroup === lastLevelGroupRef.current &&
-      (currentGroup === 'GU' || currentGroup === 'DONG')
+      (currentGroup === 'GU' ||
+        currentGroup === 'DONG' ||
+        currentGroup === 'COMMERCIAL')
     ) {
       console.log(`Skipping fetch for static layer: ${currentGroup}`);
+      // 상권 데이터는 mock이므로 한번만 가져와도 됨 (하지만 지도 이동 시 다시 가져오지 않도록 static 취급)
       return;
     }
 
@@ -112,6 +152,8 @@ export const usePolygonData = (
       fetchCombinedBoundary(map, 1);
     } else if (level >= 5) {
       fetchCombinedBoundary(map, 2);
+    } else if (level >= 2) {
+      fetchCommercialData(map);
     } else {
       fetchBuildingVworld(map);
     }
