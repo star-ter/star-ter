@@ -125,7 +125,7 @@ export function drawPolygons(
         fillOpacity = 0.5;
       } else if (type === 'commercial') {
         const commercialProps = props as CommercialArea;
-        const typeName = commercialProps.TRDAR_SE_1;
+        const typeName = commercialProps.commercialType;
 
         if (typeName === '발달상권') {
           strokeColor = '#D500F9'; // 강렬한 보라색
@@ -158,8 +158,8 @@ export function drawPolygons(
       let label = 'Unknown';
       if ('buld_nm' in props) label = (props as BuildingArea).buld_nm;
       else if ('adm_nm' in props) label = (props as AdminArea).adm_nm;
-      else if ('TRDAR_CD_N' in props)
-        label = (props as CommercialArea).TRDAR_CD_N;
+      else if ('commercialName' in props)
+        label = (props as CommercialArea).commercialName;
 
       window.kakao.maps.event.addListener(polygon, 'click', () => {
         console.log(`Clicked: ${label}`);
@@ -186,8 +186,8 @@ export function drawPolygons(
       if ('buld_nm' in props && props.buld_nm) shortName = props.buld_nm;
       else if ('adm_nm' in props && props.adm_nm)
         shortName = props.adm_nm.split(' ').pop() || '';
-      else if ('TRDAR_CD_N' in props && props.TRDAR_CD_N)
-        shortName = props.TRDAR_CD_N;
+      else if ('commercialName' in props && props.commercialName)
+        shortName = props.commercialName;
 
       const contentEl = document.createElement('div');
       contentEl.innerHTML = `<div style="text-align: center; white-space: nowrap; padding: 4px 8px; background: white; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-size: 12px; font-weight: bold; color: #333; cursor: pointer;">${shortName}</div>`;
