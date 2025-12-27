@@ -49,12 +49,28 @@ export const usePopulationVisual = () => {
     return row.SPOP; // 전체
   }, []);
 
-  // 색상 계산 (데이터 수치 -> HSL 색상상태)
+  // 색상 계산 (데이터 수치 -> 초록~빨강 8단계 자연스러운 스케일)
   const getColorByValue = useCallback((value: number, max: number) => {
-    if (max === 0) return '#4ade80';
+    if (max === 0 || value === 0) return '#f8fafc'; // 데이터 없거나 0일 때
+    
     const ratio = Math.min(value / max, 1);
-    const hue = (1 - ratio) * 120; // 120(초록) -> 0(빨강)
-    return `hsl(${hue}, 70%, 50%)`;
+    
+    // 8단계 색상 팔레트 (ColorBrewer RdYlGn 기반의 자연스러운 전환)
+    const palette = [
+      '#1a9850', // 1단계 (가장 낮음 - 진한 초록)
+      '#91cf60', // 2단계
+      '#d9ef8b', // 3단계
+      '#ffffbf', // 4단계 (중간 - 노랑)
+      '#fee08b', // 5단계
+      '#fc8d59', // 6단계
+      '#d73027', // 7단계
+      '#a50026'  // 8단계 (가장 높음 - 진한 빨강)
+    ];
+    
+    // 비율(0~1)을 8단계 인덱스(0~7)로 변환
+    const step = Math.min(Math.floor(ratio * 8), 7);
+    
+    return palette[step];
   }, []);
 
   return { 

@@ -58,7 +58,7 @@ export interface FloatingPopulationResponse {
 export type RawSeoulApiResponse = {
   [serviceName: string]: FloatingPopulationResponse;
 } & {
-  RESULT?: SeoulApiResult;
+  RESULT: SeoulApiResult;
 };
 
 /**

@@ -6,6 +6,7 @@ export interface KakaoLatLng {
 export interface KakaoBounds {
   getSouthWest: () => KakaoLatLng;
   getNorthEast: () => KakaoLatLng;
+  contain: (latlng: KakaoLatLng) => boolean;
 }
 
 export interface KakaoMap {
@@ -53,4 +54,28 @@ export interface BuildingArea {
   y?: string | number;
   polygons: number[][][][] | number[][][] | number[][];
   // [key: string]: any;
+}
+export interface KakaoMapOptions {
+  center: KakaoLatLng;
+  level: number;
+}
+
+export interface KakaoNamespace {
+  maps: {
+    LatLng: new (lat: number, lng: number) => KakaoLatLng;
+    LatLngBounds: new () => KakaoBounds;
+    Map: new (container: HTMLElement, options: KakaoMapOptions) => KakaoMap;
+    Polygon: new (options: Record<string, unknown>) => KakaoPolygon;
+    load: (callback: () => void) => void;
+    event: {
+      addListener: (target: unknown, event: string, callback: () => void) => unknown;
+      removeListener: (listener: unknown) => void;
+    };
+  };
+}
+
+declare global {
+  interface Window {
+    kakao: KakaoNamespace;
+  }
 }
