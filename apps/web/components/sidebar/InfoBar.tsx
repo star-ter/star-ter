@@ -6,6 +6,7 @@ import { InfoBarData } from '../../types/map-types';
 import { IndustryCategory } from '../../types/bottom-menu-types';
 import InfoBarHeader from './InfoBarHeader';
 import InfoBarContents from './InfoBarContents';
+import { useSidebarStore } from '../../stores/useSidebarStore';
 
 interface InfoBarProps {
   data: InfoBarData | null;
@@ -19,14 +20,15 @@ export default function InfoBar({
   onClose,
 }: InfoBarProps) {
   const [mounted, setMounted] = useState(false);
+  const { isOpen } = useSidebarStore();
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
-  // 닫기 조건: 데이터도 없고, 선택된 업종도 없으면 렌더링 안 함
-  if (!mounted || (!data && !selectedCategory)) return null;
+  // 닫기 조건: 데이터도 없고, 선택된 업종도 없고, 사이드바 상태가 닫혀있으면
+  if (!mounted || (!data && !selectedCategory) || !isOpen) return null;
 
   // 헤더 타이틀 계산
   let title: React.ReactNode = '';

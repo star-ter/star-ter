@@ -1,6 +1,7 @@
 import PillButton from '../PillButton';
 import { CompareRequest } from '../../../types/bottom-menu-types';
 import { BiTargetLock } from 'react-icons/bi';
+import { useMapStore } from '../../../stores/useMapStore';
 
 interface Props {
   onClose: () => void;
@@ -21,9 +22,36 @@ export default function CompareContents({
   onPickLocation,
   onCompare,
 }: Props) {
+  const { moveToLocation, clearMarkers } = useMapStore();
+
   const handleCompare = () => {
     if (!targetA || !targetB) return;
+    clearMarkers(); // 분석 시작 시 마커 제거
     onCompare({ targetA, targetB });
+  };
+
+  const handleSearch = (keyword: string) => {
+    if (!keyword.trim()) return;
+
+    if (!window.kakao || !window.kakao.maps || !window.kakao.maps.services) {
+      console.error('Kakao Maps SDK not loaded');
+      return;
+    }
+
+    const geocoder = new window.kakao.maps.services.Geocoder();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    geocoder.addressSearch(keyword, (result: any, status: any) => {
+      if (status === window.kakao.maps.services.Status.OK) {
+        const coords = {
+          lat: Number(result[0].y),
+          lng: Number(result[0].x),
+        };
+        // 지도 이동 (중앙 정렬)
+        moveToLocation(coords, keyword, 3, true);
+      } else {
+        alert('검색 결과를 찾을 수 없습니다.');
+      }
+    });
   };
 
   return (
@@ -40,9 +68,14 @@ export default function CompareContents({
           <input
             className="w-full rounded-xl border border-gray-200 bg-white/90 px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 shadow-sm focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
             type="text"
-            placeholder="비교할 첫번 째 구역을 입력하세요."
+            placeholder="첫번 째 구역을 입력한 후 Enter"
             value={targetA}
             onChange={(e) => changeTargetA(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleSearch(e.currentTarget.value);
+              }
+            }}
           />
           <button
             onClick={() => onPickLocation('A')}
@@ -57,9 +90,14 @@ export default function CompareContents({
           <input
             className="w-full rounded-xl border border-gray-200 bg-white/90 px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 shadow-sm focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
             type="text"
-            placeholder="비교할 두번 째 구역을 입력하세요."
+            placeholder="두번 째 구역을 입력한 후 Enter"
             value={targetB}
             onChange={(e) => changeTargetB(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleSearch(e.currentTarget.value);
+              }
+            }}
           />
           <button
             onClick={() => onPickLocation('B')}
