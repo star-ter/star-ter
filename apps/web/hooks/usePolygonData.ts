@@ -20,6 +20,7 @@ export const usePolygonData = (
   const polygonsRef = useRef<KakaoPolygon[]>([]);
   const customOverlaysRef = useRef<KakaoCustomOverlay[]>([]);
   const onPolygonClickRef = useRef(onPolygonClick);
+  const visitedCommercialRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     onPolygonClickRef.current = onPolygonClick;
@@ -105,6 +106,8 @@ export const usePolygonData = (
       maxy: ne.getLat().toString(),
     });
 
+    console.time('상권 데이터 로딩 시간');
+
     try {
       const response = await fetch(
         `${API_BASE_URL}/polygon/commercial?${query}`,
@@ -125,14 +128,25 @@ export const usePolygonData = (
           }),
         );
 
-        drawPolygons(
-          map,
-          commercialAreas,
-          'commercial',
-          polygonsRef,
-          customOverlaysRef,
-          (data) => onPolygonClickRef.current(data),
-        );
+        const newCommercialAreas = commercialAreas.filter((area) => {
+          if (visitedCommercialRef.current.has(area.commercialName))
+            return false;
+          visitedCommercialRef.current.add(area.commercialName);
+          return true;
+        });
+
+        if (newCommercialAreas.length > 0) {
+          drawPolygons(
+            map,
+            newCommercialAreas,
+            'commercial',
+            polygonsRef,
+            customOverlaysRef,
+            (data) => onPolygonClickRef.current(data),
+            false,
+          );
+        }
+        console.timeEnd('상권 데이터 로딩 시간');
       }
     } catch (err) {
       console.error('Commercial API Fetch Error:', err);
@@ -146,7 +160,19 @@ export const usePolygonData = (
     let currentGroup = '';
     if (level >= 7) currentGroup = 'GU';
     else if (level >= 5) currentGroup = 'DONG';
+    else if (level >= 2) currentGroup = 'COMMERCIAL';
     else currentGroup = 'BUILDING';
+
+    if (currentGroup !== lastLevelGroupRef.current) {
+      polygonsRef.current.forEach((polygon) => {
+        polygon.setMap(null);
+      });
+      customOverlaysRef.current.forEach((overlay) => {
+        overlay.setMap(null);
+      });
+
+      visitedCommercialRef.current.clear();
+    }
 
     if (
       currentGroup === lastLevelGroupRef.current &&
