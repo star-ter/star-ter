@@ -7,6 +7,7 @@ export interface KakaoBounds {
   getSouthWest: () => KakaoLatLng;
   getNorthEast: () => KakaoLatLng;
   contain: (latlng: KakaoLatLng) => boolean;
+  extend: (latlng: KakaoLatLng) => void;
 }
 
 export interface KakaoMap {
@@ -20,6 +21,8 @@ export interface KakaoMap {
 
 export interface KakaoPolygon {
   setMap: (map: KakaoMap | null) => void;
+  setOptions: (options: Record<string, unknown>) => void;
+  fillColor?: string; // 성능 최적화를 위한 컬러 캐싱용
 }
 
 export interface KakaoCustomOverlay {
@@ -64,9 +67,10 @@ export interface KakaoMapOptions {
 export interface KakaoNamespace {
   maps: {
     LatLng: new (lat: number, lng: number) => KakaoLatLng;
-    LatLngBounds: new () => KakaoBounds;
+    LatLngBounds: new (sw?: KakaoLatLng, ne?: KakaoLatLng) => KakaoBounds;
     Map: new (container: HTMLElement, options: KakaoMapOptions) => KakaoMap;
     Polygon: new (options: Record<string, unknown>) => KakaoPolygon;
+    Marker: new (options: Record<string, unknown>) => { setMap: (map: KakaoMap | null) => void };
     load: (callback: () => void) => void;
     event: {
       addListener: (target: unknown, event: string, callback: () => void) => unknown;

@@ -11,7 +11,8 @@ interface Props {
 export default function PopulationContents({ onClose, onView, population }: Props) {
   const { 
     genderFilter, setGenderFilter, 
-    ageFilter, setAgeFilter, loadData 
+    ageFilter, setAgeFilter,
+    showLayer, setShowLayer
   } = population;
 
   const genders: GenderFilter[] = ['Total', 'Male', 'Female'];
@@ -29,8 +30,11 @@ export default function PopulationContents({ onClose, onView, population }: Prop
         <label className="text-xs font-bold text-gray-400 uppercase">성별</label>
         <div className="mt-2 flex gap-2">
           {genders.map(g => (
-            <button key={g} onClick={() => setGenderFilter(g)}
-              className={`px-3 py-1 rounded-lg text-xs ${genderFilter === g ? 'bg-black text-white' : 'bg-gray-100 text-gray-600'}`}>
+            <button 
+              key={g} 
+              onClick={() => setGenderFilter(g)}
+              className={`px-3 py-1 rounded-lg text-xs ${genderFilter === g ? 'bg-black text-white' : 'bg-gray-100 text-gray-600'}`}
+            >
               {g === 'Total' ? '전체' : g === 'Male' ? '남성' : '여성'}
             </button>
           ))}
@@ -42,18 +46,32 @@ export default function PopulationContents({ onClose, onView, population }: Prop
         <label className="text-xs font-bold text-gray-400 uppercase">연령대</label>
         <div className="mt-2 flex flex-wrap gap-2">
           {ages.map(a => (
-            <button key={a} onClick={() => setAgeFilter(a)}
-              className={`px-3 py-1 rounded-lg text-xs ${ageFilter === a ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'}`}>
+            <button 
+              key={a} 
+              onClick={() => setAgeFilter(a)}
+              className={`px-3 py-1 rounded-lg text-xs ${ageFilter === a ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'}`}
+            >
               {a === 'Total' ? '전체' : a}
             </button>
           ))}
         </div>
       </div>
 
-      <button onClick={() => { loadData(); onView(); }}
-        className="w-full rounded-xl bg-gray-900 py-3 text-sm font-semibold text-white">
-        유동인구보기
-      </button>
+      {showLayer ? (
+        <button 
+          onClick={() => { setShowLayer(false); onClose(); }}
+          className="w-full rounded-xl bg-red-600 py-3 text-sm font-semibold text-white"
+        >
+          유동인구 끄기
+        </button>
+      ) : (
+        <button 
+          onClick={() => { setShowLayer(true); onView(); }}
+          className="w-full rounded-xl bg-gray-900 py-3 text-sm font-semibold text-white"
+        >
+          유동인구 보기
+        </button>
+      )}
     </section>
   );
 }

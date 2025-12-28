@@ -136,6 +136,7 @@ export default function Kakaomap({
     population.data,
     population.genderFilter,
     population.ageFilter,
+    population.showLayer,
     population.getPopulationValue,
     population.getColorByValue
   );

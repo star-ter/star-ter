@@ -90,3 +90,27 @@ export type RawSeoulXmlResponse = {
 } & {
   RESULT?: SeoulApiResult;
 };
+
+// --- New DTOs for Grid Integration ---
+
+export interface GeoJsonGeometry {
+  type: string;
+  coordinates: any[]; // GeoJSON coordinates can be complex nested arrays
+}
+
+export interface PopulationGridDto {
+  cell_id: string;
+  geometry: GeoJsonGeometry;
+}
+
+export interface CombinedPopulationFeature {
+  cell_id: string;
+  geometry: GeoJsonGeometry;
+  population: FloatingPopulationRow;
+}
+
+export interface CombinedLayerResponse {
+  ymd: string;
+  tt: string;
+  features: CombinedPopulationFeature[];
+}

@@ -2,22 +2,122 @@ import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { XMLParser } from 'fast-xml-parser';
 import {
+  FloatingPopulationRepository,
+  GridCellGeometry,
+} from './floating-population.repository';
+import {
   FloatingPopulationResponse,
   FloatingPopulationRow,
   RawSeoulXmlResponse,
+  CombinedLayerResponse,
+  CombinedPopulationFeature,
 } from './dto/floating-population-response.dto';
 
 @Injectable()
 export class FloatingPopulationService {
   private readonly logger = new Logger(FloatingPopulationService.name);
   private readonly apiKey: string;
-  // 서울시 공공데이터포털 API(필수)
   private readonly baseUrl = 'http://openapi.seoul.go.kr:8088';
   private readonly parser = new XMLParser();
 
-  constructor(private readonly configService: ConfigService) {
+  private cachedPopulationMap: Map<string, FloatingPopulationRow> = new Map();
+  private lastFetchTime = 0;
+  private readonly CACHE_TTL = 30 * 60 * 1000; // 30분 캐시
+
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly repository: FloatingPopulationRepository,
+  ) {
     this.apiKey =
       this.configService.get<string>('SEOUL_OPEN_API_KEY') || 'sample';
+  }
+
+  /**
+   * 유동인구 데이터와 격자 형상을 결합하여 반환합니다. (전체 로드용 - 가급적 사용 자제)
+   */
+  async getCombinedLayer(): Promise<CombinedLayerResponse> {
+    const populationMap = await this.getOrFetchPopulation();
+    const grids = await this.repository.findAllGridCells();
+
+    return this.joinGridsWithPopulation(grids, populationMap);
+  }
+
+  /**
+   * 특정 영역(Bounds) 내의 유동인구 레이어만 반환합니다.
+   * 성능 최적화의 핵심입니다.
+   */
+  async getCombinedLayerByBounds(
+    minLat: number,
+    minLng: number,
+    maxLat: number,
+    maxLng: number,
+  ): Promise<CombinedLayerResponse> {
+    // 1. 인구 데이터 로드 (캐시 우선)
+    const populationMap = await this.getOrFetchPopulation();
+
+    // 2. DB에서 해당 영역의 격자만 조회
+    const grids = await this.repository.findGridCellsByBounds(
+      minLat,
+      minLng,
+      maxLat,
+      maxLng,
+    );
+
+    this.logger.log(`Fetched ${grids.length} visible grids for bounds.`);
+
+    return this.joinGridsWithPopulation(grids, populationMap);
+  }
+
+  private async getOrFetchPopulation(): Promise<
+    Map<string, FloatingPopulationRow>
+  > {
+    const now = Date.now();
+    if (
+      this.cachedPopulationMap.size > 0 &&
+      now - this.lastFetchTime < this.CACHE_TTL
+    ) {
+      return this.cachedPopulationMap;
+    }
+
+    this.logger.log(
+      'Cache expired or empty. Fetching population data from Seoul API...',
+    );
+    // 서울시 격자수가 약 16,000~18,000개 정도이므로 19,000개까지 넉넉하게 가져옵니다.
+    const data = await this.getPopulationData(1, 19000);
+
+    const newMap = new Map<string, FloatingPopulationRow>();
+    data.row.forEach((row) => newMap.set(row.CELL_ID, row));
+
+    this.cachedPopulationMap = newMap;
+    this.lastFetchTime = now;
+
+    return this.cachedPopulationMap;
+  }
+
+  private joinGridsWithPopulation(
+    grids: GridCellGeometry[],
+    populationMap: Map<string, FloatingPopulationRow>,
+  ): CombinedLayerResponse {
+    const combinedFeatures: CombinedPopulationFeature[] = [];
+
+    grids.forEach((grid) => {
+      const population = populationMap.get(grid.cell_id);
+      if (population) {
+        combinedFeatures.push({
+          cell_id: grid.cell_id,
+          geometry: grid.geometry,
+          population: population,
+        });
+      }
+    });
+
+    const firstPop = Array.from(populationMap.values())[0];
+
+    return {
+      ymd: firstPop?.YMD || '',
+      tt: firstPop?.TT || '',
+      features: combinedFeatures,
+    };
   }
 
   async getPopulationData(
@@ -27,7 +127,6 @@ export class FloatingPopulationService {
     const SERVICE_NAME = 'Se250MSpopLocalResd';
     const CHUNK_SIZE = 1000;
 
-    // 요청 범위를 1000건씩 나누기
     const chunks: { start: number; end: number }[] = [];
     for (let s = start; s <= end; s += CHUNK_SIZE) {
       const e = Math.min(s + CHUNK_SIZE - 1, end);
@@ -37,7 +136,6 @@ export class FloatingPopulationService {
     try {
       let totalCount = 0;
 
-      // 여러 청크를 병렬로 호출합니다.
       const chunkResults = await Promise.all(
         chunks.map(async (chunk) => {
           const url = `${this.baseUrl}/${this.apiKey}/xml/${SERVICE_NAME}/${chunk.start}/${chunk.end}/`;
@@ -64,7 +162,6 @@ export class FloatingPopulationService {
         }),
       );
 
-      // 데이터 병합 및 CELL_ID 기준으로 합산
       const cellMap = new Map<string, FloatingPopulationRow>();
 
       chunkResults.forEach((rows) => {
@@ -74,9 +171,7 @@ export class FloatingPopulationService {
             cellMap.set(row.CELL_ID, { ...row });
           } else {
             const existing = cellMap.get(row.CELL_ID)!;
-            // 인구수 합산
             existing.SPOP += row.SPOP;
-            // 연령별/성별도 합산
             const keys = Object.keys(existing) as Array<
               keyof FloatingPopulationRow
             >;
@@ -100,10 +195,6 @@ export class FloatingPopulationService {
       });
 
       const finalRows = Array.from(cellMap.values());
-      this.logger.log(
-        `Aggregated ${finalRows.length} unique cells from raw rows.`,
-      );
-
       return {
         list_total_count: totalCount,
         RESULT: {
@@ -124,19 +215,15 @@ export class FloatingPopulationService {
     }
   }
 
-  // 10세 단위로 데이터를 합산
   private cleanRowData(row: FloatingPopulationRow): FloatingPopulationRow {
     const cleaned = { ...row };
     const keys = Object.keys(cleaned) as Array<keyof FloatingPopulationRow>;
 
     for (const key of keys) {
       const value = cleaned[key];
-      // *는 계산이 안되므로 0으로 환산
       if (value === ('*' as unknown)) {
         (cleaned as Record<string, unknown>)[key] = 0;
-      }
-      // 숫자형태의 문자열은 진짜 숫자로 변환
-      else if (
+      } else if (
         typeof value === 'string' &&
         !isNaN(Number(value)) &&
         !['H_DNG_CD', 'CELL_ID', 'YMD', 'TT'].includes(key)
@@ -147,7 +234,6 @@ export class FloatingPopulationService {
 
     const getVal = (key: keyof FloatingPopulationRow) =>
       Number(cleaned[key]) || 0;
-    // 10세 단위로 합산
     cleaned.pop_0_10 = getVal('M00') + getVal('F00');
     cleaned.pop_10_20 =
       getVal('M10') + getVal('M15') + getVal('F10') + getVal('F15');
