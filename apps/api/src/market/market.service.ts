@@ -12,13 +12,25 @@ import {
 import { OpenApiResponse, OpenApiStoreItem } from './dto/open-api.dto';
 import { MarketAnalyticsDto } from './dto/market-analytics.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { SalesCommercial, SalesDong } from 'generated/prisma/client';
+
+interface CommercialAreaResult {
+  TRDAR_CD: string;
+  TRDAR_CD_NM: string;
+  TRDAR_SE_1: string;
+}
+
+interface AdministrativeAreaResult {
+  ADSTRD_CD: string;
+  ADSTRD_NM: string;
+}
 
 @Injectable()
 export class MarketService {
   constructor(private readonly prisma: PrismaService) {}
   private readonly logger = new Logger(MarketService.name);
 
-  async getAnalysisData(
+  async getStoreList(
     query: GetMarketAnalysisQueryDto,
   ): Promise<MarketStoreListDto> {
     const lat = parseFloat(query.latitude);
@@ -63,133 +75,146 @@ export class MarketService {
     query: GetMarketAnalysisQueryDto,
   ): Promise<MarketAnalyticsDto> {
     const { latitude, longitude } = query;
+    const lat = parseFloat(latitude);
+    const lng = parseFloat(longitude);
 
-    const commercialArea = await this.prisma.$queryRaw<any[]>`
+    const commercialArea = await this.findCommercialArea(lat, lng);
+
+    if (commercialArea) {
+      return this.getCommercialSales(
+        commercialArea.TRDAR_CD,
+        commercialArea.TRDAR_CD_NM,
+        //commercialArea.TRDAR_SE_1,
+      );
+    }
+
+    const adminArea = await this.findAdministrativeDistrict(lat, lng);
+    if (adminArea) {
+      return this.getAdministrativeSales(
+        adminArea.ADSTRD_CD,
+        adminArea.ADSTRD_NM,
+      );
+    }
+
+    return this.getEmptySalesData('분석할 수 없는 지역입니다.');
+  }
+  // postgis라서 rawquery 사용
+  private async findCommercialArea(
+    lat: number,
+    lng: number,
+  ): Promise<CommercialAreaResult | null> {
+    const result = await this.prisma.$queryRaw<CommercialAreaResult[]>`
       SELECT TRDAR_CD, TRDAR_CD_NM, TRDAR_SE_1
       FROM seoul_commercial_area_grid
-      WHERE ST_Intersects(geom, ST_SetSRID(ST_Point(${parseFloat(longitude)}, ${parseFloat(latitude)}), 4326))
+      WHERE ST_Intersects(geom, ST_SetSRID(ST_Point(${lng}, ${lat}), 4326))
       LIMIT 1
     `;
-
-    if (commercialArea[0]) {
-      return this.getCommercialSales(
-        commercialArea[0].TRDAR_CD,
-        commercialArea[0].TRDAR_CD_NM,
-        commercialArea[0].TRDAR_SE_1,
-      );
-    } else {
-      return this.getEmptySalesData('행정동 분석 정보');
-    }
+    return result[0] || null;
+  }
+  //TODO: 현재 DB 내 area_dong 테이블에는 폴리곤 데이터가 없음. 테이블에 넣어야 함, 또한 행정동 코드가 서로 안맞음
+  private async findAdministrativeDistrict(
+    lat: number,
+    lng: number,
+  ): Promise<AdministrativeAreaResult | null> {
+    const result = await this.prisma.$queryRaw<AdministrativeAreaResult[]>`
+      SELECT ADSTRD_CD, ADSTRD_NM
+      FROM area_dong
+      WHERE ST_Intersects(geom, ST_SetSRID(ST_Point(${lng}, ${lat}), 4326))
+      LIMIT 1
+    `;
+    return result[0] || null;
   }
 
-  // [Mock] 상권 매출 데이터 (Mock Data)
+  // 상권 매출 데이터 조회
   private async getCommercialSales(
     code: string,
     name: string,
-    commercialCategory: string,
+    //commercialCategory: string,
   ): Promise<MarketAnalyticsDto> {
-    return {
-      areaName: name,
-      isCommercialArea: true,
-      totalRevenue: 45000000,
-
-      // 생명력 데이터 (Mock)
-      vitality: {
-        openingRate: 2.1,
-        closureRate: 1.5,
-      },
-      // (레거시 필드 호환용 - 나중에 삭제 가능)
-      openingRate: 2.1,
-      closureRate: 1.5,
-      // 매출 상세 (Mock)
-      sales: {
-        trend: [
-          { year: '2024', quarter: '1', revenue: 42000000 },
-          { year: '2024', quarter: '2', revenue: 45000000 },
-          { year: '2024', quarter: '3', revenue: 47000000 },
-        ],
-        timeSlot: {
-          time0006: 5,
-          time0611: 10,
-          time1114: 35,
-          time1417: 15,
-          time1721: 25,
-          time2124: 10,
-          peakTimeSummaryComment: '점심 시간대(11-14시)가 가장 활발합니다.',
-        },
-        dayOfWeek: {
-          mon: 12,
-          tue: 13,
-          wed: 15,
-          thu: 15,
-          fri: 20,
-          sat: 18,
-          sun: 7,
-          peakDaySummaryComment: '금요일 매출이 가장 높습니다.',
-        },
-        demographics: {
-          male: 45,
-          female: 55,
-          age10: 5,
-          age20: 30,
-          age30: 35,
-          age40: 15,
-          age50: 10,
-          age60: 5,
-          primaryGroupSummaryComment: '30대 여성이 주 고객층입니다.',
-        },
-        topIndustries: [
-          { name: '한식', ratio: 35 },
-          { name: '카페', ratio: 20 },
-        ],
-      },
-    };
+    const salesData = await this.prisma.salesCommercial.findMany({
+      where: { TRDAR_CD: code },
+      orderBy: { STDR_YYQU_CD: 'desc' },
+      take: 5,
+    });
+    return this.mapToAnalyticsDto(salesData, name, true);
   }
-  // [Mock] 비상권 데이터
-  private getEmptySalesData(message: string): MarketAnalyticsDto {
-    return {
-      areaName: message,
-      isCommercialArea: false,
-      totalRevenue: 0,
 
-      vitality: { openingRate: 0, closureRate: 0 },
-      openingRate: 0,
-      closureRate: 0,
+  // 행정동 매출 데이터 조회
+  private async getAdministrativeSales(
+    code: string,
+    name: string,
+  ): Promise<MarketAnalyticsDto> {
+    const salesData = await this.prisma.salesDong.findMany({
+      where: { ADSTRD_CD: code },
+      orderBy: { STDR_YYQU_CD: 'desc' },
+      take: 5,
+    });
+    return this.mapToAnalyticsDto(salesData, name, false);
+  }
+
+  private mapToAnalyticsDto(
+    rows: (SalesCommercial | SalesDong)[],
+    areaName: string,
+    isCommercial: boolean,
+  ): MarketAnalyticsDto {
+    if (!rows || rows.length === 0) {
+      return this.getEmptySalesData(`${areaName} (데이터 없음)`);
+    }
+    const latest = rows[0];
+    return {
+      areaName,
+      isCommercialArea: isCommercial,
+      totalRevenue: Number(latest.THSMON_SELNG_AMT),
       sales: {
-        trend: [],
+        trend: rows
+          .slice(0, 4)
+          .reverse()
+          .map((row) => ({
+            year: row.STDR_YYQU_CD.substring(0, 4),
+            quarter: row.STDR_YYQU_CD.substring(4, 5),
+            revenue: Number(row.THSMON_SELNG_AMT),
+          })),
         timeSlot: {
-          time0006: 0,
-          time0611: 0,
-          time1114: 0,
-          time1417: 0,
-          time1721: 0,
-          time2124: 0,
-          peakTimeSummaryComment: '데이터 없음',
+          time0006: Number(latest.TMZON_00_06_SELNG_AMT),
+          time0611: Number(latest.TMZON_06_11_SELNG_AMT),
+          time1114: Number(latest.TMZON_11_14_SELNG_AMT),
+          time1417: Number(latest.TMZON_14_17_SELNG_AMT),
+          time1721: Number(latest.TMZON_17_21_SELNG_AMT),
+          time2124: Number(latest.TMZON_21_24_SELNG_AMT),
+          peakTimeSummaryComment: '시간대별 매출 분포입니다.',
         },
         dayOfWeek: {
-          mon: 0,
-          tue: 0,
-          wed: 0,
-          thu: 0,
-          fri: 0,
-          sat: 0,
-          sun: 0,
-          peakDaySummaryComment: '데이터 없음',
+          mon: Number(latest.MON_SELNG_AMT),
+          tue: Number(latest.TUES_SELNG_AMT),
+          wed: Number(latest.WED_SELNG_AMT),
+          thu: Number(latest.THUR_SELNG_AMT),
+          fri: Number(latest.FRI_SELNG_AMT),
+          sat: Number(latest.SAT_SELNG_AMT),
+          sun: Number(latest.SUN_SELNG_AMT),
+          peakDaySummaryComment: '요일별 매출 분포입니다.',
         },
         demographics: {
-          male: 0,
-          female: 0,
-          age10: 0,
-          age20: 0,
-          age30: 0,
-          age40: 0,
-          age50: 0,
-          age60: 0,
-          primaryGroupSummaryComment: '데이터 없음',
+          male: Number(latest.ML_SELNG_AMT),
+          female: Number(latest.FML_SELNG_AMT),
+          age10: Number(latest.AGRDE_10_SELNG_AMT),
+          age20: Number(latest.AGRDE_20_SELNG_AMT),
+          age30: Number(latest.AGRDE_30_SELNG_AMT),
+          age40: Number(latest.AGRDE_40_SELNG_AMT),
+          age50: Number(latest.AGRDE_50_SELNG_AMT),
+          age60: Number(latest.AGRDE_60_ABOVE_SELNG_AMT),
+          primaryGroupSummaryComment: '성별/연령별 매출 분포입니다.',
         },
         topIndustries: [],
       },
+      vitality: { openingRate: 0, closureRate: 0 },
+      openingRate: 0,
+      closureRate: 0,
     };
+  }
+
+  private getEmptySalesData(message: string): MarketAnalyticsDto {
+    // ... (기존과 동일, 빈 객체 반환)
+    return { areaName: message, isCommercialArea: false } as any;
   }
 
   private async fetchStoreDataFromOpenApi(
