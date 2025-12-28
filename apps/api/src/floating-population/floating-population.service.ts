@@ -33,16 +33,6 @@ export class FloatingPopulationService {
   }
 
   /**
-   * 유동인구 데이터와 격자 형상을 결합하여 반환합니다. (전체 로드용 - 가급적 사용 자제)
-   */
-  async getCombinedLayer(): Promise<CombinedLayerResponse> {
-    const populationMap = await this.getOrFetchPopulation();
-    const grids = await this.repository.findAllGridCells();
-
-    return this.joinGridsWithPopulation(grids, populationMap);
-  }
-
-  /**
    * 특정 영역(Bounds) 내의 유동인구 레이어만 반환합니다.
    * 성능 최적화의 핵심입니다.
    */
@@ -62,9 +52,6 @@ export class FloatingPopulationService {
       maxLat,
       maxLng,
     );
-
-    this.logger.log(`Fetched ${grids.length} visible grids for bounds.`);
-
     return this.joinGridsWithPopulation(grids, populationMap);
   }
 
@@ -79,9 +66,6 @@ export class FloatingPopulationService {
       return this.cachedPopulationMap;
     }
 
-    this.logger.log(
-      'Cache expired or empty. Fetching population data from Seoul API...',
-    );
     // 서울시 격자수가 약 16,000~18,000개 정도이므로 19,000개까지 넉넉하게 가져옵니다.
     const data = await this.getPopulationData(1, 19000);
 

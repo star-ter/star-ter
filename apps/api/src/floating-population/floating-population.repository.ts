@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 import { GeoJsonGeometry } from './dto/floating-population-response.dto';
@@ -15,8 +15,6 @@ interface GridCellRawResult {
 
 @Injectable()
 export class FloatingPopulationRepository {
-  private readonly logger = new Logger(FloatingPopulationRepository.name);
-
   constructor(private readonly prisma: PrismaService) {}
 
   /**
@@ -28,27 +26,22 @@ export class FloatingPopulationRepository {
       return [];
     }
 
-    try {
-      const ids = cellIds.map((id) => `'${id}'`).join(',');
-      const query = `
-        SELECT 
-          cell_id, 
-          ST_AsGeoJSON(geom) as geometry
-        FROM "seoul_250_grid"
-        WHERE cell_id IN (${ids})
-      `;
+    const ids = cellIds.map((id) => `'${id}'`).join(',');
+    const query = `
+      SELECT 
+        cell_id, 
+        ST_AsGeoJSON(geom) as geometry
+      FROM "seoul_250_grid"
+      WHERE cell_id IN (${ids})
+    `;
 
-      const result =
-        await this.prisma.$queryRawUnsafe<GridCellRawResult[]>(query);
+    const result =
+      await this.prisma.$queryRawUnsafe<GridCellRawResult[]>(query);
 
-      return result.map((row) => ({
-        cell_id: row.cell_id,
-        geometry: JSON.parse(row.geometry) as GeoJsonGeometry,
-      }));
-    } catch (error) {
-      this.logger.error('Failed to fetch grid cells', error);
-      throw error;
-    }
+    return result.map((row) => ({
+      cell_id: row.cell_id,
+      geometry: JSON.parse(row.geometry) as GeoJsonGeometry,
+    }));
   }
 
   /**
@@ -61,41 +54,15 @@ export class FloatingPopulationRepository {
     maxLat: number,
     maxLng: number,
   ): Promise<GridCellGeometry[]> {
-    try {
-      // 4326: WGS 84 (GPS 좌표계)
-      const query = `
-        SELECT 
-          cell_id, 
-          ST_AsGeoJSON(geom) as geometry
-        FROM "seoul_250_grid"
-        WHERE ST_Intersects(
-          geom,
-          ST_MakeEnvelope(${minLng}, ${minLat}, ${maxLng}, ${maxLat}, 4326)
-        )
-      `;
-
-      const result =
-        await this.prisma.$queryRawUnsafe<GridCellRawResult[]>(query);
-
-      return result.map((row) => ({
-        cell_id: row.cell_id,
-        geometry: JSON.parse(row.geometry) as GeoJsonGeometry,
-      }));
-    } catch (error) {
-      this.logger.error('Failed to fetch grid cells by bounds', error);
-      throw error;
-    }
-  }
-
-  /**
-   * 모든 격자 데이터를 조회합니다 (디버깅/전체 로드용)
-   */
-  async findAllGridCells(): Promise<GridCellGeometry[]> {
     const query = `
-    SELECT 
+      SELECT 
         cell_id, 
         ST_AsGeoJSON(geom) as geometry
-    FROM "seoul_250_grid"
+      FROM "seoul_250_grid"
+      WHERE ST_Intersects(
+        geom,
+        ST_MakeEnvelope(${minLng}, ${minLat}, ${maxLng}, ${maxLat}, 4326)
+      )
     `;
 
     const result =

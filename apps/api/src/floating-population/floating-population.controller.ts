@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, BadRequestException } from '@nestjs/common';
 import { FloatingPopulationService } from './floating-population.service';
 import {
   FloatingPopulationResponse,
@@ -34,6 +34,8 @@ export class FloatingPopulationController {
         Number(maxLng),
       );
     }
-    return this.floatingPopulationService.getCombinedLayer();
+    throw new BadRequestException(
+      'Boundary parameters (minLat, minLng, maxLat, maxLng) are required.',
+    );
   }
 }

@@ -133,12 +133,10 @@ export default function Kakaomap({
   // 3. 유동인구 격자 레이어 추가
   usePopulationLayer(
     map,
-    population.data,
     population.genderFilter,
     population.ageFilter,
     population.showLayer,
-    population.getPopulationValue,
-    population.getColorByValue
+    population.getPopulationValue
   );
 
   return (
@@ -156,6 +154,7 @@ export default function Kakaomap({
 
       <div
         ref={mapRef}
+        id="kakao-map"
         className="w-full h-100 bg-gray-100"
         style={{ width: '100vw', height: '100vh' }}
       />

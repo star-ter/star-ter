@@ -98,11 +98,6 @@ export interface GeoJsonGeometry {
   coordinates: any[]; // GeoJSON coordinates can be complex nested arrays
 }
 
-export interface PopulationGridDto {
-  cell_id: string;
-  geometry: GeoJsonGeometry;
-}
-
 export interface CombinedPopulationFeature {
   cell_id: string;
   geometry: GeoJsonGeometry;
