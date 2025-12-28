@@ -104,7 +104,7 @@ export class MarketService {
     lng: number,
   ): Promise<CommercialAreaResult | null> {
     const result = await this.prisma.$queryRaw<CommercialAreaResult[]>`
-      SELECT TRDAR_CD, TRDAR_CD_NM, TRDAR_SE_1
+      SELECT TRDAR_CD, TRDAR_CD_N, TRDAR_SE_1
       FROM seoul_commercial_area_grid
       WHERE ST_Intersects(geom, ST_SetSRID(ST_Point(${lng}, ${lat}), 4326))
       LIMIT 1
@@ -213,7 +213,7 @@ export class MarketService {
   }
 
   private getEmptySalesData(message: string): MarketAnalyticsDto {
-    // ... (기존과 동일, 빈 객체 반환)
+    // TODO: any 수정하기 -> mock 제공인데, 너무 길어서 추후 const로 분리
     return { areaName: message, isCommercialArea: false } as any;
   }
 
