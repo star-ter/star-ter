@@ -50,11 +50,11 @@ export class PolygonService {
     lowSearch: number,
   ): Promise<AdminPolygonResponse[]> {
     if (lowSearch == 2) {
-      return this.prisma.adminAreaDong.findMany() as Promise<
+      return this.prisma.admin_area_dong.findMany() as Promise<
         AdminPolygonResponse[]
       >;
     }
-    return this.prisma.adminAreaGu.findMany() as Promise<
+    return this.prisma.admin_area_gu.findMany() as Promise<
       AdminPolygonResponse[]
     >;
   }
