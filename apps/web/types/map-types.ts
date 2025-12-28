@@ -86,22 +86,23 @@ declare global {
 }
 
 // 상권
+// 상권
 export interface CommercialArea {
-  TRDAR_SE_1: string;
-  TRDAR_CD_N: string;
-  SIGNGU_CD_: string; // 구 정보
-  ADSTRD_CD_: string; // 동 정보
+  commercialType: string;
+  commercialName: string;
+  guCode: string; // 구 정보
+  dongCode: string; // 동 정보
   polygons: number[][][][] | number[][][] | number[][];
 }
 
 export interface CommercialApiResponse {
   properties: {
-    TRDAR_SE_1: string;
-    TRDAR_CD_N: string;
-    SIGNGU_CD_: string;
-    ADSTRD_CD_: string;
+    commercialType: string;
+    commercialName: string;
+    guCode: string;
+    dongCode: string;
   };
-  geometry: {
+  polygons: {
     coordinates: number[][][][] | number[][][] | number[][];
   };
 }

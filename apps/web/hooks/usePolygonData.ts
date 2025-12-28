@@ -20,6 +20,7 @@ export const usePolygonData = (
   const polygonsRef = useRef<KakaoPolygon[]>([]);
   const customOverlaysRef = useRef<KakaoCustomOverlay[]>([]);
   const onPolygonClickRef = useRef(onPolygonClick);
+  const visitedCommercialRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     onPolygonClickRef.current = onPolygonClick;
@@ -93,8 +94,24 @@ export const usePolygonData = (
   // 상권 데이터를 비동기로 호출하고 지도에 그리는 함수.
   async function fetchCommercialData(map: KakaoMap) {
     console.log(`Fetching Commercial Data...`);
+
+    const bounds = map.getBounds();
+    const sw = bounds.getSouthWest();
+    const ne = bounds.getNorthEast();
+
+    const query = new URLSearchParams({
+      minx: sw.getLng().toString(),
+      miny: sw.getLat().toString(),
+      maxx: ne.getLng().toString(),
+      maxy: ne.getLat().toString(),
+    });
+
+    console.time('상권 데이터 로딩 시간');
+
     try {
-      const response = await fetch(`${API_BASE_URL}/polygon/commercial`);
+      const response = await fetch(
+        `${API_BASE_URL}/polygon/commercial?${query}`,
+      );
       const data = await response.json();
 
       if (Array.isArray(data)) {
@@ -103,22 +120,33 @@ export const usePolygonData = (
         // GeoJSON Feature -> CommercialArea 매핑
         const commercialAreas = (data as CommercialApiResponse[]).map(
           (feature) => ({
-            TRDAR_SE_1: feature.properties.TRDAR_SE_1,
-            TRDAR_CD_N: feature.properties.TRDAR_CD_N,
-            SIGNGU_CD_: feature.properties.SIGNGU_CD_,
-            ADSTRD_CD_: feature.properties.ADSTRD_CD_,
-            polygons: feature.geometry.coordinates,
+            commercialType: feature.properties.commercialType,
+            commercialName: feature.properties.commercialName,
+            guCode: feature.properties.guCode,
+            dongCode: feature.properties.dongCode,
+            polygons: feature.polygons.coordinates,
           }),
         );
 
-        drawPolygons(
-          map,
-          commercialAreas,
-          'commercial',
-          polygonsRef,
-          customOverlaysRef,
-          (data) => onPolygonClickRef.current(data),
-        );
+        const newCommercialAreas = commercialAreas.filter((area) => {
+          if (visitedCommercialRef.current.has(area.commercialName))
+            return false;
+          visitedCommercialRef.current.add(area.commercialName);
+          return true;
+        });
+
+        if (newCommercialAreas.length > 0) {
+          drawPolygons(
+            map,
+            newCommercialAreas,
+            'commercial',
+            polygonsRef,
+            customOverlaysRef,
+            (data) => onPolygonClickRef.current(data),
+            false,
+          );
+        }
+        console.timeEnd('상권 데이터 로딩 시간');
       }
     } catch (err) {
       console.error('Commercial API Fetch Error:', err);
@@ -135,11 +163,20 @@ export const usePolygonData = (
     else if (level >= 2) currentGroup = 'COMMERCIAL';
     else currentGroup = 'BUILDING';
 
+    if (currentGroup !== lastLevelGroupRef.current) {
+      polygonsRef.current.forEach((polygon) => {
+        polygon.setMap(null);
+      });
+      customOverlaysRef.current.forEach((overlay) => {
+        overlay.setMap(null);
+      });
+
+      visitedCommercialRef.current.clear();
+    }
+
     if (
       currentGroup === lastLevelGroupRef.current &&
-      (currentGroup === 'GU' ||
-        currentGroup === 'DONG' ||
-        currentGroup === 'COMMERCIAL')
+      (currentGroup === 'GU' || currentGroup === 'DONG')
     ) {
       console.log(`Skipping fetch for static layer: ${currentGroup}`);
       // 상권 데이터는 mock이므로 한번만 가져와도 됨 (하지만 지도 이동 시 다시 가져오지 않도록 static 취급)

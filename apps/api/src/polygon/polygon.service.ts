@@ -9,26 +9,41 @@ import { BuildingPolygonResponse } from './dto/building-polygon-dto';
 import { AdminPolygonResponse } from './dto/admin-polygon-dto';
 import { CommercialPolygonResponse } from './dto/commercial-polygon-dto';
 import { VWorldResponse, VWorldFeature } from './dto/vworld-response.dto';
-import { commercialMock } from './commercialMock/commercialMock';
+import { RawCommercialArea } from './dto/raw-commercial-area.dto';
 
 @Injectable()
 export class PolygonService {
   constructor(private readonly prisma: PrismaService) {}
 
-  getCommercialPolygon(): Promise<CommercialPolygonResponse[]> {
-    const typedMock = commercialMock as unknown as CommercialPolygonResponse[];
+  async getCommercialPolygon(
+    minx: string,
+    miny: string,
+    maxx: string,
+    maxy: string,
+  ): Promise<CommercialPolygonResponse[]> {
+    const results = await this.prisma.$queryRaw<RawCommercialArea[]>`
+    SELECT 
+      trdar_se_1, 
+      trdar_cd_n, 
+      signgu_cd_, 
+      adstrd_cd_, 
+      ST_AsGeoJSON(ST_Simplify(geom,0.0001)) as geom 
+    FROM seoul_commercial_area_grid
+    WHERE ST_Intersects(geom, ST_MakeEnvelope(${minx}, ${miny}, ${maxx}, ${maxy}, 4326))
+    `;
 
-    return Promise.resolve(
-      typedMock.map((feature) => ({
-        properties: {
-          TRDAR_CD_N: feature.properties.TRDAR_CD_N,
-          TRDAR_SE_1: feature.properties.TRDAR_SE_1,
-          SIGNGU_CD_: feature.properties.SIGNGU_CD_,
-          ADSTRD_CD_: feature.properties.ADSTRD_CD_,
-        },
-        geometry: feature.geometry,
-      })),
-    );
+    return results.map((row) => ({
+      properties: {
+        commercialType: row.trdar_se_1,
+        commercialName: row.trdar_cd_n,
+        guCode: row.signgu_cd_,
+        dongCode: row.adstrd_cd_,
+      },
+      polygons: JSON.parse(row.geom) as {
+        type: string;
+        coordinates: number[][][][] | number[][][] | number[][];
+      },
+    }));
   }
 
   getAdminPolygonByLowSearch(

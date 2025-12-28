@@ -12,7 +12,7 @@ export class MarketController {
   @Get('analysis')
   getAnalysis(
     @Query() query: GetMarketAnalysisQueryDto,
-  ): MarketAnalysisResponseDto {
+  ): Promise<MarketAnalysisResponseDto> {
     return this.marketService.getAnalysisData(query);
   }
 }

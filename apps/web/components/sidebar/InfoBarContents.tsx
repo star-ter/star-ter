@@ -22,7 +22,7 @@ export default function InfoBarContents({
 
   // 2. 지도만 선택된 경우 (기본 건물/지역 정보)
   if (data) {
-    return <DetailContents data={data} />;
+    return <DetailContents key={`${data.x}-${data.y}`} data={data} />;
   }
 
   return null;

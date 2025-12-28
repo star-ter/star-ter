@@ -31,12 +31,16 @@ export function drawPolygons(
   polygonsRef: Ref<KakaoPolygon[]>,
   customOverlaysRef: Ref<KakaoCustomOverlay[]>,
   onPolygonClick: (data: InfoBarData) => void,
+  shouldClear: boolean = true,
 ) {
   // Clear existing polygons and overlays
-  polygonsRef.current.forEach((poly) => poly.setMap(null));
-  polygonsRef.current = [];
-  customOverlaysRef.current.forEach((overlay) => overlay.setMap(null));
-  customOverlaysRef.current = [];
+
+  if (shouldClear) {
+    polygonsRef.current.forEach((poly) => poly.setMap(null));
+    polygonsRef.current = [];
+    customOverlaysRef.current.forEach((overlay) => overlay.setMap(null));
+    customOverlaysRef.current = [];
+  }
 
   features.forEach((feature: AdminArea | BuildingArea | CommercialArea) => {
     const { polygons, ...props } = feature;
@@ -94,8 +98,8 @@ export function drawPolygons(
               const [lng, lat] = polylabel([ring], 1.0);
               centerPoint = convertCoord(lng, lat);
             }
-          } catch {
-            // fallback
+          } catch (err) {
+            console.error('Polylabel calculation failed:', err);
           }
         }
       });
@@ -125,7 +129,7 @@ export function drawPolygons(
         fillOpacity = 0.5;
       } else if (type === 'commercial') {
         const commercialProps = props as CommercialArea;
-        const typeName = commercialProps.TRDAR_SE_1;
+        const typeName = commercialProps.commercialType;
 
         if (typeName === '발달상권') {
           strokeColor = '#D500F9'; // 강렬한 보라색
@@ -137,8 +141,8 @@ export function drawPolygons(
           strokeColor = '#00C853'; // 진한 녹색
           fillColor = '#69F0AE'; // 밝은 민트색
         } else if (typeName === '관광특구') {
-          strokeColor = '#00B0FF'; // 진한 하늘색
-          fillColor = '#40C4FF'; // 밝은 하늘색
+          strokeColor = '#FF0000'; // 새빨간색
+          fillColor = '#FF5252'; // 밝은 빨간색
         }
         fillOpacity = 0.4;
       }
@@ -158,8 +162,8 @@ export function drawPolygons(
       let label = 'Unknown';
       if ('buld_nm' in props) label = (props as BuildingArea).buld_nm;
       else if ('adm_nm' in props) label = (props as AdminArea).adm_nm;
-      else if ('TRDAR_CD_N' in props)
-        label = (props as CommercialArea).TRDAR_CD_N;
+      else if ('commercialName' in props)
+        label = (props as CommercialArea).commercialName;
 
       window.kakao.maps.event.addListener(polygon, 'click', () => {
         console.log(`Clicked: ${label}`);
@@ -168,7 +172,6 @@ export function drawPolygons(
         const y = centerPoint ? centerPoint.getLat() : 0;
 
         // TODO: InfoBar에 상권 정보(TRDAR_SE_1 등)가 포함된 props를 전달하는 부분.
-        // 현재 ...props로 모든 필드(TRDAR_SE_1, TRDAR_CD_N 등)가 넘어가고 있음.
         onPolygonClick({
           ...props,
           x: x,
@@ -186,8 +189,8 @@ export function drawPolygons(
       if ('buld_nm' in props && props.buld_nm) shortName = props.buld_nm;
       else if ('adm_nm' in props && props.adm_nm)
         shortName = props.adm_nm.split(' ').pop() || '';
-      else if ('TRDAR_CD_N' in props && props.TRDAR_CD_N)
-        shortName = props.TRDAR_CD_N;
+      else if ('commercialName' in props && props.commercialName)
+        shortName = props.commercialName;
 
       const contentEl = document.createElement('div');
       contentEl.innerHTML = `<div style="text-align: center; white-space: nowrap; padding: 4px 8px; background: white; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-size: 12px; font-weight: bold; color: #333; cursor: pointer;">${shortName}</div>`;
@@ -203,7 +206,6 @@ export function drawPolygons(
         content: contentEl,
         yAnchor: 1, // 마커 밑부분이 좌표에 닿게
       });
-
       customOverlay.setMap(map);
       customOverlaysRef.current.push(customOverlay);
     }

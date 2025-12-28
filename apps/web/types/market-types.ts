@@ -1,3 +1,9 @@
+export interface MarketStore {
+  name: string;
+  category: string;
+  subcategory?: string;
+}
+
 export interface MarketAnalysisData {
   isCommercialZone: boolean;
   areaName: string;
@@ -6,12 +12,8 @@ export interface MarketAnalysisData {
 
   reviewSummary: {
     naver: string;
-    google: string;
   };
-  stores: {
-    name: string;
-    category: string;
-  }[];
+  stores: MarketStore[];
   openingRate: number;
   closureRate: number;
 }

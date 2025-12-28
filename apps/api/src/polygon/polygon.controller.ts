@@ -31,7 +31,12 @@ export class PolygonController {
   }
 
   @Get('commercial')
-  getCommercialPolygon(): Promise<CommercialPolygonResponse[]> {
-    return this.polygonService.getCommercialPolygon();
+  getCommercialPolygon(
+    @Query('minx') minx: string,
+    @Query('miny') miny: string,
+    @Query('maxx') maxx: string,
+    @Query('maxy') maxy: string,
+  ): Promise<CommercialPolygonResponse[]> {
+    return this.polygonService.getCommercialPolygon(minx, miny, maxx, maxy);
   }
 }
