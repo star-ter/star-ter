@@ -1,72 +1,69 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
 import { InfoBarData } from '../../types/map-types';
+import { IndustryCategory } from '../../types/bottom-menu-types';
+import InfoBarHeader from './InfoBarHeader';
+import InfoBarContents from './InfoBarContents';
+import { useSidebarStore } from '../../stores/useSidebarStore';
 
 interface InfoBarProps {
   data: InfoBarData | null;
+  selectedCategory: IndustryCategory | null;
   onClose: () => void;
 }
 
-export default function InfoBar({ data, onClose }: InfoBarProps) {
+export default function InfoBar({
+  data,
+  selectedCategory,
+  onClose,
+}: InfoBarProps) {
   const [mounted, setMounted] = useState(false);
+  const { isInfoBarOpen } = useSidebarStore();
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
-  if (!data || !mounted) return null;
+  // 닫기 조건: 데이터도 없고, 선택된 업종도 없고, 사이드바 상태가 닫혀있으면
+  if (!mounted || (!data && !selectedCategory) || !isInfoBarOpen) return null;
 
-  const name = data.adm_nm || data.buld_nm || '정보 없음';
+  // 헤더 타이틀 계산
+  let title: React.ReactNode = '';
+  let subTitle: React.ReactNode = '';
 
-  // Parse name to get hierarchy
-  // "서울특별시 관악구 행운동" -> ["서울특별시", "관악구", "행운동"]
-  const nameParts = name.split(' ');
-  const displayName = nameParts[nameParts.length - 1]; // "행운동"
-  const subName =
-    nameParts.length > 1
-      ? nameParts.slice(0, nameParts.length - 1).join(' ')
-      : '';
+  if (data) {
+    // 지도 데이터가 있는 경우
+    if (data.buld_nm) {
+      // 건물명이 있으면 최우선 표시
+      title = data.buld_nm;
+      subTitle = data.adm_nm || '';
+    } else {
+      // 건물명이 없으면 행정구역명 파싱
+      const name = data.adm_nm || '정보 없음';
+      const nameParts = name.split(' ');
+      title = nameParts[nameParts.length - 1]; // e.g. "삼성동" or "강남구"
+      subTitle =
+        nameParts.length > 1
+          ? nameParts.slice(0, nameParts.length - 1).join(' ')
+          : '';
+    }
+  } else if (selectedCategory) {
+    // 업종만 선택된 경우
+    title = selectedCategory.name;
+    subTitle = '업종 분석';
+  }
 
   return createPortal(
     <div className="fixed top-0 left-0 z-50 h-full w-90 bg-white shadow-xl transition-transform duration-300 ease-in-out transform translate-x-0">
       <div className="flex flex-col h-full">
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <div>
-            {subName && (
-              <div className="text-sm text-gray-500 mb-1">{subName}</div>
-            )}
-            <h2 className="text-2xl font-bold text-gray-900">{displayName}</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <X size={24} className="text-gray-500" />
-          </button>
-        </div>
+        {/* 헤더 */}
+        <InfoBarHeader title={title} subTitle={subTitle} onClose={onClose} />
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-6">
-          <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
-            <div className="text-sm font-medium text-blue-600 mb-1">
-              11월 예상 매출
-            </div>
-            <div className="text-2xl font-bold text-blue-700">
-              약 2,975억 원
-            </div>
-            <div className="mt-4 text-xs text-blue-400">
-              * Star-ter 매출값은 추정값 입니다.
-            </div>
-          </div>
-          <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-            <p className="text-sm text-gray-500 text-center">
-              {/* TODO: 추정매출, 결제 시간대·요일·휴일여부, 성별 등의 정보 fetch 후 그리는 로직 구현 */}
-              추정매출, 결제 시간대·요일·휴일여부, 성별 등의 정보가
-              들어와야합니다
-            </p>
-          </div>
-        </div>
+        {/* 컨텐츠 */}
+        <InfoBarContents data={data} selectedCategory={selectedCategory} />
       </div>
     </div>,
     document.body,

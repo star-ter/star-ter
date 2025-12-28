@@ -12,26 +12,3 @@ datasource db {
   provider = "postgresql"
 }
 
-model admin_area_sido {
-  adm_cd   Int    @id
-  adm_nm   String @db.Text
-  x        Float
-  y        Float
-  polygons Json   @db.JsonB
-}
-
-model admin_area_gu {
-  adm_cd   Int    @id
-  adm_nm   String @db.Text
-  x        Float
-  y        Float
-  polygons Json   @db.JsonB
-}
-
-model admin_area_dong {
-  adm_cd   Int    @id
-  adm_nm   String @db.Text
-  x        Float
-  y        Float
-  polygons Json   @db.JsonB
-}

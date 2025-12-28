@@ -1,0 +1,150 @@
+//  facility_{city|gu|dong|backarea|commercial}
+
+model FacilityCity {
+    STDR_YYQU_CD    String //기준_년분기_코드
+    MEGA_CD         String //서울시_코드
+    MEGA_CD_NM      String //서울시_코드_명
+    VIATR_FCLTY_CO  Int //집객시설_수
+    PBLOFC_CO       Int //관공서_수
+    BANK_CO         Int //은행_수
+    GEHSPT_CO       Int //종합병원_수
+    GNRL_HSPTL_CO   Int //일반_병원_수
+    PARMACY_CO      Int //약국_수
+    KNDRGR_CO       Int //유치원_수
+    ELESCH_CO       Int //초등학교_수
+    MSKUL_CO        Int //중학교_수
+    HGSCHL_CO       Int //고등학교_수
+    UNIV_CO         Int //대학교_수
+    DRTS_CO         Int //백화점_수
+    SUPMK_CO        Int //슈퍼마켓_수
+    THEAT_CO        Int //극장_수
+    STAYNG_FCLTY_CO Int //숙박_시설_수
+    ARPRT_CO        Int //공항_수
+    RLROAD_STATN_CO Int //철도_역_수
+    BUS_TRMINL_CO   Int //버스_터미널_수
+    SUBWAY_STATN_CO Int //지하철_역_수
+    BUS_STTN_CO     Int //버스_정거장_수
+
+    @@id([STDR_YYQU_CD, MEGA_CD])
+    @@map("facility_city")
+}
+
+model FacilityGu {
+    STDR_YYQU_CD    String //기준_년분기_코드
+    SIGNGU_CD       String //자치구_코드
+    SIGNGU_CD_NM    String //자치구_코드_명
+    VIATR_FCLTY_CO  Int //집객시설_수
+    PBLOFC_CO       Int //관공서_수
+    BANK_CO         Int //은행_수
+    GEHSPT_CO       Int //종합병원_수
+    GNRL_HSPTL_CO   Int //일반_병원_수
+    PARMACY_CO      Int //약국_수
+    KNDRGR_CO       Int //유치원_수
+    ELESCH_CO       Int //초등학교_수
+    MSKUL_CO        Int //중학교_수
+    HGSCHL_CO       Int //고등학교_수
+    UNIV_CO         Int //대학교_수
+    DRTS_CO         Int //백화점_수
+    SUPMK_CO        Int //슈퍼마켓_수
+    THEAT_CO        Int //극장_수
+    STAYNG_FCLTY_CO Int //숙박_시설_수
+    ARPRT_CO        Int //공항_수
+    RLROAD_STATN_CO Int //철도_역_수
+    BUS_TRMINL_CO   Int //버스_터미널_수
+    SUBWAY_STATN_CO Int //지하철_역_수
+    BUS_STTN_CO     Int //버스_정거장_수
+
+    @@id([STDR_YYQU_CD, SIGNGU_CD])
+    @@map("facility_gu")
+}
+
+model FacilityDong {
+    STDR_YYQU_CD    String //기준_년분기_코드
+    ADSTRD_CD       String //행정동_코드
+    ADSTRD_CD_NM    String //행정동_코드_명
+    VIATR_FCLTY_CO  Int //집객시설_수
+    PBLOFC_CO       Int //관공서_수
+    BANK_CO         Int //은행_수
+    GEHSPT_CO       Int //종합병원_수
+    GNRL_HSPTL_CO   Int //일반_병원_수
+    PARMACY_CO      Int //약국_수
+    KNDRGR_CO       Int //유치원_수
+    ELESCH_CO       Int //초등학교_수
+    MSKUL_CO        Int //중학교_수
+    HGSCHL_CO       Int //고등학교_수
+    UNIV_CO         Int //대학교_수
+    DRTS_CO         Int //백화점_수
+    SUPMK_CO        Int //슈퍼마켓_수
+    THEAT_CO        Int //극장_수
+    STAYNG_FCLTY_CO Int //숙박_시설_수
+    ARPRT_CO        Int //공항_수
+    RLROAD_STATN_CO Int //철도_역_수
+    BUS_TRMINL_CO   Int //버스_터미널_수
+    SUBWAY_STATN_CO Int //지하철_역_수
+    BUS_STTN_CO     Int //버스_정거장_수
+
+    @@id([STDR_YYQU_CD, ADSTRD_CD])
+    @@map("facility_dong")
+}
+
+model FacilityBackarea {
+    STDR_YYQU_CD    String //기준_년분기_코드
+    TRDAR_SE_CD     String //상권_구분_코드
+    TRDAR_SE_CD_NM  String //상권_구분_코드_명
+    TRDAR_CD        String //상권배후지_코드
+    TRDAR_CD_NM     String //상권배후지_코드_명
+    VIATR_FCLTY_CO  Int //집객시설_수
+    PBLOFC_CO       Int //관공서_수
+    BANK_CO         Int //은행_수
+    GEHSPT_CO       Int //종합병원_수
+    GNRL_HSPTL_CO   Int //일반_병원_수
+    PARMACY_CO      Int //약국_수
+    KNDRGR_CO       Int //유치원_수
+    ELESCH_CO       Int //초등학교_수
+    MSKUL_CO        Int //중학교_수
+    HGSCHL_CO       Int //고등학교_수
+    UNIV_CO         Int //대학교_수
+    DRTS_CO         Int //백화점_수
+    SUPMK_CO        Int //슈퍼마켓_수
+    THEAT_CO        Int //극장_수
+    STAYNG_FCLTY_CO Int //숙박_시설_수
+    ARPRT_CO        Int //공항_수
+    RLROAD_STATN_CO Int //철도_역_수
+    BUS_TRMINL_CO   Int //버스_터미널_수
+    SUBWAY_STATN_CO Int //지하철_역_수
+    BUS_STTN_CO     Int //버스_정거장_수
+
+    @@id([STDR_YYQU_CD, TRDAR_CD])
+    @@map("facility_backarea")
+}
+
+model FacilityCommercial {
+    STDR_YYQU_CD    String //기준_년분기_코드
+    TRDAR_SE_CD     String //상권_구분_코드
+    TRDAR_SE_CD_NM  String //상권_구분_코드_명
+    TRDAR_CD        String //상권_코드
+    TRDAR_CD_NM     String //상권_코드_명
+    VIATR_FCLTY_CO  Int //집객시설_수
+    PBLOFC_CO       Int //관공서_수
+    BANK_CO         Int //은행_수
+    GEHSPT_CO       Int //종합병원_수
+    GNRL_HSPTL_CO   Int //일반_병원_수
+    PARMACY_CO      Int //약국_수
+    KNDRGR_CO       Int //유치원_수
+    ELESCH_CO       Int //초등학교_수
+    MSKUL_CO        Int //중학교_수
+    HGSCHL_CO       Int //고등학교_수
+    UNIV_CO         Int //대학교_수
+    DRTS_CO         Int //백화점_수
+    SUPMK_CO        Int //슈퍼마켓_수
+    THEAT_CO        Int //극장_수
+    STAYNG_FCLTY_CO Int //숙박_시설_수
+    ARPRT_CO        Int //공항_수
+    RLROAD_STATN_CO Int //철도_역_수
+    BUS_TRMINL_CO   Int //버스_터미널_수
+    SUBWAY_STATN_CO Int //지하철_역_수
+    BUS_STTN_CO     Int //버스_정거장_수
+
+    @@id([STDR_YYQU_CD, TRDAR_CD])
+    @@map("facility_commercial")
+}

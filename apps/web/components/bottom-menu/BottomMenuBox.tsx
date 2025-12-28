@@ -3,7 +3,7 @@ import { ReactElement, useState } from 'react';
 
 import ModalCard from './modal/ModalCard';
 import PillButton from './PillButton';
-import AreaContents from './modal/AreaContents';
+// import AreaContents from './modal/AreaContents';
 import PopulationContents from './modal/PopulationContents';
 import IndustryContents from './modal/IndustryContents';
 import CompareContents from './modal/CompareContents';
@@ -11,17 +11,10 @@ import {
   IndustryCategory,
   CompareRequest,
 } from '../../types/bottom-menu-types';
+import { IndustryData } from '../../mocks/industry';
+import { useSidebarStore } from '../../stores/useSidebarStore';
 
-type ActiveType = 'area' | 'population' | 'industry' | 'compare';
-
-const MockIndustryCategory: IndustryCategory[] = [
-  { id: 'food', label: '음식', iconCode: 'food' },
-  { id: 'retail', label: '소매', iconCode: 'retail' },
-  { id: 'service', label: '서비스', iconCode: 'service' },
-  { id: 'game', label: '오락', iconCode: 'game' },
-  { id: 'education', label: '교육', iconCode: 'education' },
-  { id: 'hotel', label: '숙박', iconCode: 'hotel' },
-];
+type ActiveType = /* 'area' | */ 'population' | 'industry' | 'compare';
 
 interface BottomMenuProps {
   locationA: string;
@@ -29,6 +22,8 @@ interface BottomMenuProps {
   setLocationA: (area: string) => void;
   setLocationB: (area: string) => void;
   handlePickMode: (target: 'A' | 'B') => void;
+  onCompare?: () => void;
+  onSelectCategory: (category: IndustryCategory | null) => void;
 }
 
 export default function BottomMenuBox({
@@ -37,15 +32,23 @@ export default function BottomMenuBox({
   setLocationA,
   setLocationB,
   handlePickMode,
+  onCompare,
+  onSelectCategory,
 }: BottomMenuProps) {
   const [active, setActive] = useState<ActiveType | 'none'>('none');
+  const { setInfoBarOpen, setIsOpen } = useSidebarStore();
 
   function modalClose() {
     setActive('none');
   }
 
   function handleIndustry(id: string) {
-    console.log('업종 선택:', id);
+    console.log('대분류 업종 코드 :', id);
+
+    const selected = IndustryData.find((item) => item.code === id);
+    if (selected) {
+      onSelectCategory(selected);
+    }
     // TODO: 선택된 업종에 대한 데이터 가져오기
     modalClose();
   }
@@ -53,6 +56,10 @@ export default function BottomMenuBox({
   function handleCompare(data: CompareRequest) {
     console.log('비교 요청:', data);
     // TODO: 비교 로직 실행
+    if (onCompare) {
+      onCompare();
+    }
+    modalClose();
   }
 
   function handlePopulation() {
@@ -70,7 +77,7 @@ export default function BottomMenuBox({
   }
 
   const items: { label: string; value: ActiveType | 'none' }[] = [
-    { label: '영역', value: 'area' },
+    // { label: '영역', value: 'area' },
     { label: '유동인구', value: 'population' },
     { label: '업종', value: 'industry' },
     { label: '비교', value: 'compare' },
@@ -78,14 +85,14 @@ export default function BottomMenuBox({
   ];
 
   const contents: Record<ActiveType, ReactElement> = {
-    area: <AreaContents onClose={modalClose} />,
+    // population: <AreaContents onClose={modalClose} />,
     population: (
       <PopulationContents onClose={modalClose} onView={handlePopulation} />
     ),
     industry: (
       <IndustryContents
         onClose={modalClose}
-        categories={MockIndustryCategory}
+        categories={IndustryData}
         onSelect={handleIndustry}
         isLoading={false}
       />
@@ -114,9 +121,23 @@ export default function BottomMenuBox({
             key={value}
             label={label}
             onClick={() => {
+              if (active === value) {
+                modalClose();
+                return;
+              }
+
               setActive(value);
               setLocationA('');
               setLocationB('');
+
+              if (value === 'compare') {
+                setInfoBarOpen(false); // 비교 모드 선택 시 왼쪽 사이드바만 닫기
+                setIsOpen(false);
+              }
+
+              if (value === 'none') {
+                onSelectCategory(null);
+              }
             }}
           />
         ))}
