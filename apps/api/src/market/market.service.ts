@@ -7,7 +7,7 @@ import {
   GetMarketAnalysisQueryDto,
   MarketAnalysisResponseDto,
   MarketStore,
-} from './dto/market-analysis.dto';
+} from './dto/market-store.dto';
 
 import { OpenApiResponse, OpenApiStoreItem } from './dto/open-api.dto';
 

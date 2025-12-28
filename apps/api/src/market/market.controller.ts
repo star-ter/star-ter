@@ -3,7 +3,7 @@ import { MarketService } from './market.service';
 import {
   GetMarketAnalysisQueryDto,
   MarketAnalysisResponseDto,
-} from './dto/market-analysis.dto';
+} from './dto/market-store.dto';
 
 @Controller('market')
 export class MarketController {
