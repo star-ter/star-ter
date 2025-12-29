@@ -4,6 +4,7 @@ import RankNav from '../rank-nav/RankNav';
 import { usePopulationVisual } from '../../hooks/usePopulationVisual';
 import { IndustryCategory } from '../../types/bottom-menu-types';
 import SearchBox from '../search/SearchBox';
+import LocationNav from '../location-nav/LocationNav';
 import { useMapStore } from '../../stores/useMapStore';
 
 interface MapBoxProps {
@@ -58,7 +59,10 @@ export default function MapBox({
   return (
     <section className="h-full pointer-events-none">
       <div className="absolute left-4 top-4 flex flex-col items-start gap-3 pointer-events-auto">
-        <SearchBox />
+        <div className="flex items-center">
+          <SearchBox />
+          <LocationNav />
+        </div>
         {shouldShowRank && (
           <>
             {/* 버튼은 클릭되어야 하므로 pointer-events-auto 추가 */}
