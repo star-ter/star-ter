@@ -16,12 +16,14 @@ import { useSidebarStore } from '../../stores/useSidebarStore';
 
 type ActiveType = /* 'area' | */ 'population' | 'industry' | 'compare';
 
+import { usePopulationVisual } from '../../hooks/usePopulationVisual';
 interface BottomMenuProps {
   locationA: string;
   locationB: string;
   setLocationA: (area: string) => void;
   setLocationB: (area: string) => void;
   handlePickMode: (target: 'A' | 'B') => void;
+  population: ReturnType<typeof usePopulationVisual>;
   onCompare?: () => void;
   onSelectCategory: (category: IndustryCategory | null) => void;
 }
@@ -32,6 +34,7 @@ export default function BottomMenuBox({
   setLocationA,
   setLocationB,
   handlePickMode,
+  population,
   onCompare,
   onSelectCategory,
 }: BottomMenuProps) {
@@ -87,7 +90,11 @@ export default function BottomMenuBox({
   const contents: Record<ActiveType, ReactElement> = {
     // population: <AreaContents onClose={modalClose} />,
     population: (
-      <PopulationContents onClose={modalClose} onView={handlePopulation} />
+      <PopulationContents
+        onClose={modalClose}
+        onView={handlePopulation}
+        population={population}
+      />
     ),
     industry: (
       <IndustryContents
@@ -121,22 +128,30 @@ export default function BottomMenuBox({
             key={value}
             label={label}
             onClick={() => {
+              // 초기화 버튼 처리 (항상 실행되어야 함)
+              if (value === 'none') {
+                setActive('none');
+                setLocationA('');
+                setLocationB('');
+                onSelectCategory(null);
+                population.setShowLayer(false);
+                return;
+              }
+
+              // 이미 열려있는 메뉴를 다시 클릭하면 닫기
               if (active === value) {
                 modalClose();
                 return;
               }
 
               setActive(value);
+              // 초기화 외의 버튼을 눌러도 위치 정보는 리셋 (기타 기획 의도 유지)
               setLocationA('');
               setLocationB('');
 
               if (value === 'compare') {
                 setInfoBarOpen(false); // 비교 모드 선택 시 왼쪽 사이드바만 닫기
                 setIsOpen(false);
-              }
-
-              if (value === 'none') {
-                onSelectCategory(null);
               }
             }}
           />

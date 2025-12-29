@@ -1,6 +1,6 @@
 import { InfoBarData } from '@/types/map-types';
 import { MarketAnalysisData } from '@/types/market-types';
-import { createMarketAnalysisUrl } from '@/utils/map-utils';
+import { convertToWKT } from '@/utils/map-utils';
 import { useEffect, useState } from 'react';
 
 export const useMarketAnalysis = (data: InfoBarData) => {
@@ -13,28 +13,53 @@ export const useMarketAnalysis = (data: InfoBarData) => {
   useEffect(() => {
     if (!data.x || !data.y) {
       console.warn('클릭한 좌표 데이터가 없습니다.');
+      setLoading(false);
       return;
     }
     const fetchMarketAnalysis = async () => {
       setLoading(true);
       setAnalysisData(null);
 
-      const finalUrl = createMarketAnalysisUrl(
-        API_BASE_URL!,
-        data.y,
-        data.x,
-        data.polygons,
-      );
+      const polygonWkt = data.polygons ? convertToWKT(data.polygons) : '';
+
+      const queryParams = new URLSearchParams({
+        latitude: data.y.toString(),
+        longitude: data.x.toString(),
+        polygon: polygonWkt,
+      });
+      const queryString = queryParams.toString();
 
       try {
-        console.log('Fetching analysis for:', data.y, data.x);
-        const res = await fetch(finalUrl);
+        const [storeRes, analyticsRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/market/stores?${queryString}`),
+          fetch(`${API_BASE_URL}/market/analytics?${queryString}`),
+        ]);
 
-        if (!res.ok) {
-          throw new Error('Network response was not ok');
+        if (!storeRes.ok || !analyticsRes.ok) {
+          throw new Error('API 응답 에러');
         }
-        const result: MarketAnalysisData = await res.json();
-        setAnalysisData(result);
+
+        const storeData = await storeRes.json();
+        const analyticsData = await analyticsRes.json();
+
+        const mergedData: MarketAnalysisData = {
+          // StoreListDto (상점 목록)
+          areaName: analyticsData.areaName,
+          reviewSummary: storeData.reviewSummary,
+          stores: storeData.stores,
+          // AnalyticsDto (매출 분석)
+          isCommercialZone: analyticsData.isCommercialArea,
+          estimatedRevenue: analyticsData.totalRevenue,
+          salesDescription:
+            analyticsData.sales?.peakTimeSummaryComment || '데이터 분석 중...',
+
+          openingRate: analyticsData.vitality?.openingRate || 0,
+          closureRate: analyticsData.vitality?.closureRate || 0,
+
+          sales: analyticsData.sales, // 상세 매출 정보 (차트용)
+        };
+
+        setAnalysisData(mergedData);
       } catch (error) {
         console.error('분석 데이터를 가져오는데 실패함.', error);
       } finally {

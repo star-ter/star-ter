@@ -1,0 +1,10 @@
+model GridCell {
+  cell_id String                   @id @db.VarChar
+  cell_x  Int?
+  cell_y  Int?
+  gid     String?                  @db.VarChar
+  geom    Unsupported("geometry")?
+
+  @@index([geom], map: "seoul_250_grid_geom_geom_idx", type: Gist)
+  @@map("seoul_250_grid")
+}

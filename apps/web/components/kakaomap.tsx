@@ -6,14 +6,18 @@ import { InfoBarData } from '../types/map-types';
 import InfoBar from './sidebar/InfoBar';
 import { useKakaoMap } from '../hooks/useKakaoMap';
 import { usePolygonData } from '../hooks/usePolygonData';
+import { usePopulationLayer } from '../hooks/usePopulationLayer';
+import { usePopulationVisual } from '../hooks/usePopulationVisual';
 import { IndustryCategory } from '../types/bottom-menu-types';
 import { useMapStore } from '../stores/useMapStore';
 import { useSidebarStore } from '../stores/useSidebarStore';
+import { useBuildingMarkers } from '../hooks/useBuildingMarkers';
 
 initProj4();
 
 interface KakaomapProps {
   polygonClick?: (area: string) => void;
+  population: ReturnType<typeof usePopulationVisual>;
   selectedCategory?: IndustryCategory | null;
   onClearCategory?: () => void;
   disableInfoBar?: boolean;
@@ -21,6 +25,7 @@ interface KakaomapProps {
 
 export default function Kakaomap({
   polygonClick = (_area: string) => {},
+  population,
   selectedCategory = null,
   onClearCategory = () => {},
   disableInfoBar = false,
@@ -45,7 +50,10 @@ export default function Kakaomap({
     }
   });
 
-  // 3. Map Store 연동 - 지도 중심 이동 및 마커 표시
+  // 3. 건물별 점포 수 마커
+  useBuildingMarkers(map, selectedCategory ?? null);
+
+  // 4. Map Store 연동 - 지도 중심 이동 및 마커 표시
   const { center, zoom, markers } = useMapStore();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const markersRef = useRef<any[]>([]);
@@ -125,6 +133,16 @@ export default function Kakaomap({
     };
   }, [center, zoom, markers, map]);
 
+
+  // 3. 유동인구 격자 레이어 추가
+  usePopulationLayer(
+    map,
+    population.genderFilter,
+    population.ageFilter,
+    population.showLayer,
+    population.getPopulationValue
+  );
+
   return (
     <div className="relative w-full h-full">
       <InfoBar
@@ -140,6 +158,7 @@ export default function Kakaomap({
 
       <div
         ref={mapRef}
+        id="kakao-map"
         className="w-full h-100 bg-gray-100"
         style={{ width: '100vw', height: '100vh' }}
       />

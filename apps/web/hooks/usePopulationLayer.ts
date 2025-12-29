@@ -1,0 +1,475 @@
+import { useEffect, useCallback, useRef } from 'react';
+import { KakaoMap, KakaoLatLng } from '../types/map-types';
+import {
+  PopulationRow,
+  GenderFilter,
+  AgeFilter,
+  CombinedFeature,
+} from '../types/population-types';
+import { fetchPopulationLayer } from '../services/population/population-service';
+
+// 히트맵 컬러 팔레트를 미리 계산하여 성능 향상 (훅 외부로 이동하여 안정성 확보)
+const colorPalette = (function () {
+  const palette = new Uint8ClampedArray(256 * 3);
+  const gradient = [
+    { stop: 0, color: [10, 10, 50] }, // 거의 안 보이는 어두운 남색
+    { stop: 60, color: [0, 100, 255] }, // 여기서부터 본격적인 Blue
+    { stop: 110, color: [0, 220, 200] }, // Teal/Cyan
+    { stop: 170, color: [255, 230, 0] }, // Bright Yellow/Gold
+    { stop: 230, color: [255, 100, 0] }, // Deep Orange
+    { stop: 255, color: [255, 255, 255] }, // White Hot
+  ];
+
+  for (let alpha = 0; alpha < 256; alpha++) {
+    let found = false;
+    for (let i = 0; i < gradient.length - 1; i++) {
+      if (alpha >= gradient[i].stop && alpha <= gradient[i + 1].stop) {
+        const ratio =
+          (alpha - gradient[i].stop) /
+          (gradient[i + 1].stop - gradient[i].stop);
+        palette[alpha * 3] = Math.round(
+          gradient[i].color[0] +
+            (gradient[i + 1].color[0] - gradient[i].color[0]) * ratio,
+        );
+        palette[alpha * 3 + 1] = Math.round(
+          gradient[i].color[1] +
+            (gradient[i + 1].color[1] - gradient[i].color[1]) * ratio,
+        );
+        palette[alpha * 3 + 2] = Math.round(
+          gradient[i].color[2] +
+            (gradient[i + 1].color[2] - gradient[i].color[2]) * ratio,
+        );
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      palette[alpha * 3] = 255;
+      palette[alpha * 3 + 1] = 0;
+      palette[alpha * 3 + 2] = 0;
+    }
+  }
+  return palette;
+})();
+
+export const usePopulationLayer = (
+  map: KakaoMap | null,
+  genderFilter: GenderFilter,
+  ageFilter: AgeFilter,
+  isVisible: boolean,
+  getPopulationValue: (
+    row: PopulationRow,
+    gender: GenderFilter,
+    age: AgeFilter,
+  ) => number,
+) => {
+  const featuresMapRef = useRef<Map<string, CombinedFeature>>(new Map());
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const featuresRef = useRef<CombinedFeature[]>([]);
+  const isVisibleRef = useRef<boolean>(isVisible);
+
+  // isVisible 상태를 Ref로 동기화 및 즉시 정리 (클로저 문제 해결)
+  useEffect(() => {
+    isVisibleRef.current = isVisible;
+    if (!isVisible) {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      // 데이터 및 캔버스 정리
+      featuresMapRef.current.clear();
+      featuresRef.current = [];
+
+      const existing = document.getElementById('population-heatmap-canvas');
+      if (existing && existing.parentNode) {
+        existing.parentNode.removeChild(existing);
+      }
+      canvasRef.current = null;
+    }
+  }, [isVisible]);
+
+
+  const dragStartLatLngRef = useRef<KakaoLatLng | null>(null);
+  const dragStartCanvasPosRef = useRef<{ x: number; y: number } | null>(null);
+
+  /**
+   * 렌더링 엔진 (Canvas 기반 히트맵)
+   * 성능 최적화: 내부 해상도를 낮추고 CSS로 확대하여 부하를 낮춤 (Downsampling)
+   */
+  const renderLayer = useCallback(() => {
+    try {
+      const container =
+        document.getElementById('kakao-map') || document.getElementById('map');
+      if (!map || !container || !isVisibleRef.current) {
+        const existing = document.getElementById('population-heatmap-canvas');
+        if (existing) {
+          const ctx = (existing as HTMLCanvasElement).getContext('2d');
+          ctx?.clearRect(
+            0,
+            0,
+            (existing as HTMLCanvasElement).width,
+            (existing as HTMLCanvasElement).height,
+          );
+        }
+        return;
+      }
+
+      const currentZoom = map.getLevel();
+      const currentFeatures = featuresRef.current;
+      if (currentZoom < 2 || currentZoom > 4 || currentFeatures.length === 0) {
+        const existing = document.getElementById('population-heatmap-canvas');
+        if (existing) {
+          const ctx = (existing as HTMLCanvasElement).getContext('2d');
+          ctx?.clearRect(
+            0,
+            0,
+            (existing as HTMLCanvasElement).width,
+            (existing as HTMLCanvasElement).height,
+          );
+        }
+        return;
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const projection = (map as any).getProjection();
+      if (!projection) return;
+
+      const CANVAS_ID = 'population-heatmap-canvas';
+      let canvas = document.getElementById(CANVAS_ID) as HTMLCanvasElement;
+      if (!canvas) {
+        canvas = document.createElement('canvas');
+        canvas.id = CANVAS_ID;
+        canvas.style.cssText =
+          'position:absolute;left:0;top:0;width:100%;height:100%;z-index:100;pointer-events:none;';
+        container.appendChild(canvas);
+      }
+      canvasRef.current = canvas;
+
+      const fullWidth = container.offsetWidth;
+      const fullHeight = container.offsetHeight;
+      if (fullWidth <= 0 || fullHeight <= 0) return;
+
+      const DOWNSAMPLE = 0.5;
+      const width = Math.floor(fullWidth * DOWNSAMPLE);
+      const height = Math.floor(fullHeight * DOWNSAMPLE);
+
+      if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width;
+        canvas.height = height;
+        canvas.style.width = `${fullWidth}px`;
+        canvas.style.height = `${fullHeight}px`;
+      }
+
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      if (!ctx) return;
+
+      canvas.style.transform = 'translate(0, 0)';
+      ctx.clearRect(0, 0, width, height);
+
+      const values = currentFeatures.map((f: CombinedFeature) =>
+        getPopulationValue(f.population, genderFilter, ageFilter),
+      );
+      const maxValue = values.length > 0 ? Math.max(...values, 1) : 1;
+
+      const configMap: Record<
+        number,
+        { radius: number; intensity: number; points: number; spread: number }
+      > = {
+        2: {
+          radius: 25 * DOWNSAMPLE,
+          intensity: 1.8,
+          points: 80,
+          spread: 300 * DOWNSAMPLE,
+        },
+        3: {
+          radius: 35 * DOWNSAMPLE,
+          intensity: 1.4,
+          points: 40,
+          spread: 200 * DOWNSAMPLE,
+        },
+        4: {
+          radius: 45 * DOWNSAMPLE,
+          intensity: 1.1,
+          points: 20,
+          spread: 100 * DOWNSAMPLE,
+        },
+      };
+      const config = configMap[currentZoom] || {
+        radius: 100 * DOWNSAMPLE,
+        intensity: 0.8,
+        points: 1,
+        spread: 0,
+      };
+
+      let drawnCount = 0;
+      currentFeatures.forEach((f: CombinedFeature) => {
+        if (!f.center) return;
+
+        try {
+          const latlng = new window.kakao.maps.LatLng(
+            f.center.lat,
+            f.center.lng,
+          );
+          const pos = projection.containerPointFromCoords(latlng);
+          if (!pos || isNaN(pos.x) || isNaN(pos.y)) return;
+
+          const baseX = pos.x * DOWNSAMPLE;
+          const baseY = pos.y * DOWNSAMPLE;
+
+          const value = getPopulationValue(
+            f.population,
+            genderFilter,
+            ageFilter,
+          );
+          const weight = value / maxValue;
+          if (weight <= 0.0001) return;
+
+          let cellHash = 0;
+          for (let j = 0; j < f.cell_id.length; j++) {
+            cellHash = (cellHash << 5) - cellHash + f.cell_id.charCodeAt(j);
+            cellHash |= 0;
+          }
+
+          const dynamicPoints = config.points;
+          for (let i = 0; i < dynamicPoints; i++) {
+            let px = baseX;
+            let py = baseY;
+
+            const seedA = cellHash + i * 1337.5;
+            const seedB = cellHash + i * 2187.3;
+
+            if (i > 0) {
+              const randomAngle =
+                (Math.abs(Math.sin(seedA) * 10000) % 1) * Math.PI * 2;
+              const randomDist =
+                (Math.abs(Math.cos(seedB) * 10000) % 1) * config.spread;
+              px += Math.cos(randomAngle) * randomDist;
+              py += Math.sin(randomAngle) * randomDist;
+            }
+
+            const baseScale = 0.5 + weight * 1.5;
+            const variance =
+              1 + ((Math.abs(Math.sin(seedA * 3)) % 1) * 0.3 - 0.15);
+            const currentRadius = config.radius * baseScale * variance;
+            const intensityAlpha = Math.min(
+              weight * config.intensity * (0.8 + (1 - baseScale) * 0.5),
+              0.5,
+            );
+
+            const grad = ctx.createRadialGradient(
+              px,
+              py,
+              0,
+              px,
+              py,
+              currentRadius,
+            );
+            grad.addColorStop(0, `rgba(0,0,0,${intensityAlpha})`);
+            grad.addColorStop(0.4, `rgba(0,0,0,${intensityAlpha * 0.4})`);
+            grad.addColorStop(1, 'rgba(0,0,0,0)');
+
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(px, py, currentRadius, 0, Math.PI * 2);
+            ctx.fill();
+            drawnCount++;
+          }
+        } catch {}
+      });
+
+      if (drawnCount > 0) {
+        const imgData = ctx.getImageData(0, 0, width, height);
+        const data = imgData.data;
+
+        for (let i = 0; i < data.length; i += 4) {
+          const alpha = data[i + 3];
+          if (alpha > 3) {
+            const baseIdx = alpha * 3;
+            data[i] = colorPalette[baseIdx];
+            data[i + 1] = colorPalette[baseIdx + 1];
+            data[i + 2] = colorPalette[baseIdx + 2];
+            data[i + 3] = alpha * 0.8;
+          } else {
+            data[i + 3] = 0;
+          }
+        }
+        ctx.putImageData(imgData, 0, 0);
+      }
+    } catch (e) {
+      console.error('[usePopulationLayer] Render error:', e);
+    }
+  }, [map, genderFilter, ageFilter, getPopulationValue]);
+
+  // 데이터 로드 함수
+  const fetchData = useCallback(
+    async (currentMap: KakaoMap) => {
+      if (!isVisibleRef.current) return;
+
+      const currentZoom = currentMap.getLevel();
+      if (currentZoom > 6) return;
+
+      const bounds = currentMap.getBounds();
+      if (!bounds || typeof bounds.getSouthWest !== 'function') return;
+
+      const sw = bounds.getSouthWest();
+      const ne = bounds.getNorthEast();
+
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      abortControllerRef.current = new AbortController();
+
+      try {
+        const data = await fetchPopulationLayer(
+          { lat: sw.getLat(), lng: sw.getLng() },
+          { lat: ne.getLat(), lng: ne.getLng() },
+          abortControllerRef.current.signal,
+        );
+
+        if (!data || !isVisibleRef.current) return;
+
+        let hasNew = false;
+        const newMap = new Map<string, CombinedFeature>(featuresMapRef.current);
+
+        data.features.forEach((f) => {
+          if (!newMap.has(f.cell_id)) {
+            const geometry = f.geometry;
+            if (geometry.type === 'Polygon' && geometry.coordinates[0]?.[0]) {
+              const coord = geometry.coordinates[0][0] as number[];
+              f.center = { lng: coord[0], lat: coord[1] };
+            } else if (
+              geometry.type === 'MultiPolygon' &&
+              geometry.coordinates[0]?.[0]?.[0]
+            ) {
+              const coord = geometry.coordinates[0][0][0] as number[];
+              f.center = { lng: coord[0], lat: coord[1] };
+            }
+            newMap.set(f.cell_id, f);
+            hasNew = true;
+          }
+        });
+
+        const CACHE_LIMIT = 3000;
+        const REMOVE_COUNT = 1000;
+        if (newMap.size > CACHE_LIMIT) {
+          const iterator = newMap.keys();
+          for (let i = 0; i < REMOVE_COUNT; i++) {
+            const key = iterator.next().value;
+            if (key) newMap.delete(key);
+          }
+          hasNew = true;
+        }
+
+        if (hasNew) {
+          featuresMapRef.current = newMap;
+          featuresRef.current = Array.from(newMap.values());
+          renderLayer();
+        }
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name === 'AbortError') return;
+        console.error('[usePopulationLayer] Fetch error:', err);
+      }
+    },
+    [renderLayer],
+  );
+
+  // 필터 변경 시 리렌더링 (성능을 위해 Ref를 쓰지만 필터는 반영되어야 함)
+  useEffect(() => {
+    if (isVisible) {
+      renderLayer();
+    }
+  }, [genderFilter, ageFilter, isVisible, renderLayer]);
+
+  // 초기 로드: 레이어가 켜졌을 때 즉시 데이터 가져오기
+  useEffect(() => {
+    if (map && isVisible) {
+      fetchData(map);
+    }
+  }, [map, isVisible, fetchData]);
+
+  // 맵 이벤트 바인딩
+  useEffect(() => {
+    const kakaoMaps = window.kakao?.maps;
+    if (!map || !kakaoMaps?.event) return;
+
+    const eventApi = kakaoMaps.event;
+    let idleListener: unknown = null;
+    let zoomListener: unknown = null;
+    let dragStartListener: unknown = null;
+    let dragListener: unknown = null;
+
+    if (isVisible) {
+      renderLayer();
+
+      try {
+        idleListener = eventApi.addListener(map, 'idle', () => {
+          if (!isVisibleRef.current) return;
+          const canvas = canvasRef.current;
+          if (canvas) {
+            canvas.style.transform = 'translate(0px, 0px)';
+          }
+          renderLayer();
+
+          if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+          debounceTimerRef.current = setTimeout(() => {
+            if (isVisibleRef.current) fetchData(map);
+          }, 300);
+        });
+
+        zoomListener = eventApi.addListener(map, 'zoom_changed', () => {
+          if (!isVisibleRef.current) return;
+          const canvas = canvasRef.current;
+          if (canvas) {
+            canvas.style.transform = 'translate(0px, 0px)';
+          }
+        });
+
+        dragStartListener = eventApi.addListener(map, 'dragstart', () => {
+          if (!isVisibleRef.current) return;
+          const center = map.getCenter();
+          dragStartLatLngRef.current = center;
+
+          const projection = (map as any).getProjection();
+          const pos = projection.containerPointFromCoords(center);
+          dragStartCanvasPosRef.current = { x: pos.x, y: pos.y };
+        });
+
+        dragListener = eventApi.addListener(map, 'drag', () => {
+          if (!isVisibleRef.current) return;
+          const canvas = canvasRef.current;
+          if (
+            !canvas ||
+            !dragStartLatLngRef.current ||
+            !dragStartCanvasPosRef.current
+          )
+            return;
+
+          const projection = (map as any).getProjection();
+          const currentPos = projection.containerPointFromCoords(
+            dragStartLatLngRef.current,
+          );
+
+          const dx = currentPos.x - dragStartCanvasPosRef.current.x;
+          const dy = currentPos.y - dragStartCanvasPosRef.current.y;
+
+          canvas.style.transform = `translate(${dx}px, ${dy}px)`;
+        });
+      } catch (e) {
+        console.error('[usePopulationLayer] Failed to add map listeners', e);
+      }
+    }
+
+    return () => {
+      try {
+        if (idleListener) eventApi.removeListener(idleListener);
+        if (zoomListener) eventApi.removeListener(zoomListener);
+        if (dragStartListener) eventApi.removeListener(dragStartListener);
+        if (dragListener) eventApi.removeListener(dragListener);
+      } catch {}
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    };
+  }, [map, renderLayer, fetchData, isVisible]);
+};

@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import Kakaomap from '@/components/kakaomap';
 import MapBox from '@/components/map/MapBox';
+import { usePopulationVisual } from '@/hooks/usePopulationVisual';
 import ComparisonOverlay from '@/components/comparison/ComparisonOverlay';
 
 import { useSidebarStore } from '@/stores/useSidebarStore';
@@ -18,6 +19,9 @@ export default function Home() {
   const [pickTarget, setPickTarget] = useState('');
   const [selectedCategory, setSelectedCategory] =
     useState<IndustryCategory | null>(null);
+
+  // 유동인구 상태 통합
+  const population = usePopulationVisual();
 
   // 비교 마커 첫번째인지 두번째인지 판단
   function handlePickMode(target: 'A' | 'B') {
@@ -81,11 +85,10 @@ export default function Home() {
           storeCount: '0'
         }}
       />
-
-    <div className="relative w-screen h-screen overflow-hidden">
       <div className="absolute inset-0 z-0">
         <Kakaomap
           polygonClick={mapClick}
+          population={population}
           selectedCategory={selectedCategory}
           onClearCategory={() => setSelectedCategory(null)}
           disableInfoBar={!!pickTarget}
@@ -98,11 +101,11 @@ export default function Home() {
           setLocationA={setLocationA}
           setLocationB={setLocationB}
           handlePickMode={handlePickMode}
+          population={population}
           onCompare={handleCompareRequest}
           onSelectCategory={setSelectedCategory}
-            />
-          </div>
-        </div>
+        />
       </div>
+    </div>
   );
 }
