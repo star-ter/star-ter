@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface TimeOfDaySalesGraphProps {
   data?: {
@@ -13,6 +13,13 @@ interface TimeOfDaySalesGraphProps {
 }
 
 export default function TimeOfDaySalesGraph({ data }: TimeOfDaySalesGraphProps) {
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoaded(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
   if (!data) return null;
 
   const values = [
@@ -70,8 +77,8 @@ export default function TimeOfDaySalesGraph({ data }: TimeOfDaySalesGraphProps) 
             return (
                 <div key={i} className="relative z-10 flex flex-col items-center justify-end h-full w-full">
                     <div 
-                        className={`w-6 rounded-t-sm transition-all duration-500 ${isMax ? 'bg-[#E5858E]' : 'bg-[#90AFFF]'}`}
-                        style={{ height: `${barHeight}px` }}
+                        className={`w-6 rounded-t-sm transition-all duration-[800ms] ease-out ${isMax ? 'bg-[#E5858E]' : 'bg-[#90AFFF]'}`}
+                        style={{ height: loaded ? `${barHeight}px` : '0px' }}
                     />
                     <span className="absolute -bottom-6 text-[10px] text-gray-500 font-medium whitespace-nowrap">
                         {d.label}

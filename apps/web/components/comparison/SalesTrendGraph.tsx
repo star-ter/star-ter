@@ -151,7 +151,10 @@ export default function SalesTrendGraph({
                       ry="4"
                       fill={color}
                       opacity={0.8}
-                  />
+                  >
+                    <animate attributeName="height" from="0" to={bar.height} dur="0.8s" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines="0.4 0 0.2 1" />
+                    <animate attributeName="y" from={graphHeight + 10} to={bar.y} dur="0.8s" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines="0.4 0 0.2 1" />
+                  </rect>
                   
                   {/* X-Axis Label (Quarter) - Rendered inside SVG for perfect alignment */}
                   <text

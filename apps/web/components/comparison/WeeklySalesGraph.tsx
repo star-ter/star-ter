@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface WeeklySalesGraphProps {
   data?: {
@@ -14,6 +14,13 @@ interface WeeklySalesGraphProps {
 }
 
 export default function WeeklySalesGraph({ data }: WeeklySalesGraphProps) {
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoaded(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
   if (!data) return <div className="h-[180px] flex items-center justify-center text-gray-400 text-xs">데이터 없음</div>;
 
   const values = [
@@ -65,8 +72,8 @@ export default function WeeklySalesGraph({ data }: WeeklySalesGraphProps) {
                 <div key={i} className="relative z-10 flex flex-col items-center justify-end h-full w-full">
                     {/* Bar */}
                     <div 
-                        className={`w-6 rounded-t-sm transition-all duration-500 ${isMax ? 'bg-[#E5858E]' : 'bg-[#90AFFF]'}`}
-                        style={{ height: `${barHeight}px` }}
+                        className={`w-6 rounded-t-sm transition-all duration-[800ms] ease-out ${isMax ? 'bg-[#E5858E]' : 'bg-[#90AFFF]'}`}
+                        style={{ height: loaded ? `${barHeight}px` : '0px' }}
                     />
                     {/* Label */}
                     <span className="absolute -bottom-5 text-[11px] text-gray-600 font-medium">

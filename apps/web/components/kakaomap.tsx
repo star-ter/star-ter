@@ -55,6 +55,14 @@ export default function Kakaomap({
   // 3. 건물별 점포 수 마커
   useBuildingMarkers(map, selectedCategory ?? null);
 
+  // 업종이 선택되면 기존 선택된 구역(건물) 정보를 초기화하고 사이드바를 염
+  useEffect(() => {
+    if (selectedCategory) {
+      setSelectedArea(null);
+      setInfoBarOpen(true);
+    }
+  }, [selectedCategory, setInfoBarOpen]);
+
   // 4. Map Store 연동 - 지도 중심 이동 및 마커 표시
   const { center, zoom, markers } = useMapStore();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

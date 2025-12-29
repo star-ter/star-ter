@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface AgeGenderSalesGraphProps {
   ageData?: {
@@ -17,6 +17,13 @@ interface AgeGenderSalesGraphProps {
 }
 
 export default function AgeGenderSalesGraph({ ageData, genderData }: AgeGenderSalesGraphProps) {
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoaded(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
   if (!ageData || !genderData) return null;
 
   // 1. Calculate Ratios
@@ -109,8 +116,14 @@ export default function AgeGenderSalesGraph({ ageData, genderData }: AgeGenderSa
                return (
                    <div key={i} className="relative z-10 flex flex-col items-center justify-end h-full w-full mx-1">
                        <div className="flex gap-[2px] items-end">
-                           <div className="w-3 bg-[#90AFFF] rounded-t-sm" style={{ height: `${mH}px` }}></div>
-                           <div className="w-3 bg-[#D9918C] rounded-t-sm" style={{ height: `${fH}px` }}></div>
+                           <div 
+                              className="w-3 bg-[#90AFFF] rounded-t-sm transition-all duration-[800ms] ease-out" 
+                              style={{ height: loaded ? `${mH}px` : '0px' }}
+                            ></div>
+                           <div 
+                              className="w-3 bg-[#D9918C] rounded-t-sm transition-all duration-[800ms] ease-out" 
+                              style={{ height: loaded ? `${fH}px` : '0px' }}
+                            ></div>
                        </div>
                        <span className="absolute -bottom-6 text-[11px] text-gray-600 font-medium whitespace-nowrap">
                            {seg.label.replace('대', '대').replace(' 이상', '')}

@@ -315,17 +315,40 @@ export class AnalysisService {
 
     // --- Store Aggregation ---
     let totalStores = 0;
-    const storeCategoriesMap = new Map<string, number>();
+    let totalOpenStores = 0; 
+    let totalCloseStores = 0;
+    
+    // Map stores: Category Name -> { count, open, close }
+    const storeCategoriesMap = new Map<string, { count: number, open: number, close: number }>();
 
     (storeRaw as any[]).forEach(row => {
         totalStores += row.STOR_CO;
+        const open = row.OPBIZ_STOR_CO || 0;
+        const close = row.CLSBIZ_STOR_CO || 0;
+        
+        totalOpenStores += open;
+        totalCloseStores += close;
+
         // Group categories
-        const currentCount = storeCategoriesMap.get(row.SVC_INDUTY_CD_NM) || 0;
-        storeCategoriesMap.set(row.SVC_INDUTY_CD_NM, currentCount + row.STOR_CO);
+        const current = storeCategoriesMap.get(row.SVC_INDUTY_CD_NM) || { count: 0, open: 0, close: 0 };
+        storeCategoriesMap.set(row.SVC_INDUTY_CD_NM, { 
+            count: current.count + row.STOR_CO,
+            open: current.open + open,
+            close: current.close + close
+        });
     });
 
+    if (storeRaw.length > 0) {
+        console.log('DEBUG: Store Table Columns:', Object.keys((storeRaw as any)[0]));
+    }
+
     const storeCategories = Array.from(storeCategoriesMap.entries())
-        .map(([name, count]) => ({ name, count }))
+        .map(([name, data]) => ({ 
+            name, 
+            count: data.count, 
+            open: data.open, 
+            close: data.close 
+        }))
         .sort((a, b) => b.count - a.count);
 
     // --- Population Aggregation ---
@@ -395,6 +418,8 @@ export class AnalysisService {
       store: {
         total: totalStores,
         categories: storeCategories.slice(0, 30), // Top 30 items
+        openingRate: totalStores > 0 ? (totalOpenStores / totalStores) * 100 : 0,
+        closingRate: totalStores > 0 ? (totalCloseStores / totalStores) * 100 : 0,
       },
       population: totalPopulation > 0 ? {
         total: totalPopulation,
