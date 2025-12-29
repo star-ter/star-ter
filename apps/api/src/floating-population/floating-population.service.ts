@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { XMLParser } from 'fast-xml-parser';
@@ -15,6 +15,7 @@ export class FloatingPopulationService implements OnModuleInit {
   private readonly apiKey: string;
   private readonly baseUrl = 'http://openapi.seoul.go.kr:8088';
   private readonly parser = new XMLParser();
+  private readonly logger = new Logger(FloatingPopulationService.name);
 
   constructor(
     private readonly configService: ConfigService,
