@@ -182,7 +182,7 @@ export const usePopulationLayer = (
 
       const currentZoom = map.getLevel();
       const currentFeatures = featuresRef.current;
-      if (currentZoom < 2 || currentZoom > 3 || currentFeatures.length === 0) {
+      if (currentZoom < 2 || currentZoom > 4 || currentFeatures.length === 0) {
         const existing = document.getElementById('population-heatmap-canvas');
         if (existing) {
           const ctx = (existing as HTMLCanvasElement).getContext('2d');
@@ -228,8 +228,9 @@ export const usePopulationLayer = (
       const maxValue = values.length > 0 ? Math.max(...values, 1) : 1;
       
       const configMap: Record<number, { radius: number; intensity: number; points: number; spread: number }> = {
-        2: { radius: 18, intensity: 2.2, points: 220, spread: 350 }, // 300 -> 220 최적화
-        3: { radius: 25, intensity: 1.6, points: 120, spread: 220 }, // 180 -> 120 최적화
+        2: { radius: 18, intensity: 2.2, points: 220, spread: 350 },
+        3: { radius: 25, intensity: 1.6, points: 120, spread: 220 },
+        4: { radius: 35, intensity: 1.2, points: 60, spread: 120 },
       };
       const config = configMap[currentZoom] || { radius: 100, intensity: 0.8, points: 1, spread: 0 };
       
@@ -258,7 +259,7 @@ export const usePopulationLayer = (
           if (weight <= 0.0001) return;
 
           // 회오리 무늬 박멸 및 밀도별 동적 스케일링 적용
-          const dynamicPoints = currentZoom <= 3 ? Math.max(80, Math.floor(config.points * (0.6 + weight * 0.4))) : config.points;
+          const dynamicPoints = currentZoom <= 4 ? Math.max(40, Math.floor(config.points * (0.6 + weight * 0.4))) : config.points;
           
           for (let i = 0; i < dynamicPoints; i++) {
             let px = baseX;
@@ -286,7 +287,7 @@ export const usePopulationLayer = (
             const intensityAlpha = Math.min(weight * config.intensity * (0.8 + (1 - baseScale) * 0.5), 0.5);
 
             const grad = ctx.createRadialGradient(px, py, 0, px, py, currentRadius);
-            if (currentZoom <= 3) {
+            if (currentZoom <= 4) {
               grad.addColorStop(0, `rgba(0,0,0,${intensityAlpha})`);
               grad.addColorStop(0.4, `rgba(0,0,0,${intensityAlpha * 0.4})`);
               grad.addColorStop(1, 'rgba(0,0,0,0)');
@@ -326,7 +327,7 @@ export const usePopulationLayer = (
         }
         ctx.putImageData(imgData, 0, 0);
       }
-    } catch (e) {
+    } catch {
       // Fail silently
     }
   }, [map, isVisible, genderFilter, ageFilter, getPopulationValue, colorPalette]);
