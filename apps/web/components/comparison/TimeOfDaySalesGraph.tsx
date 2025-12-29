@@ -1,15 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
+import { TimeOfDaySalesItem } from '../../types/analysis-types';
 
 interface TimeOfDaySalesGraphProps {
-  data?: {
-    t0006: string;
-    t0611: string;
-    t1114: string;
-    t1417: string;
-    t1721: string;
-    t2124: string;
-  };
+  data?: TimeOfDaySalesItem[];
 }
 
 export default function TimeOfDaySalesGraph({ data }: TimeOfDaySalesGraphProps) {
@@ -20,16 +14,13 @@ export default function TimeOfDaySalesGraph({ data }: TimeOfDaySalesGraphProps) 
     return () => clearTimeout(timer);
   }, []);
 
-  if (!data) return null;
+  if (!data || data.length === 0) return null;
 
-  const values = [
-    { label: '00~06', value: parseInt(data.t0006, 10) || 0, key: 't0006' },
-    { label: '06~11', value: parseInt(data.t0611, 10) || 0, key: 't0611' },
-    { label: '11~14', value: parseInt(data.t1114, 10) || 0, key: 't1114' },
-    { label: '14~17', value: parseInt(data.t1417, 10) || 0, key: 't1417' },
-    { label: '17~21', value: parseInt(data.t1721, 10) || 0, key: 't1721' },
-    { label: '21~24', value: parseInt(data.t2124, 10) || 0, key: 't2124' },
-  ];
+  const values = data.map(item => ({
+    label: item.time,
+    value: item.sales,
+    key: item.time
+  }));
 
   const maxVal = Math.max(...values.map(d => d.value), 1);
   const maxIdx = values.reduce((maxI, d, i, arr) => d.value > arr[maxI].value ? i : maxI, 0);

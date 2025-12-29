@@ -1,16 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
+import { DayOfWeekSalesItem } from '../../types/analysis-types';
 
 interface WeeklySalesGraphProps {
-  data?: {
-    mon: string;
-    tue: string;
-    wed: string;
-    thu: string;
-    fri: string;
-    sat: string;
-    sun: string;
-  };
+  data?: DayOfWeekSalesItem[];
 }
 
 export default function WeeklySalesGraph({ data }: WeeklySalesGraphProps) {
@@ -21,17 +14,16 @@ export default function WeeklySalesGraph({ data }: WeeklySalesGraphProps) {
     return () => clearTimeout(timer);
   }, []);
 
-  if (!data) return <div className="h-[180px] flex items-center justify-center text-gray-400 text-xs">데이터 없음</div>;
+  if (!data || data.length === 0) return <div className="h-[180px] flex items-center justify-center text-gray-400 text-xs">데이터 없음</div>;
 
-  const values = [
-    { label: '월', value: parseInt(data.mon, 10) || 0 },
-    { label: '화', value: parseInt(data.tue, 10) || 0 },
-    { label: '수', value: parseInt(data.wed, 10) || 0 },
-    { label: '목', value: parseInt(data.thu, 10) || 0 },
-    { label: '금', value: parseInt(data.fri, 10) || 0 },
-    { label: '토', value: parseInt(data.sat, 10) || 0 },
-    { label: '일', value: parseInt(data.sun, 10) || 0 },
-  ];
+  const dayMap: { [key: string]: string } = {
+    'mon': '월', 'tue': '화', 'wed': '수', 'thu': '목', 'fri': '금', 'sat': '토', 'sun': '일'
+  };
+
+  const values = data.map(item => ({
+    label: dayMap[item.day] || item.day,
+    value: item.sales
+  }));
 
   const maxVal = Math.max(...values.map(d => d.value), 1);
   // Highlight the max value bar

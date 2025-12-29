@@ -1,197 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
 import SalesTrendGraph from './SalesTrendGraph';
 import WeeklySalesGraph from './WeeklySalesGraph';
 import AgeGenderSalesGraph from './AgeGenderSalesGraph';
 import TimeOfDaySalesGraph from './TimeOfDaySalesGraph';
 import AgeGenderRadarChart from './AgeGenderRadarChart';
+import StoreTabContent from './StoreTabContent';
+import AnimatedNumber from '../common/AnimatedNumber';
 import { AnalysisData, AnalysisCardProps } from '../../types/analysis-types';
 
-// Custom hook for counting number
-const useCountUp = (end: number, duration: number = 2000) => {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    let startTimestamp: number | null = null;
-    const step = (timestamp: number) => {
-      if (!startTimestamp) startTimestamp = timestamp;
-      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-      // Ease Out Expo
-      const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
-      setCount(Math.round(end * ease));
-      
-      if (progress < 1) {
-        window.requestAnimationFrame(step);
-      }
-    };
-    window.requestAnimationFrame(step);
-  }, [end, duration]);
-
-  return count;
-};
-
-const AnimatedNumber = ({ value, duration = 1500, format }: { value: number, duration?: number, format?: (n: number) => string }) => {
-  const count = useCountUp(value, duration);
-  return <>{format ? format(count) : count.toLocaleString()}</>;
-};
-
-const StoreTabContent = ({ data, initialStoreCount }: { data: AnalysisData | null, initialStoreCount: string }) => {
-  const [showStoreBars, setShowStoreBars] = useState(false);
-  const [expandedStoreCategories, setExpandedStoreCategories] = useState(false);
-  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
-
-  useEffect(() => {
-    setShowStoreBars(false);
-    const timer = setTimeout(() => setShowStoreBars(true), 100);
-    return () => clearTimeout(timer);
-  }, []);
-
-  return (
-      <div className="animate-fade-in space-y-6">
-        <div className="flex justify-between items-end mb-6">
-          <div>
-            <p className="text-xs font-bold text-gray-800 mb-1">총 매장 수</p>
-            <div className="flex items-end gap-2">
-              <span className="text-3xl font-extrabold text-blue-600">
-                  {data ? <AnimatedNumber value={data.store.total} /> : initialStoreCount}
-                  <span className="text-base font-normal text-gray-600 ml-1">개</span>
-              </span>
-            </div>
-          </div>
-          
-          <div className="flex gap-2">
-             <div className="flex flex-col justify-center items-center min-w-[70px]">
-                 <span className="text-[10px] text-gray-500 font-semibold">개업률</span>
-                 <span className="text-base font-bold text-blue-600">
-                    {data && data.store.openingRate !== undefined ? (
-                        <AnimatedNumber 
-                            value={data.store.openingRate * 10} 
-                            format={(n) => (n/10).toFixed(1)} 
-                        />
-                    ) : '-'}%
-                 </span>
-             </div>
-             <div className="flex flex-col justify-center items-center min-w-[70px]">
-                 <span className="text-[10px] text-gray-500 font-semibold">폐업률</span>
-                 <span className="text-base font-bold text-red-500">
-                    {data && data.store.closingRate !== undefined ? (
-                        <AnimatedNumber 
-                            value={data.store.closingRate * 10} 
-                            format={(n) => (n/10).toFixed(1)} 
-                        />
-                    ) : '-'}%
-                 </span>
-             </div>
-          </div>
-        </div>
-        
-        <div className="space-y-1">
-          <h4 className="text-xs font-bold text-gray-700 border-b border-gray-100 pb-2 mb-2">주요 업종 분포</h4>
-          
-          {data && data.store.categories ? (
-              (() => {
-                  const totalList = data.store.categories;
-                  const showCount = expandedStoreCategories ? totalList.length : 10;
-                  const visibleList = totalList.slice(0, showCount);
-                  
-                  const maxCount = Math.max(...totalList.map((c) => c.count)) || 1;
-                  const totalStores = data.store.total || 1;
-                  
-                  return (
-                    <>
-                      {visibleList.map((item) => {
-                          const relativePercent = (item.count / maxCount) * 100;
-                          const realPercent = Math.round((item.count / totalStores) * 100);
-                          const isExpanded = expandedCategories.includes(item.name);
-                          
-                          const toggleCategory = () => {
-                            setExpandedCategories(prev => 
-                              prev.includes(item.name) 
-                                ? prev.filter(name => name !== item.name)
-                                : [...prev, item.name]
-                            );
-                          };
-                          
-                          return (
-                            <div key={item.name} className="flex flex-col group cursor-pointer" onClick={toggleCategory}>
-                                <div className="flex items-center text-sm py-1">
-                                    <span className="text-gray-500 w-24 truncate font-medium group-hover:text-blue-600 group-hover:font-bold transition-all" title={item.name}>
-                                        {item.name}
-                                    </span>
-                                    <div className="flex-1 h-1.5 bg-gray-100 rounded-full mx-2 overflow-hidden">
-                                        <div 
-                                            className="h-full bg-blue-500 rounded-full opacity-70 group-hover:opacity-100 transition-all duration-[1000ms] ease-out" 
-                                            style={{ width: showStoreBars ? `${relativePercent}%` : '0%' }}
-                                        ></div>
-                                    </div>
-                                    <div className="text-right w-20 mr-1">
-                                        <span className="font-bold text-gray-800 mr-1">
-                                            <AnimatedNumber value={item.count} />
-                                        </span>
-                                        <span className="text-xs text-gray-400">({realPercent}%)</span>
-                                    </div>
-                                    <div className="text-gray-400 group-hover:text-blue-600 transition-colors">
-                                        {isExpanded ? (
-                                            <ChevronUp size={14} className="transition-all group-hover:stroke-[3]" />
-                                        ) : (
-                                            <ChevronDown size={14} className="transition-all group-hover:stroke-[3]" />
-                                        )}
-                                    </div>
-                                </div>
-                                
-                                <div 
-                                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                                        isExpanded ? 'max-h-20 opacity-100' : 'max-h-0 opacity-0'
-                                    }`}
-                                >
-                                    <div className="text-xs flex justify-center items-center gap-6 py-1">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-gray-500">개업 점포</span>
-                                            <span className="font-bold text-blue-600">
-                                                <AnimatedNumber value={item.open || 0} />개
-                                            </span>
-                                        </div>
-                                        <div className="w-[1px] h-3 bg-gray-300"></div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-gray-500">폐업 점포</span>
-                                            <span className="font-bold text-red-500">
-                                                <AnimatedNumber value={item.close || 0} />개
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                          );
-                      })}
-                      
-                      {totalList.length > 10 && (
-                        <button 
-                          onClick={() => setExpandedStoreCategories(!expandedStoreCategories)}
-                          className="w-full py-2 text-xs text-gray-500 font-medium hover:text-blue-600 transition-colors flex items-center justify-center gap-1 mt-2 border-t border-gray-50"
-                        >
-                          {expandedStoreCategories ? '접기' : '더보기'}
-                        </button>
-                      )}
-                    </>
-                  );
-              })()
-          ) : (
-            <div className="text-center text-gray-400 text-xs py-4">데이터를 불러오는 중입니다...</div>
-          )}
-        </div>
-      </div>
-  );
-}
-
 export default function AnalysisCard({
-
   title,
   address,
   estimatedSales: initialEstimatedSales,
   storeCount: initialStoreCount,
   color = '#4A90E2',
-  onClose,
-  onClear,
   hoveredTab,
   onTabHover,
   activeTab = 'sales',
@@ -203,8 +25,6 @@ export default function AnalysisCard({
   const [data, setData] = useState<AnalysisData | null>(null);
   const [loading, setLoading] = useState(false);
 
-  
-  // Use title as fallback for regionCode if not explicitly provided
   const queryParam = regionCode || title;
 
   useEffect(() => {
@@ -212,8 +32,6 @@ export default function AnalysisCard({
         if (!queryParam) return;
         setLoading(true);
         try {
-            // Encode URI component to handle Korean characters safely
-            // Add timestamp to foil cache
             const res = await fetch(`http://localhost:4000/analysis/${encodeURIComponent(queryParam)}?_t=${Date.now()}`);
             const json = await res.json();
             if (json.sales) {
@@ -231,32 +49,20 @@ export default function AnalysisCard({
     fetchData();
   }, [queryParam]);
 
-  // Format currency helper
   const formatCurrency = (val: string) => {
       const num = parseInt(val, 10);
       if (isNaN(num)) return val;
       
-      // 1억 미만
       if (num < 100000000) {
           return `${num.toLocaleString()}원`;
       }
       
-      // 1억 이상: "1,624억 원" 형태로 표시
       const billion = Math.round(num / 100000000);
       return `${billion.toLocaleString()}억 원`;
   };
 
-
-
-
-
-
-
-
-
   return (
     <div className="bg-white/60 rounded-3xl shadow-xl p-5 w-[90vw] sm:w-[25vw] min-w-[280px] h-[64vh] min-h-[350px] flex flex-col relative animate-fade-in-up backdrop-blur-sm">
-      {/* Header */}
       <div className="text-center mb-4">
         <h3 className="text-lg font-bold text-gray-900 flex items-center justify-center gap-2">
           <span className="truncate max-w-[60%] block" title={title}>
@@ -271,7 +77,6 @@ export default function AnalysisCard({
         </h3>
       </div>
 
-      {/* Tabs */}
       <div className="flex border-b border-gray-100 mb-4">
         <button
           className={`flex-1 pb-2 text-sm transition-all ${
@@ -317,7 +122,6 @@ export default function AnalysisCard({
         </button>
       </div>
 
-      {/* Scrollable Content Area */}
       <div 
         ref={scrollRef}
         onScroll={onScroll}
@@ -325,7 +129,6 @@ export default function AnalysisCard({
       >
         {activeTab === 'sales' && (
           <div className="animate-fade-in space-y-6">
-            {/* Main Metric */}
             <div>
               <p className="text-xs font-bold text-gray-800 mb-1">
                 {data ? `${data.meta.yearQuarter.slice(0, 4)}년 ${data.meta.yearQuarter.slice(4)}분기 총 매출` : '11월 상권 추정 매출'}
@@ -344,19 +147,15 @@ export default function AnalysisCard({
               </div>
             </div>
 
-            {/* Graph */}
             <SalesTrendGraph color={color} data={data?.sales?.trend} />
 
-             {/* Weekly Sales */}
              <WeeklySalesGraph data={data?.sales?.dayOfWeek} />
 
-             {/* Age & Gender Sales */}
              <AgeGenderSalesGraph 
                 ageData={data?.sales?.age} 
                 genderData={data?.sales?.gender} 
              />
 
-             {/* Time Of Day Sales */}
              <TimeOfDaySalesGraph data={data?.sales?.timeOfDay} />
           </div>
         )}
@@ -387,9 +186,6 @@ export default function AnalysisCard({
           </div>
         )}
       </div>
-
-      {/* Footer Actions */}
-
     </div>
   );
 }

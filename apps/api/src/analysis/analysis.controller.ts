@@ -1,4 +1,3 @@
-
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { AnalysisService } from './analysis.service';
 
