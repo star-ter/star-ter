@@ -29,8 +29,8 @@ const CATEGORY_COLORS: Record<string, string> = {
   G2: '#EF4444', // Red (Retail)
   S2: '#8B5CF6', // Purple (Service)
   R1: '#EC4899', // Pink (Leisure) - Changed to R1
-  P1: '#10B981', // Emerald (Education)
-  I1: '#3B82F6', // Blue (Accommodation)
+  P1: '#CA8A04', // Yellow (Education) - Improved visibility
+  I1: '#06B6D4', // Cyan (Accommodation - New Color)
   Q1: '#22C55E', // Green (Medical)
 };
 
@@ -40,7 +40,9 @@ export const useBuildingMarkers = (
 ) => {
   const customOverlaysRef = useRef<KakaoCustomOverlay[]>([]);
 
-  const MARKER_VIEW_THRESHOLD = 2;
+  // Thresholds separation
+  const TOTAL_VIEW_THRESHOLD = 4; // Default view (High threshold to reduce clutter)
+  const CATEGORY_VIEW_THRESHOLD = 2; // Filtered view (Show all matches)
 
   // 마커(오버레이) 모두 지우기
   const clearMarkers = useCallback(() => {
@@ -51,12 +53,6 @@ export const useBuildingMarkers = (
   // API 호출 및 마커 그리기
   const fetchAndDrawMarkers = useCallback(async () => {
     if (!map) return;
-
-    // 카테고리가 선택되지 않았으면 마커를 표시하지 않음 (User Request: "선택한 카테고리에 해당하는 마커만")
-    if (!selectedCategory) {
-      clearMarkers();
-      return;
-    }
 
     // 1. 줌 레벨 체크 (너무 넓은 영역이면 조회 안함)
     const level = map.getLevel();
@@ -85,8 +81,18 @@ export const useBuildingMarkers = (
         maxy: maxy.toString(),
       });
 
-      const categories = mapCodeToBackend(selectedCategory.code);
-      categories.forEach((cat) => params.append('categories', cat));
+      // Default settings (No selection)
+      let currentThreshold = TOTAL_VIEW_THRESHOLD;
+      let currentColor = '#3B82F6'; // Default Blue
+
+      // If category is selected, apply filter and lower threshold
+      if (selectedCategory) {
+        currentThreshold = CATEGORY_VIEW_THRESHOLD;
+        currentColor = CATEGORY_COLORS[selectedCategory.code] || '#3B82F6';
+
+        const categories = mapCodeToBackend(selectedCategory.code);
+        categories.forEach((cat) => params.append('categories', cat));
+      }
 
       const res = await fetch(
         `${API_BASE_URL}/market/building-stores?${params.toString()}`,
@@ -98,11 +104,9 @@ export const useBuildingMarkers = (
       // 4. 기존 마커 지우고 새로 그리기
       clearMarkers();
 
-      const color = CATEGORY_COLORS[selectedCategory.code] || '#3B82F6';
-
       data.forEach((item) => {
         // Threshold Check
-        if (item.count < MARKER_VIEW_THRESHOLD) return;
+        if (item.count < currentThreshold) return;
 
         // Premium UI Content (Glassmorphism, No Text Name)
         const content = `
@@ -116,7 +120,7 @@ export const useBuildingMarkers = (
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
-            border: 2px solid ${color};
+            border: 2px solid ${currentColor};
             border-radius: 50%;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             animation: bounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -125,7 +129,7 @@ export const useBuildingMarkers = (
             <span style="
               font-size: 14px;
               font-weight: 800;
-              color: ${color};
+              color: ${currentColor};
               font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             ">${item.count}</span>
             <div style="
@@ -137,7 +141,7 @@ export const useBuildingMarkers = (
               height: 0; 
               border-left: 5px solid transparent;
               border-right: 5px solid transparent;
-              border-top: 6px solid ${color};
+              border-top: 6px solid ${currentColor};
             "></div>
           </div>
           <style>

@@ -353,38 +353,83 @@ export class MarketService {
       throw new InternalServerErrorException('SBIZ_API_KEY is not defined');
     }
 
-    const queryParams = new URLSearchParams({
-      serviceKey: SERVICE_KEY,
-      pageNo: '1',
-      numOfRows: '500',
-      minx: query.minx,
-      miny: query.miny,
-      maxx: query.maxx,
-      maxy: query.maxy,
-      type: 'json',
-    });
+    const numOfRows = 1000; // Maximize page size (limit usually 1000)
+    const pageNo = 1;
+
+    const buildUrl = (page: number) => {
+      const params = new URLSearchParams({
+        serviceKey: SERVICE_KEY,
+        pageNo: String(page),
+        numOfRows: String(numOfRows),
+        minx: query.minx,
+        miny: query.miny,
+        maxx: query.maxx,
+        maxy: query.maxy,
+        type: 'json',
+      });
+      return `${BASE_URL}?${params.toString()}`;
+    };
 
     try {
-      const response = await fetch(`${BASE_URL}?${queryParams.toString()}`, {
+      // 1. Fetch First Page
+      const firstRes = await fetch(buildUrl(pageNo), {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        this.logger.error(`OpenAPI Rectangle Error: ${errorText}`);
-        throw new InternalServerErrorException('OpenAPI Error');
+      if (!firstRes.ok) {
+        throw new Error(`First Page Fail: ${firstRes.status}`);
       }
 
-      const data = (await response.json()) as unknown;
-      if (this.isValidOpenApiResponse(data)) {
-        return data;
+      const firstData = (await firstRes.json()) as unknown;
+      if (!this.isValidOpenApiResponse(firstData)) {
+        throw new Error('Invalid First Page Format');
       }
 
-      this.logger.error('Invalid API Response format');
+      const totalCount = firstData.body.totalCount;
+      const allItems = [...firstData.body.items];
+
+      // 2. Fetch Remaining Pages if needed
+      if (totalCount > allItems.length) {
+        const totalPages = Math.ceil(totalCount / numOfRows);
+        const maxPages = 10; // Safety Limit (Max 10,000 items)
+        const fetchPages: Promise<OpenApiStoreItem[]>[] = [];
+
+        for (let p = 2; p <= totalPages && p <= maxPages; p++) {
+          fetchPages.push(
+            fetch(buildUrl(p), {
+              method: 'GET',
+              headers: { 'Content-Type': 'application/json' },
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                if (this.isValidOpenApiResponse(data)) {
+                  return data.body.items;
+                }
+                return [];
+              })
+              .catch((err) => {
+                this.logger.error(`Page ${p} fetch error`, err);
+                return [];
+              }),
+          );
+        }
+
+        const results = await Promise.all(fetchPages);
+        results.forEach((pageItems) => {
+          if (Array.isArray(pageItems)) {
+            allItems.push(...pageItems);
+          }
+        });
+      }
+
+      // Return combined result pretending to be a single large page
       return {
-        header: { resultCode: 'Err', resultMsg: 'Invalid Format' },
-        body: { items: [], totalCount: 0 },
+        header: firstData.header,
+        body: {
+          items: allItems,
+          totalCount: totalCount, // Keep original total count
+        },
       };
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : String(e);
