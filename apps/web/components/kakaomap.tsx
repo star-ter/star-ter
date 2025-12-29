@@ -50,8 +50,8 @@ export default function Kakaomap({
     }
   });
 
-  // 3. 건물별 점포 수 마커 (Zoom Level 4 이하일 때)
-  useBuildingMarkers(map);
+  // 3. 건물별 점포 수 마커
+  useBuildingMarkers(map, selectedCategory ?? null);
 
   // 4. Map Store 연동 - 지도 중심 이동 및 마커 표시
   const { center, zoom, markers } = useMapStore();

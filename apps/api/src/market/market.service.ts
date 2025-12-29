@@ -14,23 +14,22 @@ import {
 import { OpenApiResponse, OpenApiStoreItem } from './dto/open-api.dto';
 import { MarketAnalyticsDto } from './dto/market-analytics.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { KSIC_TO_CATEGORY } from './constants/ksic-category-map';
+import {
+  AdministrativeAreaResult,
+  CommercialAreaResult,
+} from './dto/market.interface';
 import { SalesCommercial, SalesDong } from 'generated/prisma/client';
-
-interface CommercialAreaResult {
-  TRDAR_CD: string;
-  TRDAR_CD_NM: string;
-  TRDAR_SE_1: string;
-}
-
-interface AdministrativeAreaResult {
-  ADSTRD_CD: string;
-  ADSTRD_NM: string;
-}
 
 @Injectable()
 export class MarketService {
-  constructor(private readonly prisma: PrismaService) {}
   private readonly logger = new Logger(MarketService.name);
+
+  constructor(private readonly prisma: PrismaService) {}
+
+  private getCategoryByKsic(ksicCd: string): string {
+    return KSIC_TO_CATEGORY[String(ksicCd)] || '기타';
+  }
 
   async getStoreList(
     query: GetMarketAnalysisQueryDto,
