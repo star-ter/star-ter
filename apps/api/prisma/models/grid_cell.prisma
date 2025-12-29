@@ -1,0 +1,9 @@
+model GridCell {
+    cell_id String                  @id @db.VarChar
+    cell_x  Int                     @db.Integer
+    cell_y  Int                     @db.Integer
+    gid     String?
+    geom    Unsupported("geometry")
+
+    @@map("seoul_250_grid")
+}
