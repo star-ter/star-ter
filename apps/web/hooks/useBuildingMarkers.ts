@@ -17,13 +17,10 @@ const mapCodeToBackend = (code: string): string[] => {
   if (code.startsWith('I2')) return ['음식'];
   if (code.startsWith('G2')) return ['소매'];
   if (code.startsWith('S2')) return ['생활서비스'];
-  if (code.startsWith('R2')) return ['오락/여가', '오락/스포츠']; // R2 name in mock is '오락/스포츠', backend has '오락/여가'? Check consistency.
+  if (code.startsWith('R1')) return ['오락/스포츠'];
   if (code.startsWith('P1')) return ['교육'];
   if (code.startsWith('I1')) return ['숙박'];
-  if (code.startsWith('L1')) return ['생활서비스', '부동산업']; // L1 is '부동산업' in mock
-  if (code.startsWith('M1')) return ['전문 서비스', '전문/기술']; // M1 is '전문/기술' in mock
-  if (code.startsWith('N1')) return ['문화', '시설관리/지원']; // N1 is '시설관리/지원' in mock
-  if (code.startsWith('Q1')) return ['의료', '보건/의료']; // Q1 is '보건/의료' in mock
+  if (code.startsWith('Q1')) return ['의료/건강'];
   return [];
 };
 
@@ -31,12 +28,9 @@ const CATEGORY_COLORS: Record<string, string> = {
   I2: '#F97316', // Orange (Food)
   G2: '#EF4444', // Red (Retail)
   S2: '#8B5CF6', // Purple (Service)
-  R2: '#EC4899', // Pink (Leisure)
+  R1: '#EC4899', // Pink (Leisure) - Changed to R1
   P1: '#10B981', // Emerald (Education)
   I1: '#3B82F6', // Blue (Accommodation)
-  L1: '#6366F1', // Indigo (Real Estate)
-  M1: '#14B8A6', // Teal (Professional)
-  N1: '#F43F5E', // Rose (Support)
   Q1: '#22C55E', // Green (Medical)
 };
 
@@ -45,8 +39,8 @@ export const useBuildingMarkers = (
   selectedCategory: IndustryCategory | null,
 ) => {
   const customOverlaysRef = useRef<KakaoCustomOverlay[]>([]);
-  // 개발자가 조절할 수 있는 Threshold (기본 3개 이상 표시)
-  const THRESHOLD = 3;
+
+  const MARKER_VIEW_THRESHOLD = 2;
 
   // 마커(오버레이) 모두 지우기
   const clearMarkers = useCallback(() => {
@@ -59,9 +53,6 @@ export const useBuildingMarkers = (
     if (!map) return;
 
     // 카테고리가 선택되지 않았으면 마커를 표시하지 않음 (User Request: "선택한 카테고리에 해당하는 마커만")
-    // If you want to show ALL when nothing selected, remove this check.
-    // However, user said "Turn on/off", and usually selection implies turning ON specific filter.
-    // Let's assume: If null, don't show building markers (clean map).
     if (!selectedCategory) {
       clearMarkers();
       return;
@@ -111,7 +102,7 @@ export const useBuildingMarkers = (
 
       data.forEach((item) => {
         // Threshold Check
-        if (item.count < THRESHOLD) return;
+        if (item.count < MARKER_VIEW_THRESHOLD) return;
 
         // Premium UI Content (Glassmorphism, No Text Name)
         const content = `

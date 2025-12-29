@@ -27,6 +27,16 @@ export class MarketService {
 
   constructor(private readonly prisma: PrismaService) {}
 
+  private isValidOpenApiResponse(data: unknown): data is OpenApiResponse {
+    if (typeof data !== 'object' || data === null) return false;
+    const response = data as OpenApiResponse;
+    return (
+      'header' in response &&
+      'body' in response &&
+      Array.isArray(response.body?.items)
+    );
+  }
+
   private getCategoryByCode(code: string): string {
     return KSIC_TO_CATEGORY[String(code)] || '기타';
   }
@@ -293,13 +303,19 @@ export class MarketService {
     items.forEach((item) => {
       if (!item.bldMngNo) return;
 
-      // 카테고리 필터링 (indsLclsCd 사용)
+      // 카테고리 필터링 (indsLclsCd 사용 + indsLclsNm 이름 보완)
       if (targetCategories.length > 0) {
-        // 매핑 테이블에 없는 경우(undefined)도 고려해야 함
-        const category = this.getCategoryByCode(item.indsLclsCd);
+        // 1. 코드로 매핑된 카테고리 확인
+        const categoryByCode = this.getCategoryByCode(item.indsLclsCd);
+        // 2. API가 주는 대분류명(indsLclsNm) 직접 확인
+        const categoryByName = item.indsLclsNm;
 
-        // "category"가 매핑된 우리쪽 한글명(예: '음식')이고, targetCategories가 ['음식'] 형태임
-        if (!category || !targetCategories.includes(category)) return;
+        // 둘 중 하나라도 타겟 카테고리에 포함되면 통과
+        const isMatch =
+          (categoryByCode && targetCategories.includes(categoryByCode)) ||
+          (categoryByName && targetCategories.includes(categoryByName));
+
+        if (!isMatch) return;
       }
 
       if (!grouped.has(item.bldMngNo)) {
@@ -360,11 +376,21 @@ export class MarketService {
         throw new InternalServerErrorException('OpenAPI Error');
       }
 
-      return (await response.json()) as OpenApiResponse;
-    } catch (e) {
-      this.logger.error('Fetch Rectangle Failed', e);
+      const data = (await response.json()) as unknown;
+      if (this.isValidOpenApiResponse(data)) {
+        return data;
+      }
+
+      this.logger.error('Invalid API Response format');
       return {
-        header: { resultCode: 'Err', resultMsg: '' },
+        header: { resultCode: 'Err', resultMsg: 'Invalid Format' },
+        body: { items: [], totalCount: 0 },
+      };
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      this.logger.error('Fetch Rectangle Failed', errorMessage);
+      return {
+        header: { resultCode: 'Err', resultMsg: errorMessage },
         body: { items: [], totalCount: 0 },
       };
     }
@@ -403,7 +429,10 @@ export class MarketService {
         `OpenAPI Error: ${response.status} ${response.statusText} - ${errorText}`,
       );
     }
-    const data = (await response.json()) as OpenApiResponse;
+    const data = (await response.json()) as unknown;
+    if (!this.isValidOpenApiResponse(data)) {
+      throw new InternalServerErrorException('Invalid API Response format');
+    }
     return data;
   }
 
