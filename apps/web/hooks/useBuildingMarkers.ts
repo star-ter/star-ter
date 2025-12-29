@@ -141,15 +141,8 @@ export const useBuildingMarkers = (
               height: 0; 
               border-left: 5px solid transparent;
               border-right: 5px solid transparent;
-              border-top: 6px solid ${currentColor};
             "></div>
           </div>
-          <style>
-            @keyframes bounceIn {
-              from { opacity: 0; transform: scale(0.5); }
-              to { opacity: 1; transform: scale(1); }
-            }
-          </style>
         `;
 
         const position = new window.kakao.maps.LatLng(item.lat, item.lng);
