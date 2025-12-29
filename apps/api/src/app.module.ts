@@ -7,6 +7,8 @@ import { HealthController } from './health/health.controller';
 import { PolygonModule } from './polygon/polygon.module';
 import { FloatingPopulationModule } from './floating-population/floating-population.module';
 import { MarketModule } from './market/market.module';
+import { RevenueModule } from './revenue/revenue.module';
+import { StoreModule } from './store/store.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { MarketModule } from './market/market.module';
     PolygonModule,
     FloatingPopulationModule,
     MarketModule,
+    RevenueModule,
+    StoreModule,
   ],
   controllers: [HealthController],
   providers: [],

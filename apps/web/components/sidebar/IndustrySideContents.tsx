@@ -1,11 +1,38 @@
 import React from 'react';
 import { InfoBarData } from '../../types/map-types';
-import {
-  IndustryCategory,
-  IndustryStatResponse,
-} from '../../types/bottom-menu-types';
-import { INDUSTRY_STATS_MOCK } from '../../mocks/industry-stats';
+import { IndustryCategory } from '../../types/bottom-menu-types';
 import RevenueCard from './RevenueCard';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const DEFAULT_CITY_CODE = '11';
+
+type RevenueItem = {
+  code: string;
+  name: string;
+  amount: number;
+  count: number;
+};
+
+type RevenueRankingResponse = {
+  level: 'city' | 'gu' | 'dong' | 'backarea' | 'commercial';
+  quarter: string;
+  industryCode?: string;
+  items: RevenueItem[];
+};
+
+type RevenueSummaryResponse = {
+  level: 'city' | 'gu' | 'dong' | 'backarea' | 'commercial';
+  code: string;
+  quarter: string;
+  totalAmount: number;
+  totalCount: number;
+  items: {
+    industryCode: string;
+    industryName: string;
+    amount: number;
+    count: number;
+  }[];
+};
 
 interface IndustrySideContentsProps {
   selectedCategory: IndustryCategory;
@@ -19,74 +46,154 @@ export default function IndustrySideContents({
   const [selectedSubCode, setSelectedSubCode] = React.useState<string | null>(
     null,
   );
+  const [rankingItems, setRankingItems] = React.useState<RevenueItem[]>([]);
+  const [summaryAmount, setSummaryAmount] = React.useState<number | null>(null);
+  const [summaryQuarter, setSummaryQuarter] = React.useState<string | null>(
+    null,
+  );
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
-  // TODO: 백엔드 연결 - selectedCategory의 매출 데이터를 db/api에서 조회 - 현재 mock 데이터
-  const stats: IndustryStatResponse | undefined =
-    INDUSTRY_STATS_MOCK[selectedCategory.code];
+  // selectedCategory의 하위 카테고리 목록
   const subCategories = React.useMemo(
     () => selectedCategory.children || [],
     [selectedCategory],
   );
 
-  // 데이터(지역)가 있으면 해당 지역 이름 추출
-  const areaName = data
-    ? data.adm_nm || data.buld_nm || '정보 없음'
-    : undefined;
+  React.useEffect(() => {
+    setSelectedSubCode(null);
+  }, [selectedCategory.code]);
 
-  // 선택된 세부업종이 있으면 그것만 남기고, 없으면 전체(stats.items) 사용
-  const filteredItems = React.useMemo(() => {
-    if (!stats) return [];
-    if (!selectedSubCode) return stats.items;
+  const areaInfo = React.useMemo(() => {
+    if (!data) return null;
 
-    // TODO: api 응답에 indutyMlsfcCd(업종코드)가 포함
-    return stats.items.filter((item) => item.indutyMlsfcCd === selectedSubCode);
-  }, [stats, selectedSubCode]);
+    const admCode = data.adm_cd ? String(data.adm_cd) : '';
+    if (admCode.length >= 8) return { level: 'dong', code: admCode };
+    if (admCode.length === 5) return { level: 'gu', code: admCode };
+    if (admCode.length === 2) return { level: 'city', code: admCode };
 
-  // 2. 지역 매칭 로직 (필터된 리스트에서 찾음)
-  // data가 있고, stats에 해당 지역 아이템이 있다면 찾음
+    const commercialData = data as { dongCode?: string; guCode?: string };
+    if (commercialData.dongCode) {
+      return { level: 'dong', code: commercialData.dongCode };
+    }
+    if (commercialData.guCode) {
+      return { level: 'gu', code: commercialData.guCode };
+    }
+
+    return null;
+  }, [data]);
+
+  const areaName = React.useMemo(() => {
+    if (!data) return undefined;
+    const commercialName = (data as { commercialName?: string }).commercialName;
+    return commercialName || data.adm_nm || data.buld_nm || '정보 없음';
+  }, [data]);
+
+  React.useEffect(() => {
+    if (!API_BASE_URL) {
+      setError('API_BASE_URL이 설정되지 않았습니다.');
+      return;
+    }
+
+    const controller = new AbortController();
+    const industryCode = selectedSubCode || undefined;
+    const summaryLevel = areaInfo?.level ?? 'city';
+    const summaryCode = areaInfo?.code ?? DEFAULT_CITY_CODE;
+    const rankingLevel = areaInfo?.level ?? 'gu';
+
+    setIsLoading(true);
+    setError(null);
+
+    const summaryUrl = new URL(`${API_BASE_URL}/revenue`);
+    summaryUrl.searchParams.set('level', summaryLevel);
+    summaryUrl.searchParams.set('code', summaryCode);
+    if (industryCode) {
+      summaryUrl.searchParams.set('industryCode', industryCode);
+    }
+
+    const rankingUrl = new URL(`${API_BASE_URL}/revenue/ranking`);
+    rankingUrl.searchParams.set('level', rankingLevel);
+    if (industryCode) {
+      rankingUrl.searchParams.set('industryCode', industryCode);
+    }
+
+    Promise.all([
+      fetch(summaryUrl.toString(), { signal: controller.signal }),
+      fetch(rankingUrl.toString(), { signal: controller.signal }),
+    ])
+      .then(async ([summaryRes, rankingRes]) => {
+        if (!summaryRes.ok || !rankingRes.ok) {
+          throw new Error('매출 데이터를 불러오지 못했습니다.');
+        }
+
+        const summaryData = (await summaryRes.json()) as RevenueSummaryResponse;
+        const rankingData = (await rankingRes.json()) as RevenueRankingResponse;
+
+        setSummaryAmount(summaryData.totalAmount);
+        setSummaryQuarter(summaryData.quarter);
+        setRankingItems(rankingData.items);
+      })
+      .catch((err) => {
+        if (err.name === 'AbortError') return;
+        setError('매출 데이터를 불러오지 못했습니다.');
+        setRankingItems([]);
+        setSummaryAmount(null);
+        setSummaryQuarter(null);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [areaInfo, selectedSubCode]);
+
   const matchedStat =
-    areaName && filteredItems.length > 0
-      ? filteredItems.find((item) => areaName.includes(item.areaNm))
+    areaName && rankingItems.length > 0
+      ? rankingItems.find((item) => areaName.includes(item.name))
       : undefined;
 
   // 표시할 매출액 계산
   let displayAmountString = '데이터 없음';
-  let description = '* 선택하신 지역/업종 기준 추정치입니다.';
+  let description = '선택하신 지역/업종 기준 추정치입니다.';
 
-  if (filteredItems.length > 0) {
-    let revenue = 0;
+  const formatRevenue = (amount: number) => {
+    const revenueInOk = amount / 100000000;
+    return `약 ${revenueInOk.toLocaleString(undefined, {
+      maximumFractionDigits: 1,
+    })}억 원`;
+  };
 
-    if (matchedStat) {
-      // 1. 지역 매칭 성공: 해당 지역 매출
-      revenue = matchedStat.arUnitAvrgSlsAmt;
-      const revenueInOk = revenue / 100000;
-      displayAmountString = `${revenueInOk.toLocaleString(undefined, {
-        maximumFractionDigits: 2,
-      })} 억원`;
-      description = `* ${matchedStat.areaNm} 지역의 실제 통계 데이터입니다.`;
-    } else {
-      // 2. 지역 선택 안함: 필터된 리스트의 평균
-      const totalRevenue = filteredItems.reduce(
-        (acc, curr) => acc + curr.arUnitAvrgSlsAmt,
-        0,
-      );
-      revenue = totalRevenue / filteredItems.length;
-      const revenueInOk = revenue / 100000;
+  if (isLoading) {
+    displayAmountString = '로딩중...';
+    description = '데이터를 불러오는 중입니다.';
+  } else if (summaryAmount !== null) {
+    displayAmountString = formatRevenue(summaryAmount);
+    if (areaName && matchedStat) {
+      description = `${areaName}의 실제 통계 데이터입니다.`;
+    } else if (summaryQuarter) {
       const subName =
         subCategories.find((s) => s.code === selectedSubCode)?.name ||
         selectedCategory.name;
-
-      displayAmountString = `약 ${revenueInOk.toLocaleString(undefined, {
-        maximumFractionDigits: 2,
-      })}억 원`;
       description = areaName
-        ? `* ${areaName}의 ${subName} 데이터가 없어 상위 평균을 표시합니다.`
-        : `* 서울시 ${subName} 업종 평균 추정치입니다.`;
+        ? `${areaName}의 ${subName} 데이터가 없어 상위 평균을 표시합니다.`
+        : `${summaryQuarter} 기준 ${subName} 업종 평균 추정치입니다.`;
     }
-  } else if (selectedSubCode && stats) {
+  } else if (rankingItems.length > 0) {
+    const totalRevenue = rankingItems.reduce(
+      (acc, curr) => acc + curr.amount,
+      0,
+    );
+    const avgRevenue = totalRevenue / rankingItems.length;
+    displayAmountString = `약 ${formatRevenue(avgRevenue)}`;
+    description = areaName
+      ? `${areaName} 데이터가 없어 상위 평균을 표시합니다.`
+      : '선택하신 업종의 평균 추정치입니다.';
+  } else if (selectedSubCode && rankingItems.length === 0) {
     displayAmountString = '-';
-    description = '* 해당 세부 업종의 데이터가 없습니다.';
+    description = '해당 세부 업종의 데이터가 없습니다.';
   }
+
+  console.log(data?.adm_nm, data?.adm_cd);
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -102,71 +209,74 @@ export default function IndustrySideContents({
         />
       </div>
 
-      {/* 2. 세부 업종 선택 (Chips) */}
+      {/* 2. 세부 업종 선택 (Dropdown) */}
       <div className="p-4 border-b border-gray-100">
         <h3 className="text-sm font-semibold text-gray-700 mb-3">
           세부 업종 선택
         </h3>
-        <div className="flex flex-wrap gap-2">
-          {subCategories.map((sub) => {
-            const isSelected = selectedSubCode === sub.code;
-            return (
-              <button
-                key={sub.code}
-                className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
-                  isSelected
-                    ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
-                    : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200'
-                }`}
-                onClick={() => setSelectedSubCode(isSelected ? null : sub.code)}
-              >
+        <div className="relative">
+          <select
+            className="w-full appearance-none bg-white border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded-lg leading-tight focus:outline-none focus:bg-white focus:border-blue-500 transition-colors"
+            value={selectedSubCode || ''}
+            onChange={(e) => {
+              const val = e.target.value;
+              setSelectedSubCode(val === '' ? null : val);
+            }}
+          >
+            <option value="">전체 {selectedCategory.name}</option>
+            {subCategories.map((sub) => (
+              <option key={sub.code} value={sub.code}>
                 {sub.name}
-              </button>
-            );
-          })}
+              </option>
+            ))}
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+            <svg
+              className="fill-current h-4 w-4"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+            >
+              <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+            </svg>
+          </div>
         </div>
       </div>
 
       {/* 3. 지역별 매출 순위 */}
-      {stats && filteredItems.length > 0 ? (
+      {rankingItems.length > 0 ? (
         <div className="p-4">
           <h3 className="text-sm font-semibold text-gray-700 mb-3">
             지역별 매출 순위
           </h3>
           <div className="space-y-3">
-            {filteredItems.slice(0, 10).map((item, index) => (
+            {rankingItems.slice(0, 10).map((item, index) => (
               <div
-                key={index}
+                key={item.code}
                 className={`flex items-center justify-center p-3 rounded-lg ${
-                  item === matchedStat
+                  item.code === matchedStat?.code
                     ? 'bg-blue-50 border border-blue-200 ring-1 ring-blue-300' // 선택된 지역 강조
                     : 'bg-gray-50'
                 }`}
               >
                 <div className="flex items-center gap-3 flex-1">
                   <span
-                    className={`flex items-center justify-center w-6 h-6 text-xs font-bold rounded-full ${index < 3 ? 'bg-blue-100 text-blue-600' : 'bg-gray-200 text-gray-500'}`}
+                    className={
+                      'flex items-center justify-center w-6 h-6 text-xs font-bold rounded-full bg-blue-100 text-blue-600'
+                    }
                   >
                     {index + 1}
                   </span>
                   <div>
-                    <div className="font-medium text-gray-900">
-                      {item.areaNm}
-                    </div>
+                    <div className="font-medium text-gray-900">{item.name}</div>
                     <div className="text-xs text-gray-500">
-                      {item.indutyMlsfcNm}
+                      {subCategories.find((s) => s.code === selectedSubCode)
+                        ?.name || selectedCategory.name}
                     </div>
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="font-bold text-blue-600">
-                    {(item.arUnitAvrgSlsAmt / 100000).toLocaleString(
-                      undefined,
-                      {
-                        maximumFractionDigits: 2,
-                      },
-                    )}
-                    억 원
+                    {formatRevenue(item.amount / 3)}
                   </div>
                 </div>
               </div>
@@ -175,7 +285,7 @@ export default function IndustrySideContents({
         </div>
       ) : (
         <div className="p-8 text-center text-gray-400">
-          통계 데이터가 없습니다.
+          {error ? error : '통계 데이터가 없습니다.'}
         </div>
       )}
     </div>
