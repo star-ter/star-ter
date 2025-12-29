@@ -1,9 +1,10 @@
-
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import SalesTrendGraph from './SalesTrendGraph';
-
+import WeeklySalesGraph from './WeeklySalesGraph';
+import AgeGenderSalesGraph from './AgeGenderSalesGraph';
+import TimeOfDaySalesGraph from './TimeOfDaySalesGraph';
 interface AnalysisCardProps {
-  title: string;
+  title: string; // This is currently the Dong name (e.g. 창신1동)
   address: string;
   estimatedSales: string;
   salesChange: string; // e.g., "+3.5%"
@@ -17,13 +18,14 @@ interface AnalysisCardProps {
   onTabChange?: (tab: 'sales' | 'store' | 'population') => void;
   scrollRef?: React.RefObject<HTMLDivElement | null>;
   onScroll?: (e: React.UIEvent<HTMLDivElement>) => void;
+  regionCode?: string; // Add regionCode prop if available, otherwise we might need to derive it or fetch it
 }
 
 export default function AnalysisCard({
   title,
   address,
-  estimatedSales,
-  storeCount,
+  estimatedSales: initialEstimatedSales,
+  storeCount: initialStoreCount,
   color = '#4A90E2',
   onClose,
   onClear,
@@ -33,7 +35,51 @@ export default function AnalysisCard({
   onTabChange,
   scrollRef,
   onScroll,
+  regionCode, 
 }: AnalysisCardProps) {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  
+  // Use title as fallback for regionCode if not explicitly provided
+  const queryParam = regionCode || title;
+
+  useEffect(() => {
+    async function fetchData() {
+        if (!queryParam) return;
+        setLoading(true);
+        try {
+            // Encode URI component to handle Korean characters safely
+            const res = await fetch(`http://localhost:4000/analysis/${encodeURIComponent(queryParam)}`);
+            const json = await res.json();
+            if (json.sales) {
+                setData(json);
+            }
+        } catch (error) {
+            console.error("Failed to fetch analysis data", error);
+        } finally {
+            setLoading(false);
+        }
+    }
+    fetchData();
+  }, [queryParam]);
+
+  // Format currency helper
+  const formatCurrency = (val: string) => {
+      const num = parseInt(val, 10);
+      if (isNaN(num)) return val;
+      
+      // 1억 미만
+      if (num < 100000000) {
+          return `${num.toLocaleString()}원`;
+      }
+      
+      // 1억 이상: "1,624억 원" 형태로 표시
+      const billion = Math.round(num / 100000000);
+      return `${billion.toLocaleString()}억 원`;
+  };
+
+  const displaySales = data ? formatCurrency(data.sales.total) : initialEstimatedSales;
+
   return (
     <div className="bg-white/60 rounded-3xl shadow-xl p-5 w-[320px] h-[350px] flex flex-col relative animate-fade-in-up backdrop-blur-sm">
       {/* Header */}
@@ -91,7 +137,7 @@ export default function AnalysisCard({
           onMouseLeave={() => onTabHover?.(null)}
           onClick={() => onTabChange?.('population')}
         >
-          주거인구
+          인구
         </button>
       </div>
 
@@ -106,62 +152,29 @@ export default function AnalysisCard({
             {/* Main Metric */}
             <div>
               <p className="text-xs font-bold text-gray-800 mb-1">
-                11월 상권 추정 매출
+                {data ? `${data.meta.yearQuarter.slice(0, 4)}년 ${data.meta.yearQuarter.slice(4)}분기 총 매출` : '11월 상권 추정 매출'}
               </p>
               <div className="flex items-end gap-2">
                 <span className="text-3xl font-extrabold text-blue-600">
-                  {estimatedSales}
-                  {/* TODO: [API Integration]
-                      실제 매출 데이터 API 연동 필요
-                      - Endpoint: GET /api/analysis/sales-estimate?regionId={regionCode}
-                  */}
+                  {loading ? 'Loading...' : displaySales}
                 </span>
               </div>
             </div>
 
             {/* Graph */}
-            <SalesTrendGraph color={color} />
+            <SalesTrendGraph color={color} data={data?.sales?.trend} />
 
-            {/* Additional Sales Info */}
-            <div className="bg-gray-50 rounded-xl p-4">
-              <h4 className="text-xs font-bold text-gray-700 mb-3">요일별 매출 비중</h4>
-              {/* TODO: [API Integration] Fetch day of week sales data */}
-              <div className="flex justify-between items-end h-16 gap-1">
-                {['월', '화', '수', '목', '금', '토', '일'].map((day, idx) => (
-                  <div key={day} className="flex flex-col items-center flex-1 gap-1">
-                    <div className="w-full bg-blue-100 rounded-t-sm relative group cursor-pointer" style={{ height: `${[10, 12, 14, 15, 20, 18, 11][idx] * 2}%` }}>
-                       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block text-[10px] bg-gray-800 text-white px-1 rounded whitespace-nowrap">
-                         {[10, 12, 14, 15, 20, 18, 11][idx]}%
-                       </div>
-                       <div className="w-full h-full bg-blue-500 opacity-60 hover:opacity-100 transition-opacity rounded-t-sm"></div>
-                    </div>
-                    <span className="text-[10px] text-gray-500">{day}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+             {/* Weekly Sales */}
+             <WeeklySalesGraph data={data?.sales?.dayOfWeek} />
 
-            <div className="bg-gray-50 rounded-xl p-4">
-               <h4 className="text-xs font-bold text-gray-700 mb-3">시간대별 매출 비중</h4>
-               {/* TODO: [API Integration] Fetch time of day sales data */}
-               <div className="space-y-2">
-                  <div className="flex items-center text-xs">
-                    <span className="w-16 text-gray-500">점심 (11-14)</span>
-                    <div className="flex-1 h-1.5 bg-gray-200 rounded-full"><div className="h-full bg-orange-400 w-[45%] rounded-full"></div></div>
-                    <span className="ml-2 font-bold text-gray-700">45%</span>
-                  </div>
-                  <div className="flex items-center text-xs">
-                    <span className="w-16 text-gray-500">저녁 (17-21)</span>
-                    <div className="flex-1 h-1.5 bg-gray-200 rounded-full"><div className="h-full bg-blue-500 w-[35%] rounded-full"></div></div>
-                    <span className="ml-2 font-bold text-gray-700">35%</span>
-                  </div>
-                  <div className="flex items-center text-xs">
-                    <span className="w-16 text-gray-500">기타</span>
-                    <div className="flex-1 h-1.5 bg-gray-200 rounded-full"><div className="h-full bg-gray-400 w-[20%] rounded-full"></div></div>
-                    <span className="ml-2 font-bold text-gray-700">20%</span>
-                  </div>
-               </div>
-            </div>
+             {/* Age & Gender Sales */}
+             <AgeGenderSalesGraph 
+                ageData={data?.sales?.age} 
+                genderData={data?.sales?.gender} 
+             />
+
+             {/* Time Of Day Sales */}
+             <TimeOfDaySalesGraph data={data?.sales?.timeOfDay} />
           </div>
         )}
 
@@ -170,85 +183,112 @@ export default function AnalysisCard({
             <div>
               <p className="text-xs font-bold text-gray-800 mb-1">총 매장 수</p>
               <div className="flex items-end gap-2 mb-4">
-                <span className="text-3xl font-extrabold text-blue-600">{storeCount}<span className="text-base font-normal text-gray-600 ml-1">개</span></span>
+                <span className="text-3xl font-extrabold text-blue-600">
+                    {data ? data.store.total.toLocaleString() : initialStoreCount}
+                    <span className="text-base font-normal text-gray-600 ml-1">개</span>
+                </span>
               </div>
             </div>
             
             <div className="space-y-3">
               <h4 className="text-xs font-bold text-gray-700 border-b border-gray-100 pb-2">주요 업종 분포</h4>
-              {/* TODO: [API Integration] Fetch real store categories */}
-              {[
-                { name: '한식', count: 120, percent: 30 },
-                { name: '카페/디저트', count: 80, percent: 20 },
-                { name: '편의점', count: 40, percent: 10 },
-                { name: '치킨', count: 35, percent: 8 },
-                { name: '분식', count: 30, percent: 7 },
-                { name: '호프/주점', count: 25, percent: 6 },
-                { name: '미용실', count: 20, percent: 5 },
-                { name: '약국', count: 15, percent: 4 },
-              ].map((item) => (
-                <div key={item.name} className="flex justify-between items-center text-sm">
-                  <span className="text-gray-500 w-20">{item.name}</span>
-                  <div className="flex-1 h-1.5 bg-gray-100 rounded-full mx-2">
-                    <div className="h-full bg-blue-500 rounded-full opacity-70" style={{ width: `${item.percent * 2}%` }}></div>
-                  </div>
-                  <div className="text-right w-20">
-                    <span className="font-bold text-gray-800 mr-1">{item.count}</span>
-                    <span className="text-xs text-gray-400">({item.percent}%)</span>
-                  </div>
-                </div>
-              ))}
+              
+              {data && data.store.categories ? (
+                  (() => {
+                      const maxCount = Math.max(...data.store.categories.map((c: any) => c.count)) || 1;
+                      const totalStores = data.store.total || 1;
+                      
+                      return data.store.categories.map((item: any) => {
+                          const relativePercent = (item.count / maxCount) * 100; // Scale relative to max item
+                          const realPercent = Math.round((item.count / totalStores) * 100);
+                          
+                          return (
+                            <div key={item.name} className="flex justify-between items-center text-sm">
+                                <span className="text-gray-500 w-24 truncate">{item.name}</span>
+                                <div className="flex-1 h-1.5 bg-gray-100 rounded-full mx-2">
+                                    <div className="h-full bg-blue-500 rounded-full opacity-70" style={{ width: `${relativePercent}%` }}></div>
+                                </div>
+                                <div className="text-right w-20">
+                                    <span className="font-bold text-gray-800 mr-1">{item.count}</span>
+                                    <span className="text-xs text-gray-400">({realPercent}%)</span>
+                                </div>
+                            </div>
+                          );
+                      });
+                  })()
+              ) : (
+                <div className="text-center text-gray-400 text-xs py-4">데이터를 불러오는 중입니다...</div>
+              )}
             </div>
           </div>
         )}
 
         {activeTab === 'population' && (
           <div className="animate-fade-in space-y-6">
-            {/* TODO: [API Integration] Fetch population data */}
             <div>
               <p className="text-xs font-bold text-gray-800 mb-1">총 주거 인구</p>
               <div className="flex items-end gap-2 mb-4">
-                <span className="text-3xl font-extrabold text-blue-600">12,500<span className="text-base font-normal text-gray-600 ml-1">명</span></span>
+                <span className="text-3xl font-extrabold text-blue-600">
+                    {data && data.population ? data.population.total.toLocaleString() : '0'}
+                    <span className="text-base font-normal text-gray-600 ml-1">명</span>
+                </span>
               </div>
             </div>
 
-            <div className="bg-gray-50 rounded-xl p-4">
-              <h4 className="text-xs font-bold text-gray-700 mb-3">성별 비율</h4>
-              <div className="flex h-4 rounded-full overflow-hidden mb-2">
-                <div className="bg-blue-400 w-[48%] flex items-center justify-center text-[10px] text-white">남성 48%</div>
-                <div className="bg-pink-400 w-[52%] flex items-center justify-center text-[10px] text-white">여성 52%</div>
-              </div>
-            </div>
-
-            <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
-              <h4 className="text-xs font-bold text-gray-700 mb-3">연령대별 비율</h4>
-              <div className="space-y-3">
-                {[
-                  { age: '10대', percent: 15, color: 'bg-green-400' },
-                  { age: '20대', percent: 35, color: 'bg-blue-500' },
-                  { age: '30대', percent: 28, color: 'bg-blue-400' },
-                  { age: '40대', percent: 15, color: 'bg-purple-400' },
-                  { age: '50대+', percent: 7, color: 'bg-gray-400' },
-                ].map((item) => (
-                  <div key={item.age} className="flex items-center gap-2">
-                    <span className="w-8 text-xs text-gray-500">{item.age}</span>
-                    <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div className={`h-full ${item.color}`} style={{ width: `${item.percent}%` }}></div>
+            {data && data.population ? (
+                <>
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <h4 className="text-xs font-bold text-gray-700 mb-3">성별 비율</h4>
+                      {(() => {
+                           const total = data.population.total || 1;
+                           const mP = Math.round((data.population.male / total) * 100);
+                           const fP = Math.round((data.population.female / total) * 100);
+                           return (
+                               <div className="flex h-4 rounded-full overflow-hidden mb-2">
+                                 <div className="bg-blue-400 flex items-center justify-center text-[10px] text-white overflow-hidden whitespace-nowrap" style={{ width: `${mP}%` }}>남성 {mP}%</div>
+                                 <div className="bg-pink-400 flex items-center justify-center text-[10px] text-white overflow-hidden whitespace-nowrap" style={{ width: `${fP}%` }}>여성 {fP}%</div>
+                               </div>
+                           );
+                      })()}
                     </div>
-                    <span className="text-xs font-bold text-gray-700 w-8 text-right">{item.percent}%</span>
-                  </div>
-                ))}
-              </div>
-            </div>
 
-            <div className="bg-gray-50 rounded-xl p-4">
-               <h4 className="text-xs font-bold text-gray-700 mb-2"> 직장 인구</h4>
-               <div className="flex items-end gap-1">
-                 <span className="text-xl font-bold text-gray-800">8,400</span>
-                 <span className="text-xs text-gray-500 mb-1">명</span>
-               </div>
-               <p className="text-[10px] text-gray-400 mt-1">주요 직장: 판매직, 사무직, 서비스직 위주</p>
-            </div>
+                    <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+                      <h4 className="text-xs font-bold text-gray-700 mb-3">연령대별 비율</h4>
+                      <div className="space-y-3">
+                        {(() => {
+                            const total = data.population.total || 1;
+                            const ages = [
+                                { label: '10대', val: data.population.age.a10, color: 'bg-green-400' },
+                                { label: '20대', val: data.population.age.a20, color: 'bg-blue-500' },
+                                { label: '30대', val: data.population.age.a30, color: 'bg-blue-400' },
+                                { label: '40대', val: data.population.age.a40, color: 'bg-purple-400' },
+                                { label: '50대', val: data.population.age.a50, color: 'bg-gray-400' },
+                                { label: '60대+', val: data.population.age.a60, color: 'bg-gray-500' },
+                            ];
+                            
+                            const maxVal = Math.max(...ages.map(a => a.val)) || 1;
+
+                            return ages.map((item) => {
+                                const realPercent = Math.round((item.val / total) * 100);
+                                const relativePercent = (item.val / maxVal) * 100; // Relative to max for visual impact
+                                
+                                return (
+                                  <div key={item.label} className="flex items-center gap-2">
+                                    <span className="w-8 text-xs text-gray-500">{item.label}</span>
+                                    <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                      <div className={`h-full ${item.color}`} style={{ width: `${relativePercent}%` }}></div>
+                                    </div>
+                                    <span className="text-xs font-bold text-gray-700 w-8 text-right">{realPercent}%</span>
+                                  </div>
+                                );
+                            });
+                        })()}
+                      </div>
+                    </div>
+                </>
+            ) : (
+                <div className="text-center text-gray-400 text-sm py-10">인구 데이터가 없습니다.</div>
+            )}
           </div>
         )}
       </div>
