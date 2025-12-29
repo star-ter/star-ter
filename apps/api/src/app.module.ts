@@ -4,6 +4,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { HealthController } from './health/health.controller';
 
 import { PolygonModule } from './polygon/polygon.module';
+import { FloatingPopulationModule } from './floating-population/floating-population.module';
 import { MarketModule } from './market/market.module';
 
 @Module({
@@ -11,6 +12,7 @@ import { MarketModule } from './market/market.module';
     ConfigModule.forRoot({ envFilePath: '.env' }),
     PrismaModule,
     PolygonModule,
+    FloatingPopulationModule,
     MarketModule,
   ],
   controllers: [HealthController],

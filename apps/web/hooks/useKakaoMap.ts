@@ -1,12 +1,6 @@
 import { useEffect, useState } from 'react';
 import { KakaoMap } from '../types/map-types';
 
-declare global {
-  interface Window {
-    kakao: any;
-  }
-}
-
 export const useKakaoMap = (mapRef: React.RefObject<HTMLDivElement | null>) => {
   const [map, setMap] = useState<KakaoMap | null>(null);
   const [loaded, setLoaded] = useState(false);
