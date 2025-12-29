@@ -3,6 +3,7 @@ import SalesTrendGraph from './SalesTrendGraph';
 import WeeklySalesGraph from './WeeklySalesGraph';
 import AgeGenderSalesGraph from './AgeGenderSalesGraph';
 import TimeOfDaySalesGraph from './TimeOfDaySalesGraph';
+import AgeGenderRadarChart from './AgeGenderRadarChart';
 interface AnalysisCardProps {
   title: string; // This is currently the Dong name (e.g. 창신1동)
   address: string;
@@ -49,9 +50,13 @@ export default function AnalysisCard({
         setLoading(true);
         try {
             // Encode URI component to handle Korean characters safely
-            const res = await fetch(`http://localhost:4000/analysis/${encodeURIComponent(queryParam)}`);
+            // Add timestamp to foil cache
+            const res = await fetch(`http://localhost:4000/analysis/${encodeURIComponent(queryParam)}?_t=${Date.now()}`);
             const json = await res.json();
             if (json.sales) {
+                if (json.store && json.store.categories) {
+                    console.log('DEBUG: Store categories count:', json.store.categories.length);
+                }
                 setData(json);
             }
         } catch (error) {
@@ -238,56 +243,9 @@ export default function AnalysisCard({
             </div>
 
             {data && data.population ? (
-                <>
-                    <div className="bg-gray-50 rounded-xl p-4">
-                      <h4 className="text-xs font-bold text-gray-700 mb-3">성별 비율</h4>
-                      {(() => {
-                           const total = data.population.total || 1;
-                           const mP = Math.round((data.population.male / total) * 100);
-                           const fP = Math.round((data.population.female / total) * 100);
-                           return (
-                               <div className="flex h-4 rounded-full overflow-hidden mb-2">
-                                 <div className="bg-blue-400 flex items-center justify-center text-[10px] text-white overflow-hidden whitespace-nowrap" style={{ width: `${mP}%` }}>남성 {mP}%</div>
-                                 <div className="bg-pink-400 flex items-center justify-center text-[10px] text-white overflow-hidden whitespace-nowrap" style={{ width: `${fP}%` }}>여성 {fP}%</div>
-                               </div>
-                           );
-                      })()}
-                    </div>
-
-                    <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
-                      <h4 className="text-xs font-bold text-gray-700 mb-3">연령대별 비율</h4>
-                      <div className="space-y-3">
-                        {(() => {
-                            const total = data.population.total || 1;
-                            const ages = [
-                                { label: '10대', val: data.population.age.a10, color: 'bg-green-400' },
-                                { label: '20대', val: data.population.age.a20, color: 'bg-blue-500' },
-                                { label: '30대', val: data.population.age.a30, color: 'bg-blue-400' },
-                                { label: '40대', val: data.population.age.a40, color: 'bg-purple-400' },
-                                { label: '50대', val: data.population.age.a50, color: 'bg-gray-400' },
-                                { label: '60대+', val: data.population.age.a60, color: 'bg-gray-500' },
-                            ];
-                            
-                            const maxVal = Math.max(...ages.map(a => a.val)) || 1;
-
-                            return ages.map((item) => {
-                                const realPercent = Math.round((item.val / total) * 100);
-                                const relativePercent = (item.val / maxVal) * 100; // Relative to max for visual impact
-                                
-                                return (
-                                  <div key={item.label} className="flex items-center gap-2">
-                                    <span className="w-8 text-xs text-gray-500">{item.label}</span>
-                                    <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                                      <div className={`h-full ${item.color}`} style={{ width: `${relativePercent}%` }}></div>
-                                    </div>
-                                    <span className="text-xs font-bold text-gray-700 w-8 text-right">{realPercent}%</span>
-                                  </div>
-                                );
-                            });
-                        })()}
-                      </div>
-                    </div>
-                </>
+                <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm h-[320px]">
+                  <AgeGenderRadarChart populationData={data.population} />
+                </div>
             ) : (
                 <div className="text-center text-gray-400 text-sm py-10">인구 데이터가 없습니다.</div>
             )}
