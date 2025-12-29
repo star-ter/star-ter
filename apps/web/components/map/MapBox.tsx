@@ -3,6 +3,7 @@ import BottomMenuBox from '../bottom-menu/BottomMenuBox';
 import RankNav from '../rank-nav/RankNav';
 import { usePopulationVisual } from '../../hooks/usePopulationVisual';
 import { IndustryCategory, CompareRequest } from '../../types/bottom-menu-types';
+import SearchBox from '../search/SearchBox';
 
 interface MapBoxProps {
   locationA: { name: string; code?: string };
@@ -30,6 +31,7 @@ export default function MapBox({
   return (
     <section className="relative h-full w-full pointer-events-none">
       <div className="absolute left-4 top-4 flex flex-col items-start gap-3 pointer-events-auto">
+        <SearchBox />
         <button
           type="button"
           onClick={() => setIsRankOpen((prev) => !prev)}
