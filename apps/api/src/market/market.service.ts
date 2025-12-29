@@ -117,7 +117,7 @@ export class MarketService {
     lng: number,
   ): Promise<AdministrativeAreaResult | null> {
     const result = await this.prisma.$queryRaw<AdministrativeAreaResult[]>`
-      SELECT ADSTRD_CD, ADSTRD_NM
+      SELECT "ADSTRD_CD", "ADSTRD_NM"
       FROM area_dong
       WHERE ST_Intersects(geom, ST_SetSRID(ST_Point(${lng}, ${lat}), 4326))
       LIMIT 1
@@ -213,8 +213,48 @@ export class MarketService {
   }
 
   private getEmptySalesData(message: string): MarketAnalyticsDto {
-    // TODO: any 수정하기 -> mock 제공인데, 너무 길어서 추후 const로 분리
-    return { areaName: message, isCommercialArea: false } as any;
+    return {
+      areaName: message,
+      isCommercialArea: false,
+      totalRevenue: 0,
+      sales: {
+        trend: [],
+        timeSlot: {
+          time0006: 0,
+          time0611: 0,
+          time1114: 0,
+          time1417: 0,
+          time1721: 0,
+          time2124: 0,
+          peakTimeSummaryComment: '데이터 없음',
+        },
+        dayOfWeek: {
+          mon: 0,
+          tue: 0,
+          wed: 0,
+          thu: 0,
+          fri: 0,
+          sat: 0,
+          sun: 0,
+          peakDaySummaryComment: '데이터 없음',
+        },
+        demographics: {
+          male: 0,
+          female: 0,
+          age10: 0,
+          age20: 0,
+          age30: 0,
+          age40: 0,
+          age50: 0,
+          age60: 0,
+          primaryGroupSummaryComment: '데이터 없음',
+        },
+        topIndustries: [],
+      },
+      vitality: { openingRate: 0, closureRate: 0 },
+      openingRate: 0,
+      closureRate: 0,
+    };
   }
 
   private async fetchStoreDataFromOpenApi(
