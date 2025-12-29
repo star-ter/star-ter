@@ -1,26 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import SalesTrendGraph from './SalesTrendGraph';
 import WeeklySalesGraph from './WeeklySalesGraph';
 import AgeGenderSalesGraph from './AgeGenderSalesGraph';
 import TimeOfDaySalesGraph from './TimeOfDaySalesGraph';
 import AgeGenderRadarChart from './AgeGenderRadarChart';
-interface AnalysisCardProps {
-  title: string; // This is currently the Dong name (e.g. 창신1동)
-  address: string;
-  estimatedSales: string;
-  salesChange: string; // e.g., "+3.5%"
-  storeCount: string;
-  color?: string;
-  onClose: () => void;
-  onClear: () => void;
-  hoveredTab?: string | null;
-  onTabHover?: (tab: string | null) => void;
-  activeTab?: 'sales' | 'store' | 'population';
-  onTabChange?: (tab: 'sales' | 'store' | 'population') => void;
-  scrollRef?: React.RefObject<HTMLDivElement | null>;
-  onScroll?: (e: React.UIEvent<HTMLDivElement>) => void;
-  regionCode?: string; // Add regionCode prop if available, otherwise we might need to derive it or fetch it
-}
+import { AnalysisData, AnalysisCardProps } from '../../types/analysis-types';
 
 export default function AnalysisCard({
   title,
@@ -38,8 +23,10 @@ export default function AnalysisCard({
   onScroll,
   regionCode, 
 }: AnalysisCardProps) {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<AnalysisData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [expandedStoreCategories, setExpandedStoreCategories] = useState(false);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   
   // Use title as fallback for regionCode if not explicitly provided
   const queryParam = regionCode || title;
@@ -187,41 +174,114 @@ export default function AnalysisCard({
 
         {activeTab === 'store' && (
           <div className="animate-fade-in space-y-6">
-            <div>
-              <p className="text-xs font-bold text-gray-800 mb-1">총 매장 수</p>
-              <div className="flex items-end gap-2 mb-4">
-                <span className="text-3xl font-extrabold text-blue-600">
-                    {data ? data.store.total.toLocaleString() : initialStoreCount}
-                    <span className="text-base font-normal text-gray-600 ml-1">개</span>
-                </span>
+            <div className="flex justify-between items-end mb-6">
+              <div>
+                <p className="text-xs font-bold text-gray-800 mb-1">총 매장 수</p>
+                <div className="flex items-end gap-2">
+                  <span className="text-3xl font-extrabold text-blue-600">
+                      {data ? data.store.total.toLocaleString() : initialStoreCount}
+                      <span className="text-base font-normal text-gray-600 ml-1">개</span>
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex gap-2">
+                 <div className="flex flex-col justify-center items-center min-w-[70px]">
+                     <span className="text-[10px] text-gray-500 font-semibold">개업률</span>
+                     <span className="text-base font-bold text-blue-600">
+                        {data && data.store.openingRate !== undefined ? data.store.openingRate.toFixed(1) : '-'}%
+                     </span>
+                 </div>
+                 <div className="flex flex-col justify-center items-center min-w-[70px]">
+                     <span className="text-[10px] text-gray-500 font-semibold">폐업률</span>
+                     <span className="text-base font-bold text-red-500">
+                        {data && data.store.closingRate !== undefined ? data.store.closingRate.toFixed(1) : '-'}%
+                     </span>
+                 </div>
               </div>
             </div>
             
-            <div className="space-y-3">
-              <h4 className="text-xs font-bold text-gray-700 border-b border-gray-100 pb-2">주요 업종 분포</h4>
+            <div className="space-y-1">
+              <h4 className="text-xs font-bold text-gray-700 border-b border-gray-100 pb-2 mb-2">주요 업종 분포</h4>
               
               {data && data.store.categories ? (
                   (() => {
-                      const maxCount = Math.max(...data.store.categories.map((c: any) => c.count)) || 1;
+                      const totalList = data.store.categories;
+                      const showCount = expandedStoreCategories ? totalList.length : 10;
+                      const visibleList = totalList.slice(0, showCount);
+                      
+                      const maxCount = Math.max(...totalList.map((c) => c.count)) || 1;
                       const totalStores = data.store.total || 1;
                       
-                      return data.store.categories.map((item: any) => {
-                          const relativePercent = (item.count / maxCount) * 100; // Scale relative to max item
-                          const realPercent = Math.round((item.count / totalStores) * 100);
+                      return (
+                        <>
+                          {visibleList.map((item) => {
+                              const relativePercent = (item.count / maxCount) * 100; // Scale relative to max item
+                              const realPercent = Math.round((item.count / totalStores) * 100);
+                              const isExpanded = expandedCategories.includes(item.name);
+                              
+                              const toggleCategory = () => {
+                                setExpandedCategories(prev => 
+                                  prev.includes(item.name) 
+                                    ? prev.filter(name => name !== item.name)
+                                    : [...prev, item.name]
+                                );
+                              };
+                              
+                              return (
+                                <div key={item.name} className="flex flex-col group cursor-pointer" onClick={toggleCategory}>
+                                    <div className="flex items-center text-sm py-1">
+                                        <span className="text-gray-500 w-24 truncate font-medium group-hover:text-blue-600 group-hover:font-bold transition-all" title={item.name}>
+                                            {item.name}
+                                        </span>
+                                        <div className="flex-1 h-1.5 bg-gray-100 rounded-full mx-2">
+                                            <div className="h-full bg-blue-500 rounded-full opacity-70 group-hover:opacity-100 transition-opacity" style={{ width: `${relativePercent}%` }}></div>
+                                        </div>
+                                        <div className="text-right w-20 mr-1">
+                                            <span className="font-bold text-gray-800 mr-1">{item.count}</span>
+                                            <span className="text-xs text-gray-400">({realPercent}%)</span>
+                                        </div>
+                                        <div className="text-gray-400 group-hover:text-blue-600 transition-colors">
+                                            {isExpanded ? (
+                                                <ChevronUp size={14} className="transition-all group-hover:stroke-[3]" />
+                                            ) : (
+                                                <ChevronDown size={14} className="transition-all group-hover:stroke-[3]" />
+                                            )}
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Detailed Stats Dropdown with Smooth Transition */}
+                                    <div 
+                                        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                                            isExpanded ? 'max-h-20 opacity-100' : 'max-h-0 opacity-0'
+                                        }`}
+                                    >
+                                        <div className="text-xs flex justify-center items-center gap-6 py-1">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-gray-500">개업 점포</span>
+                                                <span className="font-bold text-blue-600">{item.open || 0}개</span>
+                                            </div>
+                                            <div className="w-[1px] h-3 bg-gray-300"></div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-gray-500">폐업 점포</span>
+                                                <span className="font-bold text-red-500">{item.close || 0}개</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                              );
+                          })}
                           
-                          return (
-                            <div key={item.name} className="flex justify-between items-center text-sm">
-                                <span className="text-gray-500 w-24 truncate">{item.name}</span>
-                                <div className="flex-1 h-1.5 bg-gray-100 rounded-full mx-2">
-                                    <div className="h-full bg-blue-500 rounded-full opacity-70" style={{ width: `${relativePercent}%` }}></div>
-                                </div>
-                                <div className="text-right w-20">
-                                    <span className="font-bold text-gray-800 mr-1">{item.count}</span>
-                                    <span className="text-xs text-gray-400">({realPercent}%)</span>
-                                </div>
-                            </div>
-                          );
-                      });
+                          {totalList.length > 10 && (
+                            <button 
+                              onClick={() => setExpandedStoreCategories(!expandedStoreCategories)}
+                              className="w-full py-2 text-xs text-gray-500 font-medium hover:text-blue-600 transition-colors flex items-center justify-center gap-1 mt-2 border-t border-gray-50"
+                            >
+                              {expandedStoreCategories ? '접기' : '더보기'}
+                            </button>
+                          )}
+                        </>
+                      );
                   })()
               ) : (
                 <div className="text-center text-gray-400 text-xs py-4">데이터를 불러오는 중입니다...</div>
