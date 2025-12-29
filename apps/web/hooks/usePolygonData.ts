@@ -122,6 +122,7 @@ export const usePolygonData = (
           (feature) => ({
             commercialType: feature.properties.commercialType,
             commercialName: feature.properties.commercialName,
+            commercialCode: feature.properties.commercialCode,
             guCode: feature.properties.guCode,
             dongCode: feature.properties.dongCode,
             polygons: feature.polygons.coordinates,

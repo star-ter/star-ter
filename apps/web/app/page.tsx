@@ -14,8 +14,9 @@ export default function Home() {
   const { isOpen, width, isResizing } = useSidebarStore();
   const { isVisible: isComparisonVisible, closeComparison, openComparison, dataA: comparisonDataA, dataB: comparisonDataB } = useComparisonStore();
   
-  const [locationA, setLocationA] = useState('');
-  const [locationB, setLocationB] = useState('');
+  // Location State now holds both Name and Code
+  const [locationA, setLocationA] = useState<{name: string, code?: string}>({ name: '' });
+  const [locationB, setLocationB] = useState<{name: string, code?: string}>({ name: '' });
   const [pickTarget, setPickTarget] = useState('');
   const [selectedCategory, setSelectedCategory] =
     useState<IndustryCategory | null>(null);
@@ -28,32 +29,31 @@ export default function Home() {
     console.log('선택모드 시작합니다.');
     setPickTarget(target);
   }
-  // 지도를 클릭
-  function mapClick(area: string) {
+  // 지도를 클릭 (Updated to accept object)
+  function mapClick(data: { name: string; code?: string }) {
     if (pickTarget === 'A') {
-      setLocationA(area);
+      setLocationA(data);
       setPickTarget('');
       return;
     } else if (pickTarget === 'B') {
-      setLocationB(area);
+      setLocationB(data);
       setPickTarget('');
       return;
     }
   }
 
   // Handle Comparison Trigger (Manual via MapBox)
-  // Handle Comparison Trigger (Manual via MapBox)
   function handleCompareRequest(data?: CompareRequest) {
     // If data comes from search (codes + names), use them. 
     // Otherwise fallback to locationA string (which might be name or code, usually name from Map)
     
-    // Code: The ID used for API fetching (e.g., 11680580 or 'Samsung-dong')
-    const codeA = data?.targetA || locationA || '지역 A';
-    const codeB = data?.targetB || locationB || '지역 B';
+    // Code: The ID used for API fetching
+    const codeA = data?.targetA || locationA.code || locationA.name || '지역 A';
+    const codeB = data?.targetB || locationB.code || locationB.name || '지역 B';
 
-    // Name: The display title (e.g., 'Seoul Gangnam Samsung-dong')
-    const titleA = data?.targetNameA || locationA || '지역 A';
-    const titleB = data?.targetNameB || locationB || '지역 B';
+    // Name: The display title
+    const titleA = data?.targetNameA || locationA.name || '지역 A';
+    const titleB = data?.targetNameB || locationB.name || '지역 B';
 
     openComparison(
       {

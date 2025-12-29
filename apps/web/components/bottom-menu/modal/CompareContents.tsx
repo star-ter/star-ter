@@ -1,14 +1,15 @@
+import { useState, useEffect } from 'react';
 import PillButton from '../PillButton';
 import { CompareRequest } from '../../../types/bottom-menu-types';
 import { BiTargetLock } from 'react-icons/bi';
 import { useMapStore } from '../../../stores/useMapStore';
 import toast from 'react-hot-toast';
-import { useState } from 'react';
-
 interface Props {
   onClose: () => void;
   targetA: string;
   targetB: string;
+  propCodeA?: string;
+  propCodeB?: string;
   changeTargetA: (value: string) => void;
   changeTargetB: (value: string) => void;
   onPickLocation: (target: 'A' | 'B') => void;
@@ -19,6 +20,8 @@ export default function CompareContents({
   onClose,
   targetA,
   targetB,
+  propCodeA,
+  propCodeB,
   changeTargetA,
   changeTargetB,
   onPickLocation,
@@ -30,6 +33,15 @@ export default function CompareContents({
   const [codeA, setCodeA] = useState<string>('');
   const [codeB, setCodeB] = useState<string>('');
 
+  // Sync with props (e.g. from Map Click)
+  useEffect(() => {
+      setCodeA(propCodeA || '');
+  }, [propCodeA]);
+
+  useEffect(() => {
+      setCodeB(propCodeB || '');
+  }, [propCodeB]);
+
   // Search candidates
   const [candidatesA, setCandidatesA] = useState<any[]>([]);
   const [candidatesB, setCandidatesB] = useState<any[]>([]);
@@ -39,6 +51,12 @@ export default function CompareContents({
         toast.error('두 구역을 모두 선택해주세요.');
         return;
     }
+    // Strict Validation: Codes must be present
+    if (!codeA || !codeB) {
+        toast.error('정확한 구역을 검색 후 선택하거나, 지도에서 선택해주세요.');
+        return;
+    }
+
     clearMarkers(); // 분석 시작 시 마커 제거
     // Pass codes if available, otherwise pass names (backend might handle names, but codes are safer)
     onCompare({ 

@@ -55,62 +55,96 @@ export class AnalysisService {
         // 1. Heuristic: Strip 'Gu' suffix or split full name to find core keyword
         // e.g., "Gangnam-gu" -> "Gangnam", "Seoul Gangnam-gu Samsung-dong" -> "Samsung"
         const keywords = regionCode.trim().split(/\s+/);
-        let keyword = keywords[keywords.length - 1]; // Use last word
         
-        // Strip '동' if generic
-        if (keyword.endsWith('동') && keyword.length > 2) {
-             keyword = keyword.slice(0, -1);
-        }
-        
-        // Check Gu
-        const guList = await this.prisma.areaGu.findMany({
-            where: { SIGNGU_NM: { contains: keyword } }
-        });
-        
-        if (guList.length > 0) {
-            type = 'GU';
-            codes = [guList[0].SIGNGU_CD]; // Use First Match Only
-        } else {
-            // Check Dong
-            const dongList = await this.prisma.areaDong.findMany({
-                where: { ADSTRD_NM: { contains: keyword } }
+        // Define search helper
+        const searchInTables = async (term: string) => {
+            // Strip '동' suffix for better matching if term is long enough
+             let processTerm = term;
+             if (processTerm.endsWith('동') && processTerm.length > 2) {
+                 processTerm = processTerm.slice(0, -1);
+             }
+
+             // 1. Commercial (Prioritize specific names like 'Station Exit')
+            const commList = await this.prisma.areaCommercial.findMany({
+                where: { TRDAR_CD_NM: { contains: term } } // Use original term for exact phrases
             });
-            
-            if (dongList.length > 0) {
-                type = 'DONG';
-                codes = [dongList[0].ADSTRD_CD]; // Use First Match Only
-            } else {
-                // Check Commercial (Optional, kept for safety but prioritized last)
-                const commList = await this.prisma.areaCommercial.findMany({
-                    where: { TRDAR_CD_NM: { contains: keyword } }
-                });
-                
-                if (commList.length > 0) {
-                    type = 'COMMERCIAL';
-                    codes = [commList[0].TRDAR_CD]; // Use First Match Only
-                } else {
-                    return { error: `Region not found: ${regionCode}` };
-                }
-            }
+            if (commList.length > 0) return { type: 'COMMERCIAL', codes: [commList[0].TRDAR_CD] };
+
+             // 2. Dong
+            const dongList = await this.prisma.areaDong.findMany({
+                where: { ADSTRD_NM: { contains: processTerm } }
+            });
+            if (dongList.length > 0) return { type: 'DONG', codes: [dongList[0].ADSTRD_CD] };
+
+            // 3. Gu
+            const guList = await this.prisma.areaGu.findMany({
+                where: { SIGNGU_NM: { contains: processTerm } }
+            });
+            if (guList.length > 0) return { type: 'GU', codes: [guList[0].SIGNGU_CD] };
+
+            return null;
+        };
+
+        let result: { type: string, codes: string[] } | null = null;
+
+        // Strategy 1: Last 2 words (e.g. "Yeoksam Station 4")
+        if (keywords.length >= 2) {
+            const lastTwo = keywords.slice(-2).join(' ');
+            result = await searchInTables(lastTwo);
+        }
+
+        // Strategy 2: Last 1 word (e.g. "Samsung-dong" from "Gangnam-gu Samsung-dong")
+        if (!result) {
+            const lastOne = keywords[keywords.length - 1];
+            result = await searchInTables(lastOne);
+        }
+
+        // Strategy 3: Full String (if everything else fails, though Strategy 1 likely covers reasonable prefixes)
+        if (!result && keywords.length > 2) {
+             result = await searchInTables(regionCode.trim());
+        }
+
+        if (result) {
+            type = result.type as any;
+            codes = result.codes;
+
+        } else {
+
+             return { error: `Region not found: ${regionCode}` };
         }
     }
 
     const currentConfig = CONFIG[type];
+    
 
     // 2. Get latest available quarter from Sales table (Use SalesCommercial as reference or dynamic?)
     // Using SalesCommercial is generally safe for system-wide latest quarter, 
     // but specific regions might not have data. Let's use the specific table just in case.
     // Dynamic Query for FindFirst
-    const latestSales = await (this.prisma as any)[currentConfig.sales].findFirst({
+    // 2. Get latest available quarter for the SPECIFIC region
+    const latestRegionSales = await (this.prisma as any)[currentConfig.sales].findFirst({
+      where: { [currentConfig.key]: { in: codes } },
       orderBy: { STDR_YYQU_CD: 'desc' },
       select: { STDR_YYQU_CD: true },
     });
 
-    if (!latestSales) {
-      return { error: 'No data available' };
+    let stdrYyquCd = '';
+
+    if (latestRegionSales) {
+        stdrYyquCd = latestRegionSales.STDR_YYQU_CD;
+
+    } else {
+        // Fallback or Error if no data exists for this region
+
+        return { error: 'No data available for this region' };
     }
 
-    const stdrYyquCd = latestSales.STDR_YYQU_CD;
+    /* Global fallback removed to ensure we only show valid region data
+    const latestSales = await (this.prisma as any)[currentConfig.sales].findFirst({
+      orderBy: { STDR_YYQU_CD: 'desc' },
+      select: { STDR_YYQU_CD: true },
+    });
+    */
 
     // 3. Fetch all raw data in parallel using dynamic table names
     const [salesRaw, storeRaw, populationRaw] = await Promise.all([
@@ -133,6 +167,8 @@ export class AnalysisService {
         },
       }),
     ]);
+    
+
 
 
     // 4. Fetch History Data (Last 4 Quarters)
@@ -220,6 +256,8 @@ export class AnalysisService {
       ageSales.a50 += row.AGRDE_50_SELNG_AMT;
       ageSales.a60 += row.AGRDE_60_ABOVE_SELNG_AMT;
     });
+
+
 
     // --- Store Aggregation ---
     let totalStores = 0;
@@ -377,7 +415,6 @@ export class AnalysisService {
 
       
       // Commercial area search removed by user request.
-      /*
       // 4. Search Commercial Areas
       const commMatches = await this.prisma.areaCommercial.findMany({
           where: { TRDAR_CD_NM: { contains: lastKeyword } }
@@ -390,7 +427,6 @@ export class AnalysisService {
               fullName: `${c.SIGNGU_CD_NM || ''} ${c.TRDAR_CD_NM}`.trim()
           });
       });
-      */
 
       return results;
   }

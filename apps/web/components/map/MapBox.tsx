@@ -4,10 +4,10 @@ import { usePopulationVisual } from '../../hooks/usePopulationVisual';
 import { IndustryCategory, CompareRequest } from '../../types/bottom-menu-types';
 
 interface MapBoxProps {
-  locationA: string;
-  locationB: string;
-  setLocationA: (area: string) => void;
-  setLocationB: (area: string) => void;
+  locationA: { name: string; code?: string };
+  locationB: { name: string; code?: string };
+  setLocationA: (area: { name: string; code?: string }) => void;
+  setLocationB: (area: { name: string; code?: string }) => void;
   handlePickMode: (target: 'A' | 'B') => void;
   population: ReturnType<typeof usePopulationVisual>;
   onCompare?: (data?: CompareRequest) => void;
