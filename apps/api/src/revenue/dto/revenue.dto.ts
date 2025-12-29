@@ -24,6 +24,7 @@ export class RevenueRankingItemDto {
   name: string;
   amount: number;
   count: number;
+  changeType?: string;
 }
 
 export class RevenueRankingResponseDto {
@@ -57,6 +58,10 @@ export class GetRevenueRankingQueryDto {
   @IsNotEmpty()
   @IsIn(revenueLevels)
   level: RevenueLevel;
+
+  @IsString()
+  @IsOptional()
+  parentGuCode?: string;
 
   @IsString()
   @IsOptional()

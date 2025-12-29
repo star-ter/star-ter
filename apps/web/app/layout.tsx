@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import AIChatSidebar from '@/components/features/chat/AIChatSidebar';
 import { Toaster } from 'react-hot-toast';
+import RankNav from '@/components/rank-nav/RankNav';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',

@@ -9,6 +9,7 @@ import { FloatingPopulationModule } from './floating-population/floating-populat
 import { MarketModule } from './market/market.module';
 import { RevenueModule } from './revenue/revenue.module';
 import { StoreModule } from './store/store.module';
+import { GeoModule } from './geo/geo.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { StoreModule } from './store/store.module';
     MarketModule,
     RevenueModule,
     StoreModule,
+    GeoModule,
   ],
   controllers: [HealthController],
   providers: [],
