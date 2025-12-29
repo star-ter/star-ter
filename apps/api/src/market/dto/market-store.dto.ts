@@ -20,16 +20,12 @@ export class GetMarketAnalysisQueryDto {
   polygon?: string;
 }
 
-export class MarketAnalysisResponseDto {
-  isCommercialZone: boolean;
+export class MarketStoreListDto {
   areaName: string;
-  estimatedRevenue: number;
-  salesDescription: string;
 
   reviewSummary: {
     naver: string;
   };
+
   stores: MarketStore[];
-  openingRate: number;
-  closureRate: number;
 }
