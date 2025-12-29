@@ -49,3 +49,40 @@ model CommercialArea {
   geom          Unsupported("geometry(MultiPolygon, 4326)")
   @@map("seoul_commercial_area_grid")
 }
+
+model BuildingArea {
+  id                        Int       @id @default(autoincrement()) // 4775
+  source_shape_id           Int       // 7494
+  gis_building_unified_id   String    // 0000200588194524080100000000
+  unique_no                 String    // 1111016400102030000
+  legal_dong_code           String    // 1111016400
+  legal_dong_name           String    // 서울특별시 종로구 종로6가
+  lot_no                    String    // 203
+  special_land_code         String    // 1
+  special_land_type_name    String    // 일반
+  building_use_code         String    // 01000
+  building_use_name         String    // 단독주택
+  building_structure_code   String    // 51
+  building_structure_name   String    // 일반목구조
+  building_area_sqm         Float     // 0.0
+  use_approval_date         DateTime? @db.Date // (비어있음) -> ? 유지
+  gross_floor_area          Float     // 26.45
+  site_area_sqm             Float     // 0.0
+  height_m                  Float     // 0.0
+  building_coverage_ratio_pct Float   // 0.0
+  floor_area_ratio_pct      Float     // 0.0
+  building_id               String    // 20430
+  is_illegal_building       String    // N
+  ref_system_link_key       String    // B00100000000TH7RM
+  data_base_date            DateTime  @db.Date // 2025-12-01
+  source_sido_sigungu_code  String    // 11110
+  building_name             String?   // (비어있음) -> ? 유지
+  building_block_name       String?   // (비어있음) -> ? 유지
+  above_ground_floors       Int       // 1
+  below_ground_floors       Int       // 0
+  data_created_updated_at   DateTime  @default(now()) @db.Date // 2017-05-03
+  
+  // 지오메트리 데이터가 있으므로 필수(Required)로 변경
+  geom                      Unsupported("geometry(MultiPolygon, 4326)")
+  @@map("building_integrated_info")
+}

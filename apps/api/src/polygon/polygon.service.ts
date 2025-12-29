@@ -1,15 +1,10 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from '../../generated/prisma/client';
 import { BuildingPolygonResponse } from './dto/building-polygon-dto';
 import { AdminPolygonResponse } from './dto/admin-polygon-dto';
 import { CommercialPolygonResponse } from './dto/commercial-polygon-dto';
-import { VWorldResponse, VWorldFeature } from './dto/vworld-response.dto';
 import { RawCommercialArea } from './dto/raw-commercial-area.dto';
+import { RawCommercialBuilding } from './dto/raw-commercial-building.dto';
 
 @Injectable()
 export class PolygonService {
@@ -59,68 +54,42 @@ export class PolygonService {
     >;
   }
 
-  async getBuildingPolygon(
+  // 상권 정보가 있는 건물만 필터링하여 조회 (DB 기반)
+  async getCommercialBuildingPolygons(
     minx: string,
     miny: string,
     maxx: string,
     maxy: string,
   ): Promise<BuildingPolygonResponse[]> {
-    const BASE_URL = 'https://api.vworld.kr/req/data';
-    const key = process.env.VWORLD_API_KEY;
-
-    if (!key) {
-      throw new InternalServerErrorException('VWORLD_API_KEY is missing');
-    }
-
     try {
-      const queryParams = new URLSearchParams({
-        service: 'data',
-        request: 'GetFeature',
-        data: 'LT_C_SPBD',
-        key: key,
-        format: 'json',
-        geomFilter: `BOX(${minx},${miny},${maxx},${maxy})`,
-        crs: 'EPSG:4326',
-        size: '500',
-        domain: 'localhost', // 배포 시 실제 도메인으로 변경 필요
-      });
+      // 1. Prisma $queryRaw로 JOIN 쿼리 실행
+      // building_integrated_info (b)와 seoul_commercial_store_info (c)를 unique_no = lot_code 로 조인
+      const results = await this.prisma.$queryRaw<RawCommercialBuilding[]>`
+        SELECT DISTINCT
+          c.building_name as buld_nm,
+          c.lot_address as adm_nm,
+          ST_AsGeoJSON(b.geom) as geom
+        FROM building_integrated_info b
+        JOIN seoul_commercial_store_info c ON b.unique_no = c.lot_code
+        WHERE ST_Intersects(b.geom, ST_MakeEnvelope(${parseFloat(minx)}, ${parseFloat(miny)}, ${parseFloat(maxx)}, ${parseFloat(maxy)}, 4326))
+      `;
 
-      const response = await fetch(`${BASE_URL}?${queryParams}`);
-      if (!response.ok) {
-        throw new InternalServerErrorException(
-          `V-World API Error: ${response.statusText}`,
-        );
-      }
-
-      const json = (await response.json()) as VWorldResponse;
-
-      if (json.response && json.response.status === 'ERROR') {
-        throw new BadRequestException(
-          `V-World Error: ${json.response.error?.text || 'Unknown Error'}`,
-        );
-      }
-
-      const features = json.response?.result?.featureCollection?.features || [];
-
-      return features.map((feature: VWorldFeature) => {
-        const props = feature.properties;
-        const geometry = feature.geometry;
-
-        const fullAddr = [props.sido, props.sigungu, props.gu]
-          .filter(Boolean)
-          .join(' ');
-
+      // 2. 결과 매핑
+      return results.map((row) => {
+        const geoJson = JSON.parse(row.geom) as {
+          coordinates: number[][][][] | number[][][] | number[][];
+        };
         return {
-          buld_nm: props.buld_nm,
-          adm_nm: fullAddr,
-          polygons: geometry.coordinates as Prisma.JsonValue, // JsonValue 호환
-          // x, y, adm_cd는 V-World API 응답에 명확치 않아 생략 (Nullable)
+          buld_nm: row.buld_nm || '건물명 없음',
+          adm_nm: row.adm_nm || '',
+          polygons: geoJson.coordinates,
         } as BuildingPolygonResponse;
       });
     } catch (error) {
-      console.error('V-World Proxy Error:', error);
-      // 에러 시 빈 배열 반환할지, 에러를 던질지 정책 결정 (일단 에러 던짐)
-      throw error;
+      console.error('DB Commercial Building Fetch Error:', error);
+      throw new InternalServerErrorException(
+        'Failed to fetch commercial building polygons',
+      );
     }
   }
 }
