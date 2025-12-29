@@ -81,13 +81,15 @@ export default function AnalysisCard({
   const displaySales = data ? formatCurrency(data.sales.total) : initialEstimatedSales;
 
   return (
-    <div className="bg-white/60 rounded-3xl shadow-xl p-5 w-[320px] h-[350px] flex flex-col relative animate-fade-in-up backdrop-blur-sm">
+    <div className="bg-white/60 rounded-3xl shadow-xl p-5 w-[90vw] sm:w-80 lg:w-96 2xl:w-[28rem] h-[45vh] sm:h-[350px] lg:h-[400px] 2xl:h-[450px] flex flex-col relative animate-fade-in-up backdrop-blur-sm">
       {/* Header */}
       <div className="text-center mb-4">
         <h3 className="text-lg font-bold text-gray-900 flex items-center justify-center gap-2">
-          {title.replace(/^서울특별시\s*/, '')}
+          <span className="truncate max-w-[150px] lg:max-w-[220px]" title={title}>
+            {title.replace(/^서울특별시\s*/, '')}
+          </span>
           <button
-            className="text-xs font-normal text-blue-500 px-2 py-0.5 rounded hover:font-semibold hover:text-blue-600 transition"
+            className="text-xs font-normal text-blue-500 px-2 py-0.5 rounded hover:font-semibold hover:text-blue-600 transition shrink-0"
             onClick={() => navigator.clipboard.writeText(address)}
           >
             주소 복사
