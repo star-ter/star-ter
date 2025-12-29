@@ -11,6 +11,7 @@ import { usePopulationVisual } from '../hooks/usePopulationVisual';
 import { IndustryCategory } from '../types/bottom-menu-types';
 import { useMapStore } from '../stores/useMapStore';
 import { useSidebarStore } from '../stores/useSidebarStore';
+import { useBuildingMarkers } from '../hooks/useBuildingMarkers';
 
 initProj4();
 
@@ -49,7 +50,10 @@ export default function Kakaomap({
     }
   });
 
-  // 3. Map Store 연동 - 지도 중심 이동 및 마커 표시
+  // 3. 건물별 점포 수 마커 (Zoom Level 4 이하일 때)
+  useBuildingMarkers(map);
+
+  // 4. Map Store 연동 - 지도 중심 이동 및 마커 표시
   const { center, zoom, markers } = useMapStore();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const markersRef = useRef<any[]>([]);

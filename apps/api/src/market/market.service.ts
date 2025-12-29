@@ -7,6 +7,8 @@ import {
   GetMarketAnalysisQueryDto,
   MarketStoreListDto,
   MarketStore,
+  GetBuildingStoreQueryDto,
+  BuildingStoreCountDto,
 } from './dto/market-store.dto';
 
 import { OpenApiResponse, OpenApiStoreItem } from './dto/open-api.dto';
@@ -269,6 +271,84 @@ export class MarketService {
       openingRate: 0,
       closureRate: 0,
     };
+  }
+
+  async getBuildingStoreCounts(
+    query: GetBuildingStoreQueryDto,
+  ): Promise<BuildingStoreCountDto[]> {
+    const storesData = await this.fetchStoresInRectangle(query);
+    const items = storesData.body?.items || [];
+
+    const grouped = new Map<string, OpenApiStoreItem[]>();
+
+    items.forEach((item) => {
+      if (!item.bldMngNo) return;
+      if (!grouped.has(item.bldMngNo)) {
+        grouped.set(item.bldMngNo, []);
+      }
+      grouped.get(item.bldMngNo)!.push(item);
+    });
+
+    const result: BuildingStoreCountDto[] = [];
+
+    for (const [key, storeItems] of grouped) {
+      const representative = storeItems[0];
+      if (representative.lat && representative.lon) {
+        result.push({
+          buildingId: key,
+          lat: Number(representative.lat),
+          lng: Number(representative.lon),
+          count: storeItems.length,
+          name: representative.bldNm || '상가건물',
+        });
+      }
+    }
+
+    return result;
+  }
+
+  private async fetchStoresInRectangle(
+    query: GetBuildingStoreQueryDto,
+  ): Promise<OpenApiResponse> {
+    const BASE_URL =
+      'https://apis.data.go.kr/B553077/api/open/sdsc2/storeListInRectangle';
+    const SERVICE_KEY = process.env.SBIZ_API_KEY;
+
+    if (!SERVICE_KEY) {
+      throw new InternalServerErrorException('SBIZ_API_KEY is not defined');
+    }
+
+    const queryParams = new URLSearchParams({
+      serviceKey: SERVICE_KEY,
+      pageNo: '1',
+      numOfRows: '500',
+      minx: query.minx,
+      miny: query.miny,
+      maxx: query.maxx,
+      maxy: query.maxy,
+      type: 'json',
+    });
+
+    try {
+      const response = await fetch(`${BASE_URL}?${queryParams.toString()}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        this.logger.error(`OpenAPI Rectangle Error: ${errorText}`);
+        throw new InternalServerErrorException('OpenAPI Error');
+      }
+
+      return (await response.json()) as OpenApiResponse;
+    } catch (e) {
+      this.logger.error('Fetch Rectangle Failed', e);
+      return {
+        header: { resultCode: 'Err', resultMsg: '' },
+        body: { items: [], totalCount: 0 },
+      };
+    }
   }
 
   private async fetchStoreDataFromOpenApi(

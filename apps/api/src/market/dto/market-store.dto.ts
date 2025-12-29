@@ -29,3 +29,29 @@ export class MarketStoreListDto {
 
   stores: MarketStore[];
 }
+
+export class GetBuildingStoreQueryDto {
+  @IsString()
+  @IsNotEmpty()
+  minx: string;
+
+  @IsString()
+  @IsNotEmpty()
+  miny: string;
+
+  @IsString()
+  @IsNotEmpty()
+  maxx: string;
+
+  @IsString()
+  @IsNotEmpty()
+  maxy: string;
+}
+
+export class BuildingStoreCountDto {
+  buildingId: string;
+  lat: number;
+  lng: number;
+  count: number;
+  name: string;
+}

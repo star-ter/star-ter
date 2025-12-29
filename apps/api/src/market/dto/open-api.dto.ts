@@ -6,6 +6,9 @@ export interface OpenApiStoreItem {
   ksicNm: string; // 표준산업분류명 (우리가 subcategory로 쓸 것)
   rdnmAdr: string; // 풀 도로명주소
   bldMngNo: string; // 건물번호
+  lat: string; // 위도
+  lon: string; // 경도
+  bldNm: string; // 건물명
 }
 
 export interface OpenApiBody {
