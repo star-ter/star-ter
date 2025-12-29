@@ -78,7 +78,7 @@ export class MarketService {
 
     return {
       areaName: '선택된 지역',
-      reviewSummary: { naver: '데이터 분석 중...' },
+      reviewSummary: { naver: '여기 끝내줘요!!!' },
       stores: stores,
     };
   }
