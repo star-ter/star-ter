@@ -101,7 +101,7 @@ export class RevenueService {
   async getRevenueRanking(
     query: GetRevenueRankingQueryDto,
   ): Promise<RevenueRankingResponseDto> {
-    const { level, industryCode, quarter } = query;
+    const { level, industryCode, quarter, parentGuCode } = query;
     const modelConfig = this.modelMap[level];
     if (!modelConfig) {
       throw new BadRequestException(`지원하지 않는 레벨: ${level}`);
@@ -115,11 +115,14 @@ export class RevenueService {
     const resolvedQuarter =
       quarter || (await this.getLatestQuarter(client, modelConfig.modelName));
 
-    const where: Record<string, string> = {
+    const where: Record<string, any> = {
       STDR_YYQU_CD: resolvedQuarter,
     };
     if (industryCode) {
       where.SVC_INDUTY_CD = industryCode;
+    }
+    if (level === 'dong' && parentGuCode) {
+      where.ADSTRD_CD = { startsWith: parentGuCode };
     }
 
     const groupByArgs: any = {
@@ -141,7 +144,103 @@ export class RevenueService {
       name: row[modelConfig.nameField],
       amount: Number(row._sum.THSMON_SELNG_AMT || 0),
       count: Number(row._sum.THSMON_SELNG_CO || 0),
+      changeType: undefined as string | undefined,
     }));
+
+    if (level === 'gu' || level === 'dong') {
+      const codes = items.map((item) => item.code);
+      if (level === 'gu') {
+        const baseWhere = { SIGNGU_CD: { in: codes } };
+        let changeRows = await this.prisma.commercialChangeGu.findMany({
+          where: {
+            STDR_YYQU_CD: resolvedQuarter,
+            ...baseWhere,
+          },
+          select: {
+            SIGNGU_CD: true,
+            TRDAR_CHNGE_IX: true,
+          },
+        });
+
+        if (!changeRows.length) {
+          const latestChange =
+            await this.prisma.commercialChangeGu.findFirst({
+              select: { STDR_YYQU_CD: true },
+              orderBy: { STDR_YYQU_CD: 'desc' },
+            });
+
+          if (latestChange?.STDR_YYQU_CD) {
+            changeRows = await this.prisma.commercialChangeGu.findMany({
+              where: {
+                STDR_YYQU_CD: latestChange.STDR_YYQU_CD,
+                ...baseWhere,
+              },
+              select: {
+                SIGNGU_CD: true,
+                TRDAR_CHNGE_IX: true,
+              },
+            });
+          }
+        }
+
+        const changeMap = new Map<string, string>();
+        changeRows.forEach((row) => {
+          if (row.TRDAR_CHNGE_IX) {
+            changeMap.set(row.SIGNGU_CD, row.TRDAR_CHNGE_IX);
+          }
+        });
+
+        items.forEach((item) => {
+          item.changeType = changeMap.get(item.code);
+        });
+      }
+
+      if (level === 'dong') {
+        const baseWhere = { ADSTRD_CD: { in: codes } };
+        let changeRows = await this.prisma.commercialChangeDong.findMany({
+          where: {
+            STDR_YYQU_CD: resolvedQuarter,
+            ...baseWhere,
+          },
+          select: {
+            ADSTRD_CD: true,
+            TRDAR_CHNGE_IX: true,
+          },
+        });
+
+        if (!changeRows.length) {
+          const latestChange =
+            await this.prisma.commercialChangeDong.findFirst({
+              select: { STDR_YYQU_CD: true },
+              orderBy: { STDR_YYQU_CD: 'desc' },
+            });
+
+          if (latestChange?.STDR_YYQU_CD) {
+            changeRows = await this.prisma.commercialChangeDong.findMany({
+              where: {
+                STDR_YYQU_CD: latestChange.STDR_YYQU_CD,
+                ...baseWhere,
+              },
+              select: {
+                ADSTRD_CD: true,
+                TRDAR_CHNGE_IX: true,
+              },
+            });
+          }
+        }
+
+        const changeMap = new Map<string, string>();
+        changeRows.forEach((row) => {
+          if (row.TRDAR_CHNGE_IX) {
+            changeMap.set(row.ADSTRD_CD, row.TRDAR_CHNGE_IX);
+          }
+        });
+
+        items.forEach((item) => {
+          item.changeType = changeMap.get(item.code);
+        });
+      }
+    }
 
     return {
       level,

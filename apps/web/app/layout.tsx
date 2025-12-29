@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { Toaster } from 'react-hot-toast';
+import RankNav from '@/components/rank-nav/RankNav';
 import { MyChat } from '@/components/chatkit/chatkit';
 
 const geistSans = Geist({
