@@ -26,7 +26,6 @@ export const usePolygonData = (
     onPolygonClickRef.current = onPolygonClick;
   }, [onPolygonClick]);
 
-  // 구/동 데이터를 비동기로 호출하고 지도에 그리는 함수.
   async function fetchCombinedBoundary(map: KakaoMap, lowSearch: number) {
     console.log(`Fetching Combined Boundary...`);
     try {
@@ -51,15 +50,12 @@ export const usePolygonData = (
     }
   }
 
-  // 건물 데이터를 비동기로 호출하고 지도에 그리는 함수.
   async function fetchBuildingData(map: KakaoMap) {
     console.log(`Fetching Building Data (DB Filtered)...`);
 
     const bounds = map.getBounds();
     const sw = bounds.getSouthWest();
     const ne = bounds.getNorthEast();
-
-    // DB API에 보낼 BBOX (minx, miny, maxx, maxy)
     const minx = sw.getLng();
     const miny = sw.getLat();
     const maxx = ne.getLng();
@@ -91,7 +87,6 @@ export const usePolygonData = (
     }
   }
 
-  // 상권 데이터를 비동기로 호출하고 지도에 그리는 함수.
   async function fetchCommercialData(map: KakaoMap) {
     console.log(`Fetching Commercial Data...`);
 
@@ -117,7 +112,6 @@ export const usePolygonData = (
       if (Array.isArray(data)) {
         console.log(`Received ${data.length} commercial areas`);
 
-        // GeoJSON Feature -> CommercialArea 매핑
         const commercialAreas = (data as CommercialApiResponse[]).map(
           (feature) => ({
             commercialType: feature.properties.commercialType,
@@ -180,7 +174,6 @@ export const usePolygonData = (
       (currentGroup === 'GU' || currentGroup === 'DONG')
     ) {
       console.log(`Skipping fetch for static layer: ${currentGroup}`);
-      // 상권 데이터는 mock이므로 한번만 가져와도 됨 (하지만 지도 이동 시 다시 가져오지 않도록 static 취급)
       return;
     }
 
@@ -200,10 +193,8 @@ export const usePolygonData = (
   useEffect(() => {
     if (!map) return;
 
-    // Initial load
     refreshLayer(map);
 
-    // Debounce refresh
     let timeoutId: NodeJS.Timeout | null = null;
     const debouncedRefresh = () => {
       if (timeoutId) clearTimeout(timeoutId);
@@ -212,7 +203,6 @@ export const usePolygonData = (
       }, 500);
     };
 
-    // 지도가 변할 때 마다 refreshLayer 함수를 호출하여 데이터를 다시 그리는 함수.
     window.kakao.maps.event.addListener(map, 'idle', debouncedRefresh);
     window.kakao.maps.event.addListener(map, 'zoom_changed', debouncedRefresh);
   }, [map]);

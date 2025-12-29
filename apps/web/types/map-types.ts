@@ -22,7 +22,7 @@ export interface KakaoMap {
 export interface KakaoPolygon {
   setMap: (map: KakaoMap | null) => void;
   setOptions: (options: PolygonStyle | Record<string, unknown>) => void;
-  fillColor?: string; // 성능 최적화를 위한 컬러 캐싱용
+  fillColor?: string;
 }
 
 export interface PolygonStyle {
@@ -47,18 +47,29 @@ export interface InfoBarData {
   x: string | number;
   y: string | number;
   polygons?: number[][][][] | number[][][] | number[][];
-  // [key: string]: any;
 }
 
-// ...
+export interface AdminArea {
+  adm_nm: string;
+  adm_cd: string;
+  x: string | number;
+  y: string | number;
+  polygons: number[][][][] | number[][][] | number[][];
+}
 
-// 상권
+export interface BuildingArea {
+  buld_nm: string;
+  x: string | number;
+  y: string | number;
+  polygons: number[][][][] | number[][][] | number[][];
+}
+
 export interface CommercialArea {
   commercialType: string;
   commercialName: string;
   commercialCode: string;
-  guCode: string; // 구 정보
-  dongCode: string; // 동 정보
+  guCode: string;
+  dongCode: string;
   polygons: number[][][][] | number[][][] | number[][];
 }
 
@@ -70,8 +81,16 @@ export interface CommercialApiResponse {
     guCode: string;
     dongCode: string;
   };
-//...
   polygons: {
     coordinates: number[][][][] | number[][][] | number[][];
   };
+}
+
+export interface KakaoMarker {
+  setMap: (map: KakaoMap | null) => void;
+}
+
+export interface PolygonClickData {
+  name: string;
+  code?: string;
 }
