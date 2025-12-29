@@ -79,7 +79,6 @@ export class MarketService {
     const lng = parseFloat(longitude);
 
     const commercialArea = await this.findCommercialArea(lat, lng);
-
     if (commercialArea) {
       return this.getCommercialSales(
         commercialArea.TRDAR_CD,
@@ -103,23 +102,38 @@ export class MarketService {
     lat: number,
     lng: number,
   ): Promise<CommercialAreaResult | null> {
+    // TODO : DB 컬럼명 대소문자 이슈 -> 추후 수정 바람
     const result = await this.prisma.$queryRaw<CommercialAreaResult[]>`
-      SELECT TRDAR_CD, TRDAR_CD_N, TRDAR_SE_1
+      SELECT TRDAR_CD as "TRDAR_CD", TRDAR_CD_N as "TRDAR_CD_NM", TRDAR_SE_1 as "TRDAR_SE_1"
       FROM seoul_commercial_area_grid
       WHERE ST_Intersects(geom, ST_SetSRID(ST_Point(${lng}, ${lat}), 4326))
       LIMIT 1
     `;
     return result[0] || null;
   }
-  //TODO: 현재 DB 내 area_dong 테이블에는 폴리곤 데이터가 없음. 테이블에 넣어야 함, 또한 행정동 코드가 서로 안맞음
   private async findAdministrativeDistrict(
     lat: number,
     lng: number,
   ): Promise<AdministrativeAreaResult | null> {
+    // 1. area_dong에는 geom/polygon이 없으므로, admin_area_dong에서 찾음
+    // 2. admin_area_dong.polygons(JSONB)를 GeoJSON으로 변환하여 ST_Intersects 수행
     const result = await this.prisma.$queryRaw<AdministrativeAreaResult[]>`
-      SELECT "ADSTRD_CD", "ADSTRD_NM"
-      FROM area_dong
-      WHERE ST_Intersects(geom, ST_SetSRID(ST_Point(${lng}, ${lat}), 4326))
+      SELECT adm_cd::text as "ADSTRD_CD", adm_nm as "ADSTRD_NM"
+      FROM admin_area_dong
+      WHERE ST_Intersects(
+        ST_SetSRID(
+          ST_GeomFromGeoJSON(
+            jsonb_build_object(
+              'type',
+              CASE WHEN jsonb_typeof(polygons #> '{0,0,0}') = 'number' THEN 'Polygon' ELSE 'MultiPolygon' END,
+              'coordinates',
+              polygons
+            )
+          ),
+          4326
+        ),
+        ST_SetSRID(ST_Point(${lng}, ${lat}), 4326)
+      )
       LIMIT 1
     `;
     return result[0] || null;

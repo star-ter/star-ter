@@ -16,7 +16,7 @@ export default function MarketBadge({ isCommercialZone, areaName }: Props) {
       <div className="flex items-center space-x-3">
         <span className="text-2xl">{isCommercialZone ? '✨' : '🏠'}</span>
         <div>
-          <div className="text-xs text-gray-500 mb-0.5">분석 지역</div>
+          <div className="text-xs text-gray-500 mb-0.5">해당 상권 지역</div>
           <div className={`text-lg font-bold ${isCommercialZone ? 'text-orange-700' : 'text-gray-900'}`}>
             {areaName}
           </div>

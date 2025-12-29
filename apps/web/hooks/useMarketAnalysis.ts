@@ -44,7 +44,7 @@ export const useMarketAnalysis = (data: InfoBarData) => {
 
         const mergedData: MarketAnalysisData = {
           // StoreListDto (상점 목록)
-          areaName: storeData.areaName,
+          areaName: analyticsData.areaName,
           reviewSummary: storeData.reviewSummary,
           stores: storeData.stores,
           // AnalyticsDto (매출 분석)
