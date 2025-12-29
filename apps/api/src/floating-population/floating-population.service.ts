@@ -28,9 +28,11 @@ export class FloatingPopulationService implements OnModuleInit {
   // 모듈 초기화 시점에 한 번 데이터 동기화 작업을 수행
   async onModuleInit() {
     // 비동기로 실행하여 부팅 속도에 영향을 주지 않음
+    /*
     void this.syncPopulationData().catch((err) => {
       console.error('Initial sync failed', err);
     });
+    */
     await Promise.resolve();
   }
 

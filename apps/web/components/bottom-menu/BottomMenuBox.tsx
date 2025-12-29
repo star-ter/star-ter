@@ -24,7 +24,7 @@ interface BottomMenuProps {
   setLocationB: (area: string) => void;
   handlePickMode: (target: 'A' | 'B') => void;
   population: ReturnType<typeof usePopulationVisual>;
-  onCompare?: () => void;
+  onCompare?: (data?: CompareRequest) => void;
   onSelectCategory: (category: IndustryCategory | null) => void;
 }
 
@@ -60,7 +60,7 @@ export default function BottomMenuBox({
     console.log('비교 요청:', data);
     // TODO: 비교 로직 실행
     if (onCompare) {
-      onCompare();
+      onCompare(data);
     }
     modalClose();
   }

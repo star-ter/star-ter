@@ -6,6 +6,7 @@ interface ComparisonData {
   estimatedSales: string;
   salesChange: string;
   storeCount: string;
+  regionCode?: string;
 }
 
 interface ComparisonState {

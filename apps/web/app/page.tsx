@@ -8,7 +8,7 @@ import ComparisonOverlay from '@/components/comparison/ComparisonOverlay';
 
 import { useSidebarStore } from '@/stores/useSidebarStore';
 import { useComparisonStore } from '@/stores/useComparisonStore';
-import { IndustryCategory } from '@/types/bottom-menu-types';
+import { IndustryCategory, CompareRequest } from '@/types/bottom-menu-types';
 
 export default function Home() {
   const { isOpen, width, isResizing } = useSidebarStore();
@@ -42,21 +42,35 @@ export default function Home() {
   }
 
   // Handle Comparison Trigger (Manual via MapBox)
-  function handleCompareRequest() {
+  // Handle Comparison Trigger (Manual via MapBox)
+  function handleCompareRequest(data?: CompareRequest) {
+    // If data comes from search (codes + names), use them. 
+    // Otherwise fallback to locationA string (which might be name or code, usually name from Map)
+    
+    // Code: The ID used for API fetching (e.g., 11680580 or 'Samsung-dong')
+    const codeA = data?.targetA || locationA || '지역 A';
+    const codeB = data?.targetB || locationB || '지역 B';
+
+    // Name: The display title (e.g., 'Seoul Gangnam Samsung-dong')
+    const titleA = data?.targetNameA || locationA || '지역 A';
+    const titleB = data?.targetNameB || locationB || '지역 B';
+
     openComparison(
       {
-        title: locationA || '동작구 사당1동 중심 상권',
-        address: '서울 동작구 주소...',
-        estimatedSales: '약 242억 원',
-        salesChange: '',
-        storeCount: '400',
+        title: titleA,
+        address: '-',
+        estimatedSales: '-',
+        salesChange: '-',
+        storeCount: '-',
+        regionCode: codeA, 
       },
       {
-        title: locationB || '관악구 중앙동 중심 상권',
-        address: '서울 관악구 주소...',
-        estimatedSales: '약 220억 원',
-        salesChange: '',
-        storeCount: '350',
+        title: titleB,
+        address: '-',
+        estimatedSales: '-',
+        salesChange: '-',
+        storeCount: '-',
+        regionCode: codeB,
       }
     );
   }

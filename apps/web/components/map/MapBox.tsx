@@ -1,7 +1,7 @@
 import SearchBox from '../search/SearchBox';
 import BottomMenuBox from '../bottom-menu/BottomMenuBox';
 import { usePopulationVisual } from '../../hooks/usePopulationVisual';
-import { IndustryCategory } from '../../types/bottom-menu-types';
+import { IndustryCategory, CompareRequest } from '../../types/bottom-menu-types';
 
 interface MapBoxProps {
   locationA: string;
@@ -10,7 +10,7 @@ interface MapBoxProps {
   setLocationB: (area: string) => void;
   handlePickMode: (target: 'A' | 'B') => void;
   population: ReturnType<typeof usePopulationVisual>;
-  onCompare?: () => void;
+  onCompare?: (data?: CompareRequest) => void;
   onSelectCategory: (category: IndustryCategory | null) => void;
 }
 

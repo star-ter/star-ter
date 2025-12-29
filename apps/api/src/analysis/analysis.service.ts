@@ -52,32 +52,42 @@ export class AnalysisService {
          }
     } else {
         // String: Search by Name (Priority: Gu -> Dong -> Commercial)
+        // 1. Heuristic: Strip 'Gu' suffix or split full name to find core keyword
+        // e.g., "Gangnam-gu" -> "Gangnam", "Seoul Gangnam-gu Samsung-dong" -> "Samsung"
+        const keywords = regionCode.trim().split(/\s+/);
+        let keyword = keywords[keywords.length - 1]; // Use last word
+        
+        // Strip '동' if generic
+        if (keyword.endsWith('동') && keyword.length > 2) {
+             keyword = keyword.slice(0, -1);
+        }
+        
         // Check Gu
         const guList = await this.prisma.areaGu.findMany({
-            where: { SIGNGU_NM: { contains: regionCode } }
+            where: { SIGNGU_NM: { contains: keyword } }
         });
         
         if (guList.length > 0) {
             type = 'GU';
-            codes = guList.map(g => g.SIGNGU_CD);
+            codes = [guList[0].SIGNGU_CD]; // Use First Match Only
         } else {
             // Check Dong
             const dongList = await this.prisma.areaDong.findMany({
-                where: { ADSTRD_NM: { contains: regionCode } }
+                where: { ADSTRD_NM: { contains: keyword } }
             });
             
             if (dongList.length > 0) {
                 type = 'DONG';
-                codes = dongList.map(d => d.ADSTRD_CD);
+                codes = [dongList[0].ADSTRD_CD]; // Use First Match Only
             } else {
-                // Check Commercial
+                // Check Commercial (Optional, kept for safety but prioritized last)
                 const commList = await this.prisma.areaCommercial.findMany({
-                    where: { TRDAR_CD_NM: { contains: regionCode } }
+                    where: { TRDAR_CD_NM: { contains: keyword } }
                 });
                 
                 if (commList.length > 0) {
                     type = 'COMMERCIAL';
-                    codes = commList.map(c => c.TRDAR_CD);
+                    codes = [commList[0].TRDAR_CD]; // Use First Match Only
                 } else {
                     return { error: `Region not found: ${regionCode}` };
                 }
@@ -297,6 +307,91 @@ export class AnalysisService {
         female: femalePopulation,
         age: agePopulation
       } : null
+
     };
+  }
+
+  async searchRegions(query: string) {
+      if (!query) return [];
+
+      // Split query by spaces to handle full names like "Seoul Gangnam-gu Samsung-dong"
+      const keywords = query.trim().split(/\s+/);
+      
+      // Use the last part of the query as the primary search term.
+      // e.g., "Seoul Gangnam Samsung-dong" -> "Samsung-dong"
+      let lastKeyword = keywords[keywords.length - 1]; 
+      
+      // Heuristic: If keyword ends with '동' and is generic enough, strip '동' 
+      // to match '삼성1동' when user types '삼성동'.
+      // Only strip if length > 1 to avoid stripping '이동' -> '이' (too short)
+      if (lastKeyword.endsWith('동') && lastKeyword.length > 2) {
+          lastKeyword = lastKeyword.slice(0, -1);
+      }
+
+      const results: { type: string, code: string, name: string, fullName: string }[] = [];
+
+      // 1. Fetch Gu and City Info
+      const allGus = await this.prisma.areaGu.findMany();
+      const guMap = new Map<string, string>();
+      allGus.forEach(g => guMap.set(g.SIGNGU_CD, g.SIGNGU_NM));
+
+      // 2. Search Gu
+      const guMatches = await this.prisma.areaGu.findMany({
+          where: { SIGNGU_NM: { contains: lastKeyword } }
+      });
+      guMatches.forEach(g => {
+          // Infer City from Code (Standard Korean Admin Code)
+          const cityCode = g.SIGNGU_CD.substring(0, 2); 
+          let cityName = '';
+          if (cityCode === '11') cityName = '서울특별시';
+          // Add more if needed or fetch from DB if available
+
+          results.push({
+              type: 'GU',
+              code: g.SIGNGU_CD,
+              name: g.SIGNGU_NM,
+              fullName: `${cityName} ${g.SIGNGU_NM}`.trim()
+          });
+      });
+
+      // 3. Search Dong
+      const dongMatches = await this.prisma.areaDong.findMany({
+          where: { ADSTRD_NM: { contains: lastKeyword } }
+      });
+      
+      dongMatches.forEach(d => {
+          const guCode = d.ADSTRD_CD.slice(0, 5);
+          const guName = guMap.get(guCode) || '';
+          
+          const cityCode = d.ADSTRD_CD.substring(0, 2);
+          let cityName = '';
+          if (cityCode === '11') cityName = '서울특별시';
+
+          results.push({
+              type: 'DONG',
+              code: d.ADSTRD_CD,
+              name: d.ADSTRD_NM,
+              fullName: `${cityName} ${guName} ${d.ADSTRD_NM}`.trim()
+          });
+      });
+
+      
+      // Commercial area search removed by user request.
+      /*
+      // 4. Search Commercial Areas
+      const commMatches = await this.prisma.areaCommercial.findMany({
+          where: { TRDAR_CD_NM: { contains: lastKeyword } }
+      });
+      commMatches.forEach(c => {
+          results.push({
+              type: 'COMMERCIAL',
+              code: c.TRDAR_CD,
+              name: c.TRDAR_CD_NM,
+              fullName: `${c.SIGNGU_CD_NM || ''} ${c.TRDAR_CD_NM}`.trim()
+          });
+      });
+      */
+
+      return results;
   }
 }
