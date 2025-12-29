@@ -27,9 +27,9 @@ type RankNavProps = {
 
 const changeLabelMap: Record<string, string> = {
   HH: '정체 상권',
-  LL: '뜨는 상권',
+  LL: '변동 상권',
   HL: '위험 상권',
-  LH: '확장 상권',
+  LH: '뜨는 상권',
 };
 
 export default function RankNav({
@@ -102,7 +102,7 @@ export default function RankNav({
   }, [level, parentGuCode, industryCode]);
 
   const formatAmount = (amount: number) => {
-    const revenueInOk = amount / 100000000 / 3;
+    const revenueInOk = amount / 100000000;
     return `${revenueInOk.toLocaleString(undefined, {
       maximumFractionDigits: 0,
     })}억`;
@@ -116,12 +116,9 @@ export default function RankNav({
             {level === 'dong' ? '동 매출 순위' : '서울시 매출 순위'}
           </h2>
           <p className="text-xs text-gray-500">
-            {level === 'dong' ? '현재 구 기준' : '서울시 기준'} 월 매출
+            {level === 'dong' ? '현재 구 기준' : '서울시 기준'} 분기 매출
           </p>
         </div>
-        {/* <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
-          {quarter ? `${quarter} 분기` : '불러오는 중'}
-        </span> */}
       </header>
 
       <div className="space-y-2">
@@ -159,7 +156,12 @@ export default function RankNav({
                     ? 'bg-blue-100 text-blue-700'
                     : changeLabelMap[item.changeType || '']?.includes('위험')
                       ? 'bg-red-100 text-red-700'
-                      : 'bg-gray-100 text-gray-700'
+                      : changeLabelMap[item.changeType || '']?.includes('확장') ||
+                          changeLabelMap[item.changeType || '']?.includes(
+                            '변동',
+                          )
+                        ? 'bg-amber-100 text-amber-700'
+                        : 'bg-gray-100 text-gray-700'
                 }`}
               >
                 {changeLabelMap[item.changeType || ''] || '정보 없음'}
