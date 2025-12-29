@@ -10,7 +10,7 @@ export interface IndustryCategory {
 // API 응답 데이터 구조 (예시 기반)
 export interface IndustryStatItem {
   yr: string;
-  indutyMlsfcCd: string; // 업종 분류 코드
+  csCode: string; // 업종 분류 코드
   indutyMlsfcNm: string; // 업종명
   areaNm: string; // 지역명
   frcsCnt: number; // 가맹점 수

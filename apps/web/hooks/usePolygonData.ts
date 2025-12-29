@@ -52,14 +52,14 @@ export const usePolygonData = (
   }
 
   // 건물 데이터를 비동기로 호출하고 지도에 그리는 함수.
-  async function fetchBuildingVworld(map: KakaoMap) {
-    console.log(`Fetching Building Data...`);
+  async function fetchBuildingData(map: KakaoMap) {
+    console.log(`Fetching Building Data (DB Filtered)...`);
 
     const bounds = map.getBounds();
     const sw = bounds.getSouthWest();
     const ne = bounds.getNorthEast();
 
-    // V-World API에 보낼 BBOX (minx, miny, maxx, maxy)
+    // DB API에 보낼 BBOX (minx, miny, maxx, maxy)
     const minx = sw.getLng();
     const miny = sw.getLat();
     const maxx = ne.getLng();
@@ -78,7 +78,7 @@ export const usePolygonData = (
         drawPolygons(
           map,
           features as BuildingArea[],
-          'vworld_building',
+          'building_store',
           polygonsRef,
           customOverlaysRef,
           (data) => onPolygonClickRef.current(data),
@@ -192,7 +192,7 @@ export const usePolygonData = (
     } else if (level >= 2) {
       fetchCommercialData(map);
     } else {
-      fetchBuildingVworld(map);
+      fetchBuildingData(map);
     }
   }
 

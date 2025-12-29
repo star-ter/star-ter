@@ -7,28 +7,29 @@ import {
   GetMarketAnalysisQueryDto,
   MarketStoreListDto,
   MarketStore,
+  GetBuildingStoreQueryDto,
+  BuildingStoreCountDto,
 } from './dto/market-store.dto';
 
 import { OpenApiResponse, OpenApiStoreItem } from './dto/open-api.dto';
 import { MarketAnalyticsDto } from './dto/market-analytics.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { KSIC_TO_CATEGORY } from './constants/ksic-category-map';
+import {
+  AdministrativeAreaResult,
+  CommercialAreaResult,
+} from './dto/market.interface';
 import { SalesCommercial, SalesDong } from 'generated/prisma/client';
-
-interface CommercialAreaResult {
-  TRDAR_CD: string;
-  TRDAR_CD_NM: string;
-  TRDAR_SE_1: string;
-}
-
-interface AdministrativeAreaResult {
-  ADSTRD_CD: string;
-  ADSTRD_NM: string;
-}
 
 @Injectable()
 export class MarketService {
-  constructor(private readonly prisma: PrismaService) {}
   private readonly logger = new Logger(MarketService.name);
+
+  constructor(private readonly prisma: PrismaService) {}
+
+  private getCategoryByCode(code: string): string {
+    return KSIC_TO_CATEGORY[String(code)] || '기타';
+  }
 
   async getStoreList(
     query: GetMarketAnalysisQueryDto,
@@ -79,7 +80,6 @@ export class MarketService {
     const lng = parseFloat(longitude);
 
     const commercialArea = await this.findCommercialArea(lat, lng);
-
     if (commercialArea) {
       return this.getCommercialSales(
         commercialArea.TRDAR_CD,
@@ -103,23 +103,38 @@ export class MarketService {
     lat: number,
     lng: number,
   ): Promise<CommercialAreaResult | null> {
+    // TODO : DB 컬럼명 대소문자 이슈 -> 추후 수정 바람
     const result = await this.prisma.$queryRaw<CommercialAreaResult[]>`
-      SELECT TRDAR_CD, TRDAR_CD_N, TRDAR_SE_1
+      SELECT TRDAR_CD as "TRDAR_CD", TRDAR_CD_N as "TRDAR_CD_NM", TRDAR_SE_1 as "TRDAR_SE_1"
       FROM seoul_commercial_area_grid
       WHERE ST_Intersects(geom, ST_SetSRID(ST_Point(${lng}, ${lat}), 4326))
       LIMIT 1
     `;
     return result[0] || null;
   }
-  //TODO: 현재 DB 내 area_dong 테이블에는 폴리곤 데이터가 없음. 테이블에 넣어야 함, 또한 행정동 코드가 서로 안맞음
   private async findAdministrativeDistrict(
     lat: number,
     lng: number,
   ): Promise<AdministrativeAreaResult | null> {
+    // 1. area_dong에는 geom/polygon이 없으므로, admin_area_dong에서 찾음
+    // 2. admin_area_dong.polygons(JSONB)를 GeoJSON으로 변환하여 ST_Intersects 수행
     const result = await this.prisma.$queryRaw<AdministrativeAreaResult[]>`
-      SELECT ADSTRD_CD, ADSTRD_NM
-      FROM area_dong
-      WHERE ST_Intersects(geom, ST_SetSRID(ST_Point(${lng}, ${lat}), 4326))
+      SELECT adm_cd::text as "ADSTRD_CD", adm_nm as "ADSTRD_NM"
+      FROM admin_area_dong
+      WHERE ST_Intersects(
+        ST_SetSRID(
+          ST_GeomFromGeoJSON(
+            jsonb_build_object(
+              'type',
+              CASE WHEN jsonb_typeof(polygons #> '{0,0,0}') = 'number' THEN 'Polygon' ELSE 'MultiPolygon' END,
+              'coordinates',
+              polygons
+            )
+          ),
+          4326
+        ),
+        ST_SetSRID(ST_Point(${lng}, ${lat}), 4326)
+      )
       LIMIT 1
     `;
     return result[0] || null;
@@ -213,8 +228,146 @@ export class MarketService {
   }
 
   private getEmptySalesData(message: string): MarketAnalyticsDto {
-    // TODO: any 수정하기 -> mock 제공인데, 너무 길어서 추후 const로 분리
-    return { areaName: message, isCommercialArea: false } as any;
+    return {
+      areaName: message,
+      isCommercialArea: false,
+      totalRevenue: 0,
+      sales: {
+        trend: [],
+        timeSlot: {
+          time0006: 0,
+          time0611: 0,
+          time1114: 0,
+          time1417: 0,
+          time1721: 0,
+          time2124: 0,
+          peakTimeSummaryComment: '데이터 없음',
+        },
+        dayOfWeek: {
+          mon: 0,
+          tue: 0,
+          wed: 0,
+          thu: 0,
+          fri: 0,
+          sat: 0,
+          sun: 0,
+          peakDaySummaryComment: '데이터 없음',
+        },
+        demographics: {
+          male: 0,
+          female: 0,
+          age10: 0,
+          age20: 0,
+          age30: 0,
+          age40: 0,
+          age50: 0,
+          age60: 0,
+          primaryGroupSummaryComment: '데이터 없음',
+        },
+        topIndustries: [],
+      },
+      vitality: { openingRate: 0, closureRate: 0 },
+      openingRate: 0,
+      closureRate: 0,
+    };
+  }
+
+  async getBuildingStoreCounts(
+    query: GetBuildingStoreQueryDto,
+  ): Promise<BuildingStoreCountDto[]> {
+    const storesData = await this.fetchStoresInRectangle(query);
+    const items = storesData.body?.items || [];
+
+    // 필터링할 카테고리 목록 (Array 보장)
+    let targetCategories: string[] = [];
+    if (query.categories) {
+      if (Array.isArray(query.categories)) {
+        targetCategories = query.categories;
+      } else {
+        targetCategories = [query.categories];
+      }
+    }
+
+    const grouped = new Map<string, OpenApiStoreItem[]>();
+
+    items.forEach((item) => {
+      if (!item.bldMngNo) return;
+
+      // 카테고리 필터링 (indsLclsCd 사용)
+      if (targetCategories.length > 0) {
+        // 매핑 테이블에 없는 경우(undefined)도 고려해야 함
+        const category = this.getCategoryByCode(item.indsLclsCd);
+
+        // "category"가 매핑된 우리쪽 한글명(예: '음식')이고, targetCategories가 ['음식'] 형태임
+        if (!category || !targetCategories.includes(category)) return;
+      }
+
+      if (!grouped.has(item.bldMngNo)) {
+        grouped.set(item.bldMngNo, []);
+      }
+      grouped.get(item.bldMngNo)!.push(item);
+    });
+
+    const result: BuildingStoreCountDto[] = [];
+
+    for (const [key, storeItems] of grouped) {
+      const representative = storeItems[0];
+      if (representative.lat && representative.lon) {
+        result.push({
+          buildingId: key,
+          lat: Number(representative.lat),
+          lng: Number(representative.lon),
+          count: storeItems.length,
+          name: representative.bldNm || '상가건물',
+        });
+      }
+    }
+
+    return result;
+  }
+
+  private async fetchStoresInRectangle(
+    query: GetBuildingStoreQueryDto,
+  ): Promise<OpenApiResponse> {
+    const BASE_URL =
+      'https://apis.data.go.kr/B553077/api/open/sdsc2/storeListInRectangle';
+    const SERVICE_KEY = process.env.SBIZ_API_KEY;
+
+    if (!SERVICE_KEY) {
+      throw new InternalServerErrorException('SBIZ_API_KEY is not defined');
+    }
+
+    const queryParams = new URLSearchParams({
+      serviceKey: SERVICE_KEY,
+      pageNo: '1',
+      numOfRows: '500',
+      minx: query.minx,
+      miny: query.miny,
+      maxx: query.maxx,
+      maxy: query.maxy,
+      type: 'json',
+    });
+
+    try {
+      const response = await fetch(`${BASE_URL}?${queryParams.toString()}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        this.logger.error(`OpenAPI Rectangle Error: ${errorText}`);
+        throw new InternalServerErrorException('OpenAPI Error');
+      }
+
+      return (await response.json()) as OpenApiResponse;
+    } catch (e) {
+      this.logger.error('Fetch Rectangle Failed', e);
+      return {
+        header: { resultCode: 'Err', resultMsg: '' },
+        body: { items: [], totalCount: 0 },
+      };
+    }
   }
 
   private async fetchStoreDataFromOpenApi(
