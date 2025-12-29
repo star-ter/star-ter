@@ -1,0 +1,61 @@
+model industry_mapping {
+  id                  Int    @id @default(autoincrement())
+  ksic_cd             String
+  ksic_nm             String
+  service_industry_cd String
+}
+
+model seoul_250_population {
+  YMD        String    @db.VarChar(8)
+  TT         String    @db.VarChar(2)
+  CELL_ID    String    @db.VarChar
+  H_DNG_CD   String?   @db.VarChar
+  SPOP       Float?
+  M00        Float?
+  M10        Float?
+  M15        Float?
+  M20        Float?
+  M25        Float?
+  M30        Float?
+  M35        Float?
+  M40        Float?
+  M45        Float?
+  M50        Float?
+  M55        Float?
+  M60        Float?
+  M65        Float?
+  M70        Float?
+  F00        Float?
+  F10        Float?
+  F15        Float?
+  F20        Float?
+  F25        Float?
+  F30        Float?
+  F35        Float?
+  F40        Float?
+  F45        Float?
+  F50        Float?
+  F55        Float?
+  F60        Float?
+  F65        Float?
+  F70        Float?
+  updated_at DateTime? @default(now()) @db.Timestamp(6)
+
+  @@id([YMD, TT, CELL_ID])
+}
+
+model service_industry {
+  service_industry_cd    String  @id
+  service_industry_nm    String
+  service_industry_en_nm String?
+  description            String?
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model spatial_ref_sys {
+  srid      Int     @id
+  auth_name String? @db.VarChar(256)
+  auth_srid Int?
+  srtext    String? @db.VarChar(2048)
+  proj4text String? @db.VarChar(2048)
+}
