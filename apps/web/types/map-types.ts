@@ -21,8 +21,16 @@ export interface KakaoMap {
 
 export interface KakaoPolygon {
   setMap: (map: KakaoMap | null) => void;
-  setOptions: (options: Record<string, unknown>) => void;
+  setOptions: (options: PolygonStyle | Record<string, unknown>) => void;
   fillColor?: string; // 성능 최적화를 위한 컬러 캐싱용
+}
+
+export interface PolygonStyle {
+  strokeColor: string;
+  strokeWeight: number;
+  strokeOpacity: number;
+  fillColor: string;
+  fillOpacity: number;
 }
 
 export interface KakaoCustomOverlay {
