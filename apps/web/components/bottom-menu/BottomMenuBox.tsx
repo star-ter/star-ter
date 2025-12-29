@@ -122,7 +122,7 @@ export default function BottomMenuBox({
   const Content = active === 'none' ? null : contents[active as ActiveType];
 
   return (
-    <section className="flex flex-col items-center mb-[24px]">
+    <section className="w-screen flex flex-col items-center mb-[24px]">
       {Content && <ModalCard>{Content}</ModalCard>}
       <div className="flex items-center justify-center gap-4 rounded-2xl bg-white/80 px-4 py-3 shadow-md ring-1 ring-black/5">
         {items.map(({ label, value }) => (

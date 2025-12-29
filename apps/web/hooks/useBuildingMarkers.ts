@@ -17,13 +17,10 @@ const mapCodeToBackend = (code: string): string[] => {
   if (code.startsWith('I2')) return ['음식'];
   if (code.startsWith('G2')) return ['소매'];
   if (code.startsWith('S2')) return ['생활서비스'];
-  if (code.startsWith('R2')) return ['오락/여가', '오락/스포츠']; // R2 name in mock is '오락/스포츠', backend has '오락/여가'? Check consistency.
+  if (code.startsWith('R1')) return ['오락/스포츠'];
   if (code.startsWith('P1')) return ['교육'];
   if (code.startsWith('I1')) return ['숙박'];
-  if (code.startsWith('L1')) return ['생활서비스', '부동산업']; // L1 is '부동산업' in mock
-  if (code.startsWith('M1')) return ['전문 서비스', '전문/기술']; // M1 is '전문/기술' in mock
-  if (code.startsWith('N1')) return ['문화', '시설관리/지원']; // N1 is '시설관리/지원' in mock
-  if (code.startsWith('Q1')) return ['의료', '보건/의료']; // Q1 is '보건/의료' in mock
+  if (code.startsWith('Q1')) return ['의료/건강'];
   return [];
 };
 
@@ -31,12 +28,9 @@ const CATEGORY_COLORS: Record<string, string> = {
   I2: '#F97316', // Orange (Food)
   G2: '#EF4444', // Red (Retail)
   S2: '#8B5CF6', // Purple (Service)
-  R2: '#EC4899', // Pink (Leisure)
-  P1: '#10B981', // Emerald (Education)
-  I1: '#3B82F6', // Blue (Accommodation)
-  L1: '#6366F1', // Indigo (Real Estate)
-  M1: '#14B8A6', // Teal (Professional)
-  N1: '#F43F5E', // Rose (Support)
+  R1: '#EC4899', // Pink (Leisure) - Changed to R1
+  P1: '#CA8A04', // Yellow (Education) - Improved visibility
+  I1: '#06B6D4', // Cyan (Accommodation - New Color)
   Q1: '#22C55E', // Green (Medical)
 };
 
@@ -45,8 +39,10 @@ export const useBuildingMarkers = (
   selectedCategory: IndustryCategory | null,
 ) => {
   const customOverlaysRef = useRef<KakaoCustomOverlay[]>([]);
-  // 개발자가 조절할 수 있는 Threshold (기본 3개 이상 표시)
-  const THRESHOLD = 3;
+
+  // Thresholds separation
+  const TOTAL_VIEW_THRESHOLD = 3; // Default view (High threshold to reduce clutter)
+  const CATEGORY_VIEW_THRESHOLD = 2; // Filtered view (Show all matches)
 
   // 마커(오버레이) 모두 지우기
   const clearMarkers = useCallback(() => {
@@ -57,15 +53,6 @@ export const useBuildingMarkers = (
   // API 호출 및 마커 그리기
   const fetchAndDrawMarkers = useCallback(async () => {
     if (!map) return;
-
-    // 카테고리가 선택되지 않았으면 마커를 표시하지 않음 (User Request: "선택한 카테고리에 해당하는 마커만")
-    // If you want to show ALL when nothing selected, remove this check.
-    // However, user said "Turn on/off", and usually selection implies turning ON specific filter.
-    // Let's assume: If null, don't show building markers (clean map).
-    if (!selectedCategory) {
-      clearMarkers();
-      return;
-    }
 
     // 1. 줌 레벨 체크 (너무 넓은 영역이면 조회 안함)
     const level = map.getLevel();
@@ -94,8 +81,18 @@ export const useBuildingMarkers = (
         maxy: maxy.toString(),
       });
 
-      const categories = mapCodeToBackend(selectedCategory.code);
-      categories.forEach((cat) => params.append('categories', cat));
+      // Default settings (No selection)
+      let currentThreshold = TOTAL_VIEW_THRESHOLD;
+      let currentColor = '#3B82F6'; // Default Blue
+
+      // If category is selected, apply filter and lower threshold
+      if (selectedCategory) {
+        currentThreshold = CATEGORY_VIEW_THRESHOLD;
+        currentColor = CATEGORY_COLORS[selectedCategory.code] || '#3B82F6';
+
+        const categories = mapCodeToBackend(selectedCategory.code);
+        categories.forEach((cat) => params.append('categories', cat));
+      }
 
       const res = await fetch(
         `${API_BASE_URL}/market/building-stores?${params.toString()}`,
@@ -107,34 +104,44 @@ export const useBuildingMarkers = (
       // 4. 기존 마커 지우고 새로 그리기
       clearMarkers();
 
-      const color = CATEGORY_COLORS[selectedCategory.code] || '#3B82F6';
-
       data.forEach((item) => {
         // Threshold Check
-        if (item.count < THRESHOLD) return;
+        if (item.count < currentThreshold) return;
 
-        // Premium UI Content (Glassmorphism, No Text Name)
+        const categoryName = selectedCategory
+          ? selectedCategory.name
+          : '점포수';
+
+        // Premium UI Content (Rounded Rectangle with Category + Count)
         const content = `
           <div style="
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 32px;
-            height: 32px;
-            background: rgba(255, 255, 255, 0.85);
+            min-width: 40px;
+            padding: 6px 10px;
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
-            border: 2px solid ${color};
-            border-radius: 50%;
+            border: 2px solid ${currentColor};
+            border-radius: 20px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             animation: bounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             cursor: pointer;
+            white-space: nowrap;
           ">
             <span style="
-              font-size: 14px;
+              font-size: 13px;
+              font-weight: 700;
+              color: ${currentColor};
+              margin-right: 4px;
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            ">${categoryName}</span>
+            <span style="
+              font-size: 13px;
               font-weight: 800;
-              color: ${color};
+              color: #333;
               font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             ">${item.count}</span>
             <div style="
@@ -146,17 +153,10 @@ export const useBuildingMarkers = (
               height: 0; 
               border-left: 5px solid transparent;
               border-right: 5px solid transparent;
-              border-top: 6px solid ${color};
+              border-top: 6px solid ${currentColor};
             "></div>
           </div>
-          <style>
-            @keyframes bounceIn {
-              from { opacity: 0; transform: scale(0.5); }
-              to { opacity: 1; transform: scale(1); }
-            }
-          </style>
         `;
-
         const position = new window.kakao.maps.LatLng(item.lat, item.lng);
 
         const customOverlay = new window.kakao.maps.CustomOverlay({

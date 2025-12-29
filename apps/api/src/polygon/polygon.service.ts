@@ -68,7 +68,7 @@ export class PolygonService {
         SELECT DISTINCT
           c.building_name as buld_nm,
           c.lot_address as adm_nm,
-          ST_AsGeoJSON(b.geom) as geom
+          ST_AsGeoJSON(ST_SnapToGrid(b.geom, 0.00001)) as geom
         FROM building_integrated_info b
         JOIN seoul_commercial_store_info c ON b.unique_no = c.lot_code
         WHERE ST_Intersects(b.geom, ST_MakeEnvelope(${parseFloat(minx)}, ${parseFloat(miny)}, ${parseFloat(maxx)}, ${parseFloat(maxy)}, 4326))
