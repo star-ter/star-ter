@@ -1,88 +1,47 @@
 model AdminAreaSido {
   adm_cd   Int    @id
-  adm_nm   String @db.Text
+  adm_nm   String
   x        Float
   y        Float
-  polygons Json   @db.JsonB
+  polygons Json
+
   @@map("admin_area_sido")
 }
 
 model AdminAreaGu {
   adm_cd   Int    @id
-  adm_nm   String @db.Text
+  adm_nm   String
   x        Float
   y        Float
-  polygons Json   @db.JsonB
+  polygons Json
+
   @@map("admin_area_gu")
 }
 
 model AdminAreaDong {
   adm_cd   Int    @id
-  adm_nm   String @db.Text
+  adm_nm   String
   x        Float
   y        Float
-  polygons Json   @db.JsonB
+  polygons Json
+
   @@map("admin_area_dong")
 }
 
 model CommercialArea {
-  // 상권 아이디
-  trdar_cd      String @id
-  // 상권 코드 
-  trdar_se_c    String
-  // 상권 종류 - 골목상권, 발달상권, 전통시장, 관광특구
-  trdar_se_1    String
-  // 상권 이름 
-  trdar_cd_n    String
-  // x 좌표, y 좌표
-  xcnts_valu    Float
-  ydnts_valu    Float
-  // 구 코드, 구 한글
-  signgu_cd     String
-  signgu_cd_    String
-  // 동 코드, 동 한글
-  adstrd_cd     String
-  adstrd_cd_    String
-  // 면적
-  relm_ar       Float
-  // 폴리곤
-  geom          Unsupported("geometry(MultiPolygon, 4326)")
-  @@map("seoul_commercial_area_grid")
-}
+  trdar_se_c String?                  @db.VarChar
+  trdar_se_1 String?                  @db.VarChar
+  trdar_cd   String                   @id @db.VarChar
+  trdar_cd_n String?                  @db.VarChar
+  xcnts_valu Float?
+  ydnts_valu Float?
+  signgu_cd  String?                  @db.VarChar
+  signgu_cd_ String?                  @db.VarChar
+  adstrd_cd  String?                  @db.VarChar
+  adstrd_cd_ String?                  @db.VarChar
+  relm_ar    Float?
+  geom       Unsupported("geometry")?
 
-model BuildingArea {
-  id                        Int       @id @default(autoincrement()) // 4775
-  source_shape_id           Int       // 7494
-  gis_building_unified_id   String    // 0000200588194524080100000000
-  unique_no                 String    // 1111016400102030000
-  legal_dong_code           String    // 1111016400
-  legal_dong_name           String    // 서울특별시 종로구 종로6가
-  lot_no                    String    // 203
-  special_land_code         String    // 1
-  special_land_type_name    String    // 일반
-  building_use_code         String    // 01000
-  building_use_name         String    // 단독주택
-  building_structure_code   String    // 51
-  building_structure_name   String    // 일반목구조
-  building_area_sqm         Float     // 0.0
-  use_approval_date         DateTime? @db.Date // (비어있음) -> ? 유지
-  gross_floor_area          Float     // 26.45
-  site_area_sqm             Float     // 0.0
-  height_m                  Float     // 0.0
-  building_coverage_ratio_pct Float   // 0.0
-  floor_area_ratio_pct      Float     // 0.0
-  building_id               String    // 20430
-  is_illegal_building       String    // N
-  ref_system_link_key       String    // B00100000000TH7RM
-  data_base_date            DateTime  @db.Date // 2025-12-01
-  source_sido_sigungu_code  String    // 11110
-  building_name             String?   // (비어있음) -> ? 유지
-  building_block_name       String?   // (비어있음) -> ? 유지
-  above_ground_floors       Int       // 1
-  below_ground_floors       Int       // 0
-  data_created_updated_at   DateTime  @default(now()) @db.Date // 2017-05-03
-  
-  // 지오메트리 데이터가 있으므로 필수(Required)로 변경
-  geom                      Unsupported("geometry(MultiPolygon, 4326)")
-  @@map("building_integrated_info")
+  @@index([geom], map: "seoul_commercial_area_grid_geom_geom_idx", type: Gist)
+  @@map("seoul_commercial_area_grid")
 }
