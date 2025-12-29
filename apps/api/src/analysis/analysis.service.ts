@@ -52,55 +52,99 @@ export class AnalysisService {
          }
     } else {
         // String: Search by Name (Priority: Gu -> Dong -> Commercial)
-        // Check Gu
-        const guList = await this.prisma.areaGu.findMany({
-            where: { SIGNGU_NM: { contains: regionCode } }
-        });
+        // 1. Heuristic: Strip 'Gu' suffix or split full name to find core keyword
+        // e.g., "Gangnam-gu" -> "Gangnam", "Seoul Gangnam-gu Samsung-dong" -> "Samsung"
+        const keywords = regionCode.trim().split(/\s+/);
         
-        if (guList.length > 0) {
-            type = 'GU';
-            codes = guList.map(g => g.SIGNGU_CD);
-        } else {
-            // Check Dong
-            const dongList = await this.prisma.areaDong.findMany({
-                where: { ADSTRD_NM: { contains: regionCode } }
+        // Define search helper
+        const searchInTables = async (term: string) => {
+            // Strip '동' suffix for better matching if term is long enough
+             let processTerm = term;
+             if (processTerm.endsWith('동') && processTerm.length > 2) {
+                 processTerm = processTerm.slice(0, -1);
+             }
+
+             // 1. Commercial (Prioritize specific names like 'Station Exit')
+            const commList = await this.prisma.areaCommercial.findMany({
+                where: { TRDAR_CD_NM: { contains: term } } // Use original term for exact phrases
             });
-            
-            if (dongList.length > 0) {
-                type = 'DONG';
-                codes = dongList.map(d => d.ADSTRD_CD);
-            } else {
-                // Check Commercial
-                const commList = await this.prisma.areaCommercial.findMany({
-                    where: { TRDAR_CD_NM: { contains: regionCode } }
-                });
-                
-                if (commList.length > 0) {
-                    type = 'COMMERCIAL';
-                    codes = commList.map(c => c.TRDAR_CD);
-                } else {
-                    return { error: `Region not found: ${regionCode}` };
-                }
-            }
+            if (commList.length > 0) return { type: 'COMMERCIAL', codes: [commList[0].TRDAR_CD] };
+
+             // 2. Dong
+            const dongList = await this.prisma.areaDong.findMany({
+                where: { ADSTRD_NM: { contains: processTerm } }
+            });
+            if (dongList.length > 0) return { type: 'DONG', codes: [dongList[0].ADSTRD_CD] };
+
+            // 3. Gu
+            const guList = await this.prisma.areaGu.findMany({
+                where: { SIGNGU_NM: { contains: processTerm } }
+            });
+            if (guList.length > 0) return { type: 'GU', codes: [guList[0].SIGNGU_CD] };
+
+            return null;
+        };
+
+        let result: { type: string, codes: string[] } | null = null;
+
+        // Strategy 1: Last 2 words (e.g. "Yeoksam Station 4")
+        if (keywords.length >= 2) {
+            const lastTwo = keywords.slice(-2).join(' ');
+            result = await searchInTables(lastTwo);
+        }
+
+        // Strategy 2: Last 1 word (e.g. "Samsung-dong" from "Gangnam-gu Samsung-dong")
+        if (!result) {
+            const lastOne = keywords[keywords.length - 1];
+            result = await searchInTables(lastOne);
+        }
+
+        // Strategy 3: Full String (if everything else fails, though Strategy 1 likely covers reasonable prefixes)
+        if (!result && keywords.length > 2) {
+             result = await searchInTables(regionCode.trim());
+        }
+
+        if (result) {
+            type = result.type as any;
+            codes = result.codes;
+
+        } else {
+
+             return { error: `Region not found: ${regionCode}` };
         }
     }
 
     const currentConfig = CONFIG[type];
+    
 
     // 2. Get latest available quarter from Sales table (Use SalesCommercial as reference or dynamic?)
     // Using SalesCommercial is generally safe for system-wide latest quarter, 
     // but specific regions might not have data. Let's use the specific table just in case.
     // Dynamic Query for FindFirst
-    const latestSales = await (this.prisma as any)[currentConfig.sales].findFirst({
+    // 2. Get latest available quarter for the SPECIFIC region
+    const latestRegionSales = await (this.prisma as any)[currentConfig.sales].findFirst({
+      where: { [currentConfig.key]: { in: codes } },
       orderBy: { STDR_YYQU_CD: 'desc' },
       select: { STDR_YYQU_CD: true },
     });
 
-    if (!latestSales) {
-      return { error: 'No data available' };
+    let stdrYyquCd = '';
+
+    if (latestRegionSales) {
+        stdrYyquCd = latestRegionSales.STDR_YYQU_CD;
+
+    } else {
+        // Fallback or Error if no data exists for this region
+
+        return { error: 'No data available for this region' };
     }
 
-    const stdrYyquCd = latestSales.STDR_YYQU_CD;
+    /* Global fallback removed to ensure we only show valid region data
+    const latestSales = await (this.prisma as any)[currentConfig.sales].findFirst({
+      orderBy: { STDR_YYQU_CD: 'desc' },
+      select: { STDR_YYQU_CD: true },
+    });
+    */
 
     // 3. Fetch all raw data in parallel using dynamic table names
     const [salesRaw, storeRaw, populationRaw] = await Promise.all([
@@ -123,6 +167,8 @@ export class AnalysisService {
         },
       }),
     ]);
+    
+
 
 
     // 4. Fetch History Data (Last 4 Quarters)
@@ -211,6 +257,8 @@ export class AnalysisService {
       ageSales.a60 += row.AGRDE_60_ABOVE_SELNG_AMT;
     });
 
+
+
     // --- Store Aggregation ---
     let totalStores = 0;
     const storeCategoriesMap = new Map<string, number>();
@@ -297,6 +345,89 @@ export class AnalysisService {
         female: femalePopulation,
         age: agePopulation
       } : null
+
     };
+  }
+
+  async searchRegions(query: string) {
+      if (!query) return [];
+
+      // Split query by spaces to handle full names like "Seoul Gangnam-gu Samsung-dong"
+      const keywords = query.trim().split(/\s+/);
+      
+      // Use the last part of the query as the primary search term.
+      // e.g., "Seoul Gangnam Samsung-dong" -> "Samsung-dong"
+      let lastKeyword = keywords[keywords.length - 1]; 
+      
+      // Heuristic: If keyword ends with '동' and is generic enough, strip '동' 
+      // to match '삼성1동' when user types '삼성동'.
+      // Only strip if length > 1 to avoid stripping '이동' -> '이' (too short)
+      if (lastKeyword.endsWith('동') && lastKeyword.length > 2) {
+          lastKeyword = lastKeyword.slice(0, -1);
+      }
+
+      const results: { type: string, code: string, name: string, fullName: string }[] = [];
+
+      // 1. Fetch Gu and City Info
+      const allGus = await this.prisma.areaGu.findMany();
+      const guMap = new Map<string, string>();
+      allGus.forEach(g => guMap.set(g.SIGNGU_CD, g.SIGNGU_NM));
+
+      // 2. Search Gu
+      const guMatches = await this.prisma.areaGu.findMany({
+          where: { SIGNGU_NM: { contains: lastKeyword } }
+      });
+      guMatches.forEach(g => {
+          // Infer City from Code (Standard Korean Admin Code)
+          const cityCode = g.SIGNGU_CD.substring(0, 2); 
+          let cityName = '';
+          if (cityCode === '11') cityName = '서울특별시';
+          // Add more if needed or fetch from DB if available
+
+          results.push({
+              type: 'GU',
+              code: g.SIGNGU_CD,
+              name: g.SIGNGU_NM,
+              fullName: `${cityName} ${g.SIGNGU_NM}`.trim()
+          });
+      });
+
+      // 3. Search Dong
+      const dongMatches = await this.prisma.areaDong.findMany({
+          where: { ADSTRD_NM: { contains: lastKeyword } }
+      });
+      
+      dongMatches.forEach(d => {
+          const guCode = d.ADSTRD_CD.slice(0, 5);
+          const guName = guMap.get(guCode) || '';
+          
+          const cityCode = d.ADSTRD_CD.substring(0, 2);
+          let cityName = '';
+          if (cityCode === '11') cityName = '서울특별시';
+
+          results.push({
+              type: 'DONG',
+              code: d.ADSTRD_CD,
+              name: d.ADSTRD_NM,
+              fullName: `${cityName} ${guName} ${d.ADSTRD_NM}`.trim()
+          });
+      });
+
+      
+      // Commercial area search removed by user request.
+      // 4. Search Commercial Areas
+      const commMatches = await this.prisma.areaCommercial.findMany({
+          where: { TRDAR_CD_NM: { contains: lastKeyword } }
+      });
+      commMatches.forEach(c => {
+          results.push({
+              type: 'COMMERCIAL',
+              code: c.TRDAR_CD,
+              name: c.TRDAR_CD_NM,
+              fullName: `${c.SIGNGU_CD_NM || ''} ${c.TRDAR_CD_NM}`.trim()
+          });
+      });
+
+      return results;
   }
 }

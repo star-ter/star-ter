@@ -16,7 +16,7 @@ import { useBuildingMarkers } from '../hooks/useBuildingMarkers';
 initProj4();
 
 interface KakaomapProps {
-  polygonClick?: (area: string) => void;
+  polygonClick?: (data: { name: string; code?: string }) => void;
   population: ReturnType<typeof usePopulationVisual>;
   selectedCategory?: IndustryCategory | null;
   onClearCategory?: () => void;
@@ -24,7 +24,7 @@ interface KakaomapProps {
 }
 
 export default function Kakaomap({
-  polygonClick = (_area: string) => {},
+  polygonClick = (_data: { name: string; code?: string }) => {},
   population,
   selectedCategory = null,
   onClearCategory = () => {},
@@ -45,8 +45,10 @@ export default function Kakaomap({
       setInfoBarOpen(true); // 데이터가 선택되면 사이드바 열기
     }
     if (polygonClick) {
-      const label = data.buld_nm || data.adm_nm || 'Unknown';
-      polygonClick(label);
+      const label = data.buld_nm || data.adm_nm || data.commercialName || 'Unknown';
+      const code = data.adm_cd || data.commercialCode;
+      
+      polygonClick({ name: label, code: code });
     }
   });
 

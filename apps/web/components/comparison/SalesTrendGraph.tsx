@@ -110,11 +110,11 @@ export default function SalesTrendGraph({
           preserveAspectRatio="xMidYMid meet"
         >
           {/* Grid Layout & Ticks */}
-          {ticks.map((tick) => {
-             const normalizedTick = tick / maxScale;
+            {ticks.map((tick, index) => {
+             const normalizedTick = tick / Math.max(maxScale, 1);
              const y = graphHeight - (normalizedTick * graphHeight) + 10;
             return (
-              <g key={tick}>
+              <g key={`tick-${tick}-${index}`}>
                 <text
                   x={paddingX - 5}
                   y={y + 4}

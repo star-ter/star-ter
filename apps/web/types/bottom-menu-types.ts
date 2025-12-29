@@ -30,4 +30,6 @@ export interface IndustryStatResponse {
 export interface CompareRequest {
   targetA: string;
   targetB: string;
+  targetNameA?: string;
+  targetNameB?: string;
 }

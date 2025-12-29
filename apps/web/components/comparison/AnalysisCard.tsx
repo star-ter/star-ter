@@ -85,7 +85,7 @@ export default function AnalysisCard({
       {/* Header */}
       <div className="text-center mb-4">
         <h3 className="text-lg font-bold text-gray-900 flex items-center justify-center gap-2">
-          {title}
+          {title.replace(/^서울특별시\s*/, '')}
           <button
             className="text-xs font-normal text-blue-500 px-2 py-0.5 rounded hover:font-semibold hover:text-blue-600 transition"
             onClick={() => navigator.clipboard.writeText(address)}
