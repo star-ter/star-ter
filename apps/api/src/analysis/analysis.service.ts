@@ -346,6 +346,9 @@ export class AnalysisService {
             agePopulation.a50 += row.AGRDE_50_REPOP_CO;
             agePopulation.a60 += row.AGRDE_60_ABOVE_REPOP_CO;
         });
+        if (populationRaw.length > 0) {
+             console.log('POPULATION RAW KEYS:', Object.keys(populationRaw[0]));
+        }
     }
 
     // 5. Construct Response
@@ -391,7 +394,7 @@ export class AnalysisService {
       },
       store: {
         total: totalStores,
-        categories: storeCategories.slice(0, 10), // Top 10
+        categories: storeCategories.slice(0, 30), // Top 30 items
       },
       population: totalPopulation > 0 ? {
         total: totalPopulation,
