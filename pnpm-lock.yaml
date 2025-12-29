@@ -57,6 +57,9 @@ importers:
       class-validator:
         specifier: ^0.14.3
         version: 0.14.3
+      openai:
+        specifier: ^6.15.0
+        version: 6.15.0(zod@4.1.13)
       prisma:
         specifier: ^7.1.0
         version: 7.1.0(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3)
@@ -145,6 +148,9 @@ importers:
       '@mapbox/polylabel':
         specifier: ^1.0.2
         version: 1.0.2
+      '@openai/chatkit-react':
+        specifier: ^1.4.0
+        version: 1.4.0(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       '@types/proj4':
         specifier: ^2.5.6
         version: 2.19.0
@@ -1090,6 +1096,15 @@ packages:
     resolution: {integrity: sha512-GXD3wy50qYbxCJ652bDrDzgMr3NFEkIS374+IgFQKkCvk9yiYcLvX2XDYr7UyQxf4wK0e+yqDYRubZ0DtOxnmQ==}
     engines: {node: ^14.18.0 || >=16.10.0, npm: '>=5.10.0'}
     hasBin: true
+
+  '@openai/chatkit-react@1.4.0':
+    resolution: {integrity: sha512-zJ5R6bDYx2OZ3ODJij3TbR6oqi0oFQJb01quXuYZqGuF+u/PpMvxUzHDG08E1QQuEbUc9YdtPeZR34oS0+LHHw==}
+    peerDependencies:
+      react: '>=18'
+      react-dom: '>=18'
+
+  '@openai/chatkit@1.2.0':
+    resolution: {integrity: sha512-rPf1i74UtkAEX7VKt+Gzbz+N51Ipm2UXUtDcCW+MTPbvLDvdex3Xj0ObAScVAjnUefhBreghb7YynoWuJ9rnVw==}
 
   '@paralleldrive/cuid2@2.3.1':
     resolution: {integrity: sha512-XO7cAxhnTZl0Yggq6jOgjiOHhbgcO4NqFqwSmQpjK3b6TEE6Uj/jfSk6wzYyemh3+I0sHirKSetjQwn5cZktFw==}
@@ -3505,6 +3520,18 @@ packages:
     resolution: {integrity: sha512-kbpaSSGJTWdAY5KPVeMOKXSrPtr8C8C7wodJbcsd51jRnmD+GZu8Y0VoU6Dm5Z4vWr0Ig/1NKuWRKf7j5aaYSg==}
     engines: {node: '>=6'}
 
+  openai@6.15.0:
+    resolution: {integrity: sha512-F1Lvs5BoVvmZtzkUEVyh8mDQPPFolq4F+xdsx/DO8Hee8YF3IGAlZqUIsF+DVGhqf4aU0a3bTghsxB6OIsRy1g==}
+    hasBin: true
+    peerDependencies:
+      ws: ^8.18.0
+      zod: ^3.25 || ^4.0
+    peerDependenciesMeta:
+      ws:
+        optional: true
+      zod:
+        optional: true
+
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
     engines: {node: '>= 0.8.0'}
@@ -5573,6 +5600,14 @@ snapshots:
   '@nuxt/opencollective@0.4.1':
     dependencies:
       consola: 3.4.2
+
+  '@openai/chatkit-react@1.4.0(react-dom@19.2.1(react@19.2.1))(react@19.2.1)':
+    dependencies:
+      '@openai/chatkit': 1.2.0
+      react: 19.2.1
+      react-dom: 19.2.1(react@19.2.1)
+
+  '@openai/chatkit@1.2.0': {}
 
   '@paralleldrive/cuid2@2.3.1':
     dependencies:
@@ -8382,6 +8417,10 @@ snapshots:
   onetime@5.1.2:
     dependencies:
       mimic-fn: 2.1.0
+
+  openai@6.15.0(zod@4.1.13):
+    optionalDependencies:
+      zod: 4.1.13
 
   optionator@0.9.4:
     dependencies:

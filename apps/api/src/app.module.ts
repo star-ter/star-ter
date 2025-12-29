@@ -5,6 +5,7 @@ import { HealthController } from './health/health.controller';
 
 import { PolygonModule } from './polygon/polygon.module';
 import { MarketModule } from './market/market.module';
+import { AiModule } from './ai/ai.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { MarketModule } from './market/market.module';
     PrismaModule,
     PolygonModule,
     MarketModule,
+    AiModule,
   ],
   controllers: [HealthController],
   providers: [],
