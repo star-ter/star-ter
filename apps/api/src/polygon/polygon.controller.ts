@@ -17,17 +17,21 @@ export class PolygonController {
   }
 
   @Get('building')
-  getBuildingPolygon(
+  getCommercialBuildingPolygon(
     @Query('minx') minx: string,
     @Query('miny') miny: string,
     @Query('maxx') maxx: string,
     @Query('maxy') maxy: string,
   ): Promise<BuildingPolygonResponse[]> {
     if (!minx || !miny || !maxx || !maxy) {
-      // BBox가 없으면 빈 배열 혹은 에러 반환 (일단 빈 배열)
       return Promise.resolve([]);
     }
-    return this.polygonService.getBuildingPolygon(minx, miny, maxx, maxy);
+    return this.polygonService.getCommercialBuildingPolygons(
+      minx,
+      miny,
+      maxx,
+      maxy,
+    );
   }
 
   @Get('commercial')

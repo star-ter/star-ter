@@ -92,7 +92,7 @@ const COMMERCIAL_STYLES: Record<
 // 통합된 폴리곤 그리기 함수 (GeoJSON/CustomArea  모두 처리)
 /* @param map Kakao 지도 객체
  * @param features 데이터 배열 (AdminArea[] 또는 BuildingArea[])
- * @param type 'admin' (행정구역) 또는 'vworld_building' (건물) - 스타일 결정용
+ * @param type 'admin' (행정구역) 또는 'building_store' (건물) - 스타일 결정용
  * @param polygonsRef 폴리곤 객체들을 저장할 Ref (cleanup용)
  * @param customOverlaysRef 커스텀 오버레이 객체들을 저장할 Ref (cleanup용)
  * @param onPolygonClick 폴리곤 클릭 시 실행할 콜백
@@ -100,7 +100,7 @@ const COMMERCIAL_STYLES: Record<
 export function drawPolygons(
   map: KakaoMap,
   features: AdminArea[] | BuildingArea[] | CommercialArea[],
-  type: 'admin' | 'vworld_building' | 'commercial',
+  type: 'admin' | 'building_store' | 'commercial',
   polygonsRef: Ref<KakaoPolygon[]>,
   customOverlaysRef: Ref<KakaoCustomOverlay[]>,
   onPolygonClick: (data: InfoBarData) => void,
@@ -216,22 +216,22 @@ export function drawPolygons(
           fillColor: '#e2e8f0', // 차분한 슬레이트 블루
           fillOpacity: 0.6,
         };
-      } else if (type === 'vworld_building') {
-        // Warm Amber / Sand Tone for Buildings
+      } else if (type === 'building_store') {
+        // 중첩 허용을 위해 아주 낮은 투명도 설정 (밀도 시각화)
         normalStyle = {
-          strokeColor: '#9ca3af', // Gray 400
-          strokeWeight: 0.6,
-          strokeOpacity: 0.7,
-          fillColor: '#e5e7eb', // Gray 200
-          fillOpacity: 0.45,
+          strokeColor: '#6b7280', // Gray 500
+          strokeWeight: 1,
+          strokeOpacity: 0.5,
+          fillColor: '#374151', // Gray 700
+          fillOpacity: 0.05, // 5% Opacity - 겹치면 진해짐
         };
-        // 건물 호버 스타일 (진한 회색/앰버)
+        // 건물 호버 스타일
         hoverStyle = {
-          strokeColor: '#4b5563', // Gray 600
-          strokeWeight: 1, // 약간 두껍게
+          strokeColor: '#374151', // Gray 700
+          strokeWeight: 1.5,
           strokeOpacity: 0.9,
-          fillColor: '#9ca3af', // Gray 400
-          fillOpacity: 0.6,
+          fillColor: '#4b5563', // Gray 600
+          fillOpacity: 0.4,
         };
       } else if (type === 'commercial') {
         const commercialProps = props as CommercialArea;
@@ -286,7 +286,7 @@ export function drawPolygons(
 
     // 5. 마커(오버레이)
     if (position) {
-      if (type === 'vworld_building') return;
+      if (type === 'building_store') return;
 
       let shortName = '데이터없음';
       if ('buld_nm' in props && props.buld_nm) shortName = props.buld_nm;
