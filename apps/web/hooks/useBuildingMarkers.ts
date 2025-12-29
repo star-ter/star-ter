@@ -41,7 +41,7 @@ export const useBuildingMarkers = (
   const customOverlaysRef = useRef<KakaoCustomOverlay[]>([]);
 
   // Thresholds separation
-  const TOTAL_VIEW_THRESHOLD = 4; // Default view (High threshold to reduce clutter)
+  const TOTAL_VIEW_THRESHOLD = 3; // Default view (High threshold to reduce clutter)
   const CATEGORY_VIEW_THRESHOLD = 2; // Filtered view (Show all matches)
 
   // 마커(오버레이) 모두 지우기
@@ -108,28 +108,40 @@ export const useBuildingMarkers = (
         // Threshold Check
         if (item.count < currentThreshold) return;
 
-        // Premium UI Content (Glassmorphism, No Text Name)
+        const categoryName = selectedCategory
+          ? selectedCategory.name
+          : '점포수';
+
+        // Premium UI Content (Rounded Rectangle with Category + Count)
         const content = `
           <div style="
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 32px;
-            height: 32px;
-            background: rgba(255, 255, 255, 0.85);
+            min-width: 40px;
+            padding: 6px 10px;
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             border: 2px solid ${currentColor};
-            border-radius: 50%;
+            border-radius: 20px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             animation: bounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             cursor: pointer;
+            white-space: nowrap;
           ">
             <span style="
-              font-size: 14px;
-              font-weight: 800;
+              font-size: 13px;
+              font-weight: 700;
               color: ${currentColor};
+              margin-right: 4px;
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            ">${categoryName}</span>
+            <span style="
+              font-size: 13px;
+              font-weight: 800;
+              color: #333;
               font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             ">${item.count}</span>
             <div style="
@@ -141,10 +153,10 @@ export const useBuildingMarkers = (
               height: 0; 
               border-left: 5px solid transparent;
               border-right: 5px solid transparent;
+              border-top: 6px solid ${currentColor};
             "></div>
           </div>
         `;
-
         const position = new window.kakao.maps.LatLng(item.lat, item.lng);
 
         const customOverlay = new window.kakao.maps.CustomOverlay({
