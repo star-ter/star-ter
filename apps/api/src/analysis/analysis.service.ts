@@ -71,38 +71,68 @@ export class AnalysisService {
 
              // Priority 1: If explicitly searching for Gu (ends with "구")
              if (endsWithGu) {
-                 const guList = await this.prisma.areaGu.findMany({
-                     where: { SIGNGU_NM: { contains: term } }
+                 // Try exact match first
+                 let guList = await this.prisma.areaGu.findMany({
+                     where: { SIGNGU_NM: { equals: term } }
                  });
+                 // Fall back to partial match
+                 if (guList.length === 0) {
+                     guList = await this.prisma.areaGu.findMany({
+                         where: { SIGNGU_NM: { contains: term } }
+                     });
+                 }
                  if (guList.length > 0) return { type: 'GU', codes: [guList[0].SIGNGU_CD] };
              }
 
              // Priority 2: If explicitly searching for Dong (ends with "동")
              if (endsWithDong) {
-                 const dongList = await this.prisma.areaDong.findMany({
-                     where: { ADSTRD_NM: { contains: processTerm } }
+                 // Try exact match first
+                 let dongList = await this.prisma.areaDong.findMany({
+                     where: { ADSTRD_NM: { equals: processTerm } }
                  });
+                 // Fall back to partial match
+                 if (dongList.length === 0) {
+                     dongList = await this.prisma.areaDong.findMany({
+                         where: { ADSTRD_NM: { contains: processTerm } }
+                     });
+                 }
                  if (dongList.length > 0) return { type: 'DONG', codes: [dongList[0].ADSTRD_CD] };
              }
 
              // Default hierarchy for ambiguous searches: Gu → Dong → Commercial
              if (!endsWithGu && !endsWithDong) {
-                 // Try Gu first
-                 const guList = await this.prisma.areaGu.findMany({
-                     where: { SIGNGU_NM: { contains: term } }
+                 // Try Gu first (exact then partial)
+                 let guList = await this.prisma.areaGu.findMany({
+                     where: { SIGNGU_NM: { equals: term } }
                  });
+                 if (guList.length === 0) {
+                     guList = await this.prisma.areaGu.findMany({
+                         where: { SIGNGU_NM: { contains: term } }
+                     });
+                 }
                  if (guList.length > 0) return { type: 'GU', codes: [guList[0].SIGNGU_CD] };
 
-                 // Then Dong
-                 const dongList = await this.prisma.areaDong.findMany({
-                     where: { ADSTRD_NM: { contains: term } }
+                 // Then Dong (exact then partial)
+                 let dongList = await this.prisma.areaDong.findMany({
+                     where: { ADSTRD_NM: { equals: term } }
                  });
+                 if (dongList.length === 0) {
+                     dongList = await this.prisma.areaDong.findMany({
+                         where: { ADSTRD_NM: { contains: term } }
+                     });
+                 }
                  if (dongList.length > 0) return { type: 'DONG', codes: [dongList[0].ADSTRD_CD] };
 
-                 // Finally Commercial
-                 const commList = await this.prisma.areaCommercial.findMany({
-                     where: { TRDAR_CD_NM: { contains: term } }
+                 // Finally Commercial (exact match first, then partial match)
+                 let commList = await this.prisma.areaCommercial.findMany({
+                     where: { TRDAR_CD_NM: { equals: term } }
                  });
+                 // If no exact match, try partial match
+                 if (commList.length === 0) {
+                     commList = await this.prisma.areaCommercial.findMany({
+                         where: { TRDAR_CD_NM: { contains: term } }
+                     });
+                 }
                  if (commList.length > 0) return { type: 'COMMERCIAL', codes: [commList[0].TRDAR_CD] };
              }
 
