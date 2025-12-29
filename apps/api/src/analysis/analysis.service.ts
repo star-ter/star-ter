@@ -1,183 +1,139 @@
-
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { SalesRow, StoreRow, PopulationRow } from '../types/analysis';
 
 @Injectable()
 export class AnalysisService {
   constructor(private prisma: PrismaService) {}
 
   async getAnalysis(regionCode: string) {
-    // 1. Resolve Region Type and Codes
     let codes: string[] = [];
     let type: 'GU' | 'DONG' | 'COMMERCIAL' = 'COMMERCIAL';
-    
-    // Config for dynamic fetching
-    const CONFIG = {
-        GU: {
-            sales: 'salesGu',
-            store: 'storeGu',
-            pop: 'residentPopulationGu',
-            key: 'SIGNGU_CD'
-        },
-        DONG: {
-            sales: 'salesDong',
-            store: 'storeDong',
-            pop: 'residentPopulationDong',
-            key: 'ADSTRD_CD'
-        },
-        COMMERCIAL: {
-            sales: 'salesCommercial',
-            store: 'storeCommercial',
-            pop: 'residentPopulationCommercial',
-            key: 'TRDAR_CD'
-        }
-    };
 
     if (!isNaN(Number(regionCode))) {
-         // Numeric: Try to match exact code in priority
-         const gu = await this.prisma.areaGu.findFirst({ where: { SIGNGU_CD: regionCode } });
-         if (gu) {
-             type = 'GU';
-             codes = [regionCode];
-         } else {
-             const dong = await this.prisma.areaDong.findFirst({ where: { ADSTRD_CD: regionCode } });
-             if (dong) {
-                 type = 'DONG';
-                 codes = [regionCode];
-             } else {
-                 // Assume Commercial
-                 type = 'COMMERCIAL';
-                 codes = [regionCode];
-             }
-         }
-    } else {
-        // String: Search by Name (Priority: Gu -> Dong -> Commercial)
-        // 1. Heuristic: Strip 'Gu' suffix or split full name to find core keyword
-        // e.g., "Gangnam-gu" -> "Gangnam", "Seoul Gangnam-gu Samsung-dong" -> "Samsung"
-        const keywords = regionCode.trim().split(/\s+/);
-        
-        // Define search helper with smart priority based on suffix
-        const searchInTables = async (term: string) => {
-             let processTerm = term;
-             
-             // Determine search priority based on suffix
-             const endsWithGu = term.endsWith('구');
-             const endsWithDong = term.endsWith('동');
-             
-             // Strip '동' suffix for Dong search to broaden results
-             if (endsWithDong && processTerm.length > 2) {
-                 processTerm = processTerm.slice(0, -1);
-             }
-
-             // Priority 1: If explicitly searching for Gu (ends with "구")
-             if (endsWithGu) {
-                 // Try exact match first
-                 let guList = await this.prisma.areaGu.findMany({
-                     where: { SIGNGU_NM: { equals: term } }
-                 });
-                 // Fall back to partial match
-                 if (guList.length === 0) {
-                     guList = await this.prisma.areaGu.findMany({
-                         where: { SIGNGU_NM: { contains: term } }
-                     });
-                 }
-                 if (guList.length > 0) return { type: 'GU', codes: [guList[0].SIGNGU_CD] };
-             }
-
-             // Priority 2: If explicitly searching for Dong (ends with "동")
-             if (endsWithDong) {
-                 // Try exact match first
-                 let dongList = await this.prisma.areaDong.findMany({
-                     where: { ADSTRD_NM: { equals: processTerm } }
-                 });
-                 // Fall back to partial match
-                 if (dongList.length === 0) {
-                     dongList = await this.prisma.areaDong.findMany({
-                         where: { ADSTRD_NM: { contains: processTerm } }
-                     });
-                 }
-                 if (dongList.length > 0) return { type: 'DONG', codes: [dongList[0].ADSTRD_CD] };
-             }
-
-             // Default hierarchy for ambiguous searches: Gu → Dong → Commercial
-             if (!endsWithGu && !endsWithDong) {
-                 // Try Gu first (exact then partial)
-                 let guList = await this.prisma.areaGu.findMany({
-                     where: { SIGNGU_NM: { equals: term } }
-                 });
-                 if (guList.length === 0) {
-                     guList = await this.prisma.areaGu.findMany({
-                         where: { SIGNGU_NM: { contains: term } }
-                     });
-                 }
-                 if (guList.length > 0) return { type: 'GU', codes: [guList[0].SIGNGU_CD] };
-
-                 // Then Dong (exact then partial)
-                 let dongList = await this.prisma.areaDong.findMany({
-                     where: { ADSTRD_NM: { equals: term } }
-                 });
-                 if (dongList.length === 0) {
-                     dongList = await this.prisma.areaDong.findMany({
-                         where: { ADSTRD_NM: { contains: term } }
-                     });
-                 }
-                 if (dongList.length > 0) return { type: 'DONG', codes: [dongList[0].ADSTRD_CD] };
-
-                 // Finally Commercial (exact match first, then partial match)
-                 let commList = await this.prisma.areaCommercial.findMany({
-                     where: { TRDAR_CD_NM: { equals: term } }
-                 });
-                 // If no exact match, try partial match
-                 if (commList.length === 0) {
-                     commList = await this.prisma.areaCommercial.findMany({
-                         where: { TRDAR_CD_NM: { contains: term } }
-                     });
-                 }
-                 if (commList.length > 0) return { type: 'COMMERCIAL', codes: [commList[0].TRDAR_CD] };
-             }
-
-             return null;
-         };
-
-        let result: { type: string, codes: string[] } | null = null;
-
-        // Strategy 1: Last 2 words (e.g. "Yeoksam Station 4")
-        if (keywords.length >= 2) {
-            const lastTwo = keywords.slice(-2).join(' ');
-            result = await searchInTables(lastTwo);
-        }
-
-        // Strategy 2: Last 1 word (e.g. "Samsung-dong" from "Gangnam-gu Samsung-dong")
-        if (!result) {
-            const lastOne = keywords[keywords.length - 1];
-            result = await searchInTables(lastOne);
-        }
-
-        // Strategy 3: Full String (if everything else fails, though Strategy 1 likely covers reasonable prefixes)
-        if (!result && keywords.length > 2) {
-             result = await searchInTables(regionCode.trim());
-        }
-
-        if (result) {
-            type = result.type as any;
-            codes = result.codes;
-
+      const gu = await this.prisma.areaGu.findFirst({
+        where: { SIGNGU_CD: regionCode },
+      });
+      if (gu) {
+        type = 'GU';
+        codes = [regionCode];
+      } else {
+        const dong = await this.prisma.areaDong.findFirst({
+          where: { ADSTRD_CD: regionCode },
+        });
+        if (dong) {
+          type = 'DONG';
+          codes = [regionCode];
         } else {
-
-             return { error: `Region not found: ${regionCode}` };
+          type = 'COMMERCIAL';
+          codes = [regionCode];
         }
+      }
+    } else {
+      const keywords = regionCode.trim().split(/\s+/);
+
+      const searchInTables = async (term: string) => {
+        let processTerm = term;
+
+        const endsWithGu = term.endsWith('구');
+        const endsWithDong = term.endsWith('동');
+
+        if (endsWithDong && processTerm.length > 2) {
+          processTerm = processTerm.slice(0, -1);
+        }
+
+        if (endsWithGu) {
+          let guList = await this.prisma.areaGu.findMany({
+            where: { SIGNGU_NM: { equals: term } },
+          });
+          if (guList.length === 0) {
+            guList = await this.prisma.areaGu.findMany({
+              where: { SIGNGU_NM: { contains: term } },
+            });
+          }
+          if (guList.length > 0)
+            return { type: 'GU', codes: [guList[0].SIGNGU_CD] };
+        }
+
+        if (endsWithDong) {
+          let dongList = await this.prisma.areaDong.findMany({
+            where: { ADSTRD_NM: { equals: processTerm } },
+          });
+          if (dongList.length === 0) {
+            dongList = await this.prisma.areaDong.findMany({
+              where: { ADSTRD_NM: { contains: processTerm } },
+            });
+          }
+          if (dongList.length > 0)
+            return { type: 'DONG', codes: [dongList[0].ADSTRD_CD] };
+        }
+
+        if (!endsWithGu && !endsWithDong) {
+          let guList = await this.prisma.areaGu.findMany({
+            where: { SIGNGU_NM: { equals: term } },
+          });
+          if (guList.length === 0) {
+            guList = await this.prisma.areaGu.findMany({
+              where: { SIGNGU_NM: { contains: term } },
+            });
+          }
+          if (guList.length > 0)
+            return { type: 'GU', codes: [guList[0].SIGNGU_CD] };
+
+          let dongList = await this.prisma.areaDong.findMany({
+            where: { ADSTRD_NM: { equals: term } },
+          });
+          if (dongList.length === 0) {
+            dongList = await this.prisma.areaDong.findMany({
+              where: { ADSTRD_NM: { contains: term } },
+            });
+          }
+          if (dongList.length > 0)
+            return { type: 'DONG', codes: [dongList[0].ADSTRD_CD] };
+
+          let commList = await this.prisma.areaCommercial.findMany({
+            where: { TRDAR_CD_NM: { equals: term } },
+          });
+          if (commList.length === 0) {
+            commList = await this.prisma.areaCommercial.findMany({
+              where: { TRDAR_CD_NM: { contains: term } },
+            });
+          }
+          if (commList.length > 0)
+            return { type: 'COMMERCIAL', codes: [commList[0].TRDAR_CD] };
+        }
+
+        return null;
+      };
+
+      let result: { type: string; codes: string[] } | null = null;
+
+      if (keywords.length >= 2) {
+        const lastTwo = keywords.slice(-2).join(' ');
+        result = await searchInTables(lastTwo);
+      }
+
+      if (!result) {
+        const lastOne = keywords[keywords.length - 1];
+        result = await searchInTables(lastOne);
+      }
+
+      if (!result && keywords.length > 2) {
+        result = await searchInTables(regionCode.trim());
+      }
+
+      if (result) {
+        type = result.type as 'GU' | 'DONG' | 'COMMERCIAL';
+        codes = result.codes;
+      } else {
+        return { error: `Region not found: ${regionCode}` };
+      }
     }
 
-    const currentConfig = CONFIG[type];
-    
+    const deleg = this.getDelegates(type);
 
-    // 2. Get latest available quarter from Sales table (Use SalesCommercial as reference or dynamic?)
-    // Using SalesCommercial is generally safe for system-wide latest quarter, 
-    // but specific regions might not have data. Let's use the specific table just in case.
-    // Dynamic Query for FindFirst
-    // 2. Get latest available quarter for the SPECIFIC region
-    const latestRegionSales = await (this.prisma as any)[currentConfig.sales].findFirst({
-      where: { [currentConfig.key]: { in: codes } },
+    const latestRegionSales = await deleg.sales.findFirst({
+      where: { [deleg.key]: { in: codes } },
       orderBy: { STDR_YYQU_CD: 'desc' },
       select: { STDR_YYQU_CD: true },
     });
@@ -185,106 +141,103 @@ export class AnalysisService {
     let stdrYyquCd = '';
 
     if (latestRegionSales) {
-        stdrYyquCd = latestRegionSales.STDR_YYQU_CD;
-
+      stdrYyquCd = latestRegionSales.STDR_YYQU_CD;
     } else {
-        // Fallback or Error if no data exists for this region
-
-        return { error: 'No data available for this region' };
+      return { error: 'No data available for this region' };
     }
 
-    /* Global fallback removed to ensure we only show valid region data
-    const latestSales = await (this.prisma as any)[currentConfig.sales].findFirst({
-      orderBy: { STDR_YYQU_CD: 'desc' },
-      select: { STDR_YYQU_CD: true },
-    });
-    */
-
-    // 3. Fetch all raw data in parallel using dynamic table names
-    const [salesRaw, storeRaw, populationRaw] = await Promise.all([
-      (this.prisma as any)[currentConfig.sales].findMany({
+    const [salesRaw, storeRaw, populationRaw]: [
+      SalesRow[],
+      StoreRow[],
+      PopulationRow[],
+    ] = await Promise.all([
+      deleg.sales.findMany({
         where: {
-          [currentConfig.key]: { in: codes },
+          [deleg.key]: { in: codes },
           STDR_YYQU_CD: stdrYyquCd,
         },
       }),
-      (this.prisma as any)[currentConfig.store].findMany({
+      deleg.store.findMany({
         where: {
-          [currentConfig.key]: { in: codes },
+          [deleg.key]: { in: codes },
           STDR_YYQU_CD: stdrYyquCd,
         },
       }),
-      (this.prisma as any)[currentConfig.pop].findMany({
+      deleg.pop.findMany({
         where: {
-          [currentConfig.key]: { in: codes },
+          [deleg.key]: { in: codes },
           STDR_YYQU_CD: stdrYyquCd,
         },
       }),
     ]);
-    
 
-
-
-    // 4. Fetch History Data (Last 4 Quarters)
-    // Find available quarters from the specific sales table
-    const availableQuarters = await (this.prisma as any)[currentConfig.sales].findMany({
-        where: {
-             [currentConfig.key]: { in: codes },
-        },
-        distinct: ['STDR_YYQU_CD'],
-        orderBy: { STDR_YYQU_CD: 'desc' },
-        take: 4,
-        select: { STDR_YYQU_CD: true },
-    });
-    
-    // Sort asc to show trend over time
-    const quartersToFetch = (availableQuarters as any[]).map(q => q.STDR_YYQU_CD).sort();
-
-    // Fetch total sales for these quarters
-    const historyDataRaw = await (this.prisma as any)[currentConfig.sales].findMany({
-        where: {
-            [currentConfig.key]: { in: codes },
-            STDR_YYQU_CD: { in: quartersToFetch },
-        },
-        select: {
-            STDR_YYQU_CD: true,
-            THSMON_SELNG_AMT: true,
-        },
+    const availableQuarters = await deleg.sales.findMany({
+      where: {
+        [deleg.key]: { in: codes },
+      },
+      distinct: ['STDR_YYQU_CD'],
+      orderBy: { STDR_YYQU_CD: 'desc' },
+      take: 4,
+      select: { STDR_YYQU_CD: true },
     });
 
-    // Aggregate by quarter
+    const quartersToFetch = availableQuarters.map((q) => q.STDR_YYQU_CD).sort();
+
+    const historyDataRaw = await deleg.sales.findMany({
+      where: {
+        [deleg.key]: { in: codes },
+        STDR_YYQU_CD: { in: quartersToFetch },
+      },
+      select: {
+        STDR_YYQU_CD: true,
+        THSMON_SELNG_AMT: true,
+      },
+    });
+
     const historyMap = new Map<string, bigint>();
-    quartersToFetch.forEach(q => historyMap.set(q, BigInt(0)));
+    quartersToFetch.forEach((q) => historyMap.set(q, BigInt(0)));
 
-    (historyDataRaw as any[]).forEach(row => {
-        const currentTotal = historyMap.get(row.STDR_YYQU_CD) || BigInt(0);
-        historyMap.set(row.STDR_YYQU_CD, currentTotal + row.THSMON_SELNG_AMT);
+    historyDataRaw.forEach((row) => {
+      const currentTotal = historyMap.get(row.STDR_YYQU_CD) || BigInt(0);
+      historyMap.set(row.STDR_YYQU_CD, currentTotal + row.THSMON_SELNG_AMT);
     });
 
-    const trendData = quartersToFetch.map(q => ({
-        quarter: q,
-        sales: (historyMap.get(q) || BigInt(0)).toString(),
+    const trendData = quartersToFetch.map((q) => ({
+      quarter: q,
+      sales: (historyMap.get(q) || BigInt(0)).toString(),
     }));
 
-    
-    // 5. Aggregate Data (Logic remains identical as columns are consistent)
-    // --- Sales Aggregation ---
     let totalSales = BigInt(0);
     const daySales = {
-      mon: BigInt(0), tue: BigInt(0), wed: BigInt(0), thu: BigInt(0), fri: BigInt(0), sat: BigInt(0), sun: BigInt(0)
+      mon: BigInt(0),
+      tue: BigInt(0),
+      wed: BigInt(0),
+      thu: BigInt(0),
+      fri: BigInt(0),
+      sat: BigInt(0),
+      sun: BigInt(0),
     };
     const timeSales = {
-      t0006: BigInt(0), t0611: BigInt(0), t1114: BigInt(0), t1417: BigInt(0), t1721: BigInt(0), t2124: BigInt(0)
+      t0006: BigInt(0),
+      t0611: BigInt(0),
+      t1114: BigInt(0),
+      t1417: BigInt(0),
+      t1721: BigInt(0),
+      t2124: BigInt(0),
     };
     const genderSales = { male: BigInt(0), female: BigInt(0) };
     const ageSales = {
-        a10: BigInt(0), a20: BigInt(0), a30: BigInt(0),
-        a40: BigInt(0), a50: BigInt(0), a60: BigInt(0)
+      a10: BigInt(0),
+      a20: BigInt(0),
+      a30: BigInt(0),
+      a40: BigInt(0),
+      a50: BigInt(0),
+      a60: BigInt(0),
     };
 
-    (salesRaw as any[]).forEach(row => {
+    salesRaw.forEach((row) => {
       totalSales += row.THSMON_SELNG_AMT;
-      
+
       daySales.mon += row.MON_SELNG_AMT;
       daySales.tue += row.TUES_SELNG_AMT;
       daySales.wed += row.WED_SELNG_AMT;
@@ -311,76 +264,68 @@ export class AnalysisService {
       ageSales.a60 += row.AGRDE_60_ABOVE_SELNG_AMT;
     });
 
-
-
-    // --- Store Aggregation ---
     let totalStores = 0;
-    let totalOpenStores = 0; 
+    let totalOpenStores = 0;
     let totalCloseStores = 0;
-    
-    // Map stores: Category Name -> { count, open, close }
-    const storeCategoriesMap = new Map<string, { count: number, open: number, close: number }>();
 
-    (storeRaw as any[]).forEach(row => {
-        totalStores += row.STOR_CO;
-        const open = row.OPBIZ_STOR_CO || 0;
-        const close = row.CLSBIZ_STOR_CO || 0;
-        
-        totalOpenStores += open;
-        totalCloseStores += close;
+    const storeCategoriesMap = new Map<
+      string,
+      { count: number; open: number; close: number }
+    >();
 
-        // Group categories
-        const current = storeCategoriesMap.get(row.SVC_INDUTY_CD_NM) || { count: 0, open: 0, close: 0 };
-        storeCategoriesMap.set(row.SVC_INDUTY_CD_NM, { 
-            count: current.count + row.STOR_CO,
-            open: current.open + open,
-            close: current.close + close
-        });
+    storeRaw.forEach((row) => {
+      totalStores += row.STOR_CO;
+      const open = row.OPBIZ_STOR_CO || 0;
+      const close = row.CLSBIZ_STOR_CO || 0;
+
+      totalOpenStores += open;
+      totalCloseStores += close;
+
+      const current = storeCategoriesMap.get(row.SVC_INDUTY_CD_NM) || {
+        count: 0,
+        open: 0,
+        close: 0,
+      };
+      storeCategoriesMap.set(row.SVC_INDUTY_CD_NM, {
+        count: current.count + row.STOR_CO,
+        open: current.open + open,
+        close: current.close + close,
+      });
     });
-
-    if (storeRaw.length > 0) {
-        console.log('DEBUG: Store Table Columns:', Object.keys((storeRaw as any)[0]));
-    }
-
     const storeCategories = Array.from(storeCategoriesMap.entries())
-        .map(([name, data]) => ({ 
-            name, 
-            count: data.count, 
-            open: data.open, 
-            close: data.close 
-        }))
-        .sort((a, b) => b.count - a.count);
+      .map(([name, data]) => ({
+        name,
+        count: data.count,
+        open: data.open,
+        close: data.close,
+      }))
+      .sort((a, b) => b.count - a.count);
 
-    // --- Population Aggregation ---
     let totalPopulation = 0;
     let malePopulation = 0;
     let femalePopulation = 0;
     const agePopulation = { a10: 0, a20: 0, a30: 0, a40: 0, a50: 0, a60: 0 };
 
     if (populationRaw && populationRaw.length > 0) {
-        (populationRaw as any[]).forEach(row => {
-            totalPopulation += row.TOT_REPOP_CO;
-            malePopulation += row.ML_REPOP_CO;
-            femalePopulation += row.FML_REPOP_CO;
-            agePopulation.a10 += row.AGRDE_10_REPOP_CO;
-            agePopulation.a20 += row.AGRDE_20_REPOP_CO;
-            agePopulation.a30 += row.AGRDE_30_REPOP_CO;
-            agePopulation.a40 += row.AGRDE_40_REPOP_CO;
-            agePopulation.a50 += row.AGRDE_50_REPOP_CO;
-            agePopulation.a60 += row.AGRDE_60_ABOVE_REPOP_CO;
-        });
-        if (populationRaw.length > 0) {
-             console.log('POPULATION RAW KEYS:', Object.keys(populationRaw[0]));
-        }
+      populationRaw.forEach((row) => {
+        totalPopulation += row.TOT_REPOP_CO;
+        malePopulation += row.ML_REPOP_CO;
+        femalePopulation += row.FML_REPOP_CO;
+        agePopulation.a10 += row.AGRDE_10_REPOP_CO;
+        agePopulation.a20 += row.AGRDE_20_REPOP_CO;
+        agePopulation.a30 += row.AGRDE_30_REPOP_CO;
+        agePopulation.a40 += row.AGRDE_40_REPOP_CO;
+        agePopulation.a50 += row.AGRDE_50_REPOP_CO;
+        agePopulation.a60 += row.AGRDE_60_ABOVE_REPOP_CO;
+      });
     }
 
-    // 5. Construct Response
     return {
       meta: {
         yearQuarter: stdrYyquCd,
         regionCode,
         matchedRegions: codes,
-        type, // Return type for debugging or frontend use
+        type,
       },
       sales: {
         total: totalSales.toString(),
@@ -403,113 +348,148 @@ export class AnalysisService {
           t2124: timeSales.t2124.toString(),
         },
         gender: {
-            male: genderSales.male.toString(),
-            female: genderSales.female.toString(),
+          male: genderSales.male.toString(),
+          female: genderSales.female.toString(),
         },
         age: {
-            a10: ageSales.a10.toString(),
-            a20: ageSales.a20.toString(),
-            a30: ageSales.a30.toString(),
-            a40: ageSales.a40.toString(),
-            a50: ageSales.a50.toString(),
-            a60: ageSales.a60.toString(),
-        }
+          a10: ageSales.a10.toString(),
+          a20: ageSales.a20.toString(),
+          a30: ageSales.a30.toString(),
+          a40: ageSales.a40.toString(),
+          a50: ageSales.a50.toString(),
+          a60: ageSales.a60.toString(),
+        },
       },
       store: {
         total: totalStores,
-        categories: storeCategories.slice(0, 30), // Top 30 items
-        openingRate: totalStores > 0 ? (totalOpenStores / totalStores) * 100 : 0,
-        closingRate: totalStores > 0 ? (totalCloseStores / totalStores) * 100 : 0,
+        categories: storeCategories.slice(0, 30),
+        openingRate:
+          totalStores > 0 ? (totalOpenStores / totalStores) * 100 : 0,
+        closingRate:
+          totalStores > 0 ? (totalCloseStores / totalStores) * 100 : 0,
       },
-      population: totalPopulation > 0 ? {
-        total: totalPopulation,
-        male: malePopulation,
-        female: femalePopulation,
-        age: agePopulation
-      } : null
-
+      population:
+        totalPopulation > 0
+          ? {
+              total: totalPopulation,
+              male: malePopulation,
+              female: femalePopulation,
+              age: agePopulation,
+            }
+          : null,
     };
   }
 
   async searchRegions(query: string) {
-      if (!query) return [];
+    if (!query) return [];
 
-      // Split query by spaces to handle full names like "Seoul Gangnam-gu Samsung-dong"
-      const keywords = query.trim().split(/\s+/);
-      
-      // Use the last part of the query as the primary search term.
-      // e.g., "Seoul Gangnam Samsung-dong" -> "Samsung-dong"
-      let lastKeyword = keywords[keywords.length - 1]; 
-      
-      // Heuristic: If keyword ends with '동' and is generic enough, strip '동' 
-      // to match '삼성1동' when user types '삼성동'.
-      // Only strip if length > 1 to avoid stripping '이동' -> '이' (too short)
-      if (lastKeyword.endsWith('동') && lastKeyword.length > 2) {
-          lastKeyword = lastKeyword.slice(0, -1);
-      }
+    const keywords = query.trim().split(/\s+/);
 
-      const results: { type: string, code: string, name: string, fullName: string }[] = [];
+    let lastKeyword = keywords[keywords.length - 1];
 
-      // 1. Fetch Gu and City Info
-      const allGus = await this.prisma.areaGu.findMany();
-      const guMap = new Map<string, string>();
-      allGus.forEach(g => guMap.set(g.SIGNGU_CD, g.SIGNGU_NM));
+    if (lastKeyword.endsWith('동') && lastKeyword.length > 2) {
+      lastKeyword = lastKeyword.slice(0, -1);
+    }
 
-      // 2. Search Gu
-      const guMatches = await this.prisma.areaGu.findMany({
-          where: { SIGNGU_NM: { contains: lastKeyword } }
+    const results: {
+      type: string;
+      code: string;
+      name: string;
+      fullName: string;
+    }[] = [];
+
+    const allGus = await this.prisma.areaGu.findMany();
+    const guMap = new Map<string, string>();
+    allGus.forEach((g) => guMap.set(g.SIGNGU_CD, g.SIGNGU_NM));
+
+    const guMatches = await this.prisma.areaGu.findMany({
+      where: { SIGNGU_NM: { contains: lastKeyword } },
+    });
+    guMatches.forEach((g) => {
+      const cityCode = g.SIGNGU_CD.substring(0, 2);
+      let cityName = '';
+      if (cityCode === '11') cityName = '서울특별시';
+
+      results.push({
+        type: 'GU',
+        code: g.SIGNGU_CD,
+        name: g.SIGNGU_NM,
+        fullName: `${cityName} ${g.SIGNGU_NM}`.trim(),
       });
-      guMatches.forEach(g => {
-          // Infer City from Code (Standard Korean Admin Code)
-          const cityCode = g.SIGNGU_CD.substring(0, 2); 
-          let cityName = '';
-          if (cityCode === '11') cityName = '서울특별시';
-          // Add more if needed or fetch from DB if available
+    });
 
-          results.push({
-              type: 'GU',
-              code: g.SIGNGU_CD,
-              name: g.SIGNGU_NM,
-              fullName: `${cityName} ${g.SIGNGU_NM}`.trim()
-          });
-      });
+    const dongMatches = await this.prisma.areaDong.findMany({
+      where: { ADSTRD_NM: { contains: lastKeyword } },
+    });
 
-      // 3. Search Dong
-      const dongMatches = await this.prisma.areaDong.findMany({
-          where: { ADSTRD_NM: { contains: lastKeyword } }
-      });
-      
-      dongMatches.forEach(d => {
-          const guCode = d.ADSTRD_CD.slice(0, 5);
-          const guName = guMap.get(guCode) || '';
-          
-          const cityCode = d.ADSTRD_CD.substring(0, 2);
-          let cityName = '';
-          if (cityCode === '11') cityName = '서울특별시';
+    dongMatches.forEach((d) => {
+      const guCode = d.ADSTRD_CD.slice(0, 5);
+      const guName = guMap.get(guCode) || '';
 
-          results.push({
-              type: 'DONG',
-              code: d.ADSTRD_CD,
-              name: d.ADSTRD_NM,
-              fullName: `${cityName} ${guName} ${d.ADSTRD_NM}`.trim()
-          });
-      });
+      const cityCode = d.ADSTRD_CD.substring(0, 2);
+      let cityName = '';
+      if (cityCode === '11') cityName = '서울특별시';
 
-      
-      // Commercial area search removed by user request.
-      // 4. Search Commercial Areas
-      const commMatches = await this.prisma.areaCommercial.findMany({
-          where: { TRDAR_CD_NM: { contains: lastKeyword } }
+      results.push({
+        type: 'DONG',
+        code: d.ADSTRD_CD,
+        name: d.ADSTRD_NM,
+        fullName: `${cityName} ${guName} ${d.ADSTRD_NM}`.trim(),
       });
-      commMatches.forEach(c => {
-          results.push({
-              type: 'COMMERCIAL',
-              code: c.TRDAR_CD,
-              name: c.TRDAR_CD_NM,
-              fullName: `${c.SIGNGU_CD_NM || ''} ${c.TRDAR_CD_NM}`.trim()
-          });
-      });
+    });
 
-      return results;
+    const commMatches = await this.prisma.areaCommercial.findMany({
+      where: { TRDAR_CD_NM: { contains: lastKeyword } },
+    });
+    commMatches.forEach((c) => {
+      results.push({
+        type: 'COMMERCIAL',
+        code: c.TRDAR_CD,
+        name: c.TRDAR_CD_NM,
+        fullName: `${c.SIGNGU_CD_NM || ''} ${c.TRDAR_CD_NM}`.trim(),
+      });
+    });
+
+    return results;
   }
+
+  private getDelegates(type: 'GU' | 'DONG' | 'COMMERCIAL') {
+    switch (type) {
+      case 'GU':
+        return {
+          sales: this.prisma.salesGu as unknown as SalesDelegate,
+          store: this.prisma.storeGu as unknown as StoreDelegate,
+          pop: this.prisma.residentPopulationGu as unknown as PopDelegate,
+          key: 'SIGNGU_CD',
+        };
+      case 'DONG':
+        return {
+          sales: this.prisma.salesDong as unknown as SalesDelegate,
+          store: this.prisma.storeDong as unknown as StoreDelegate,
+          pop: this.prisma.residentPopulationDong as unknown as PopDelegate,
+          key: 'ADSTRD_CD',
+        };
+      case 'COMMERCIAL':
+        return {
+          sales: this.prisma.salesCommercial as unknown as SalesDelegate,
+          store: this.prisma.storeCommercial as unknown as StoreDelegate,
+          pop: this.prisma
+            .residentPopulationCommercial as unknown as PopDelegate,
+          key: 'TRDAR_CD',
+        };
+    }
+  }
+}
+
+interface SalesDelegate {
+  findFirst(args: unknown): Promise<{ STDR_YYQU_CD: string } | null>;
+  findMany(args: unknown): Promise<SalesRow[]>;
+}
+
+interface StoreDelegate {
+  findMany(args: unknown): Promise<StoreRow[]>;
+}
+
+interface PopDelegate {
+  findMany(args: unknown): Promise<PopulationRow[]>;
 }

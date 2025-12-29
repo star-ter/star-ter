@@ -1,3 +1,40 @@
+export interface SalesTrendItem {
+  period: string;
+  sales: number;
+}
+
+export interface DayOfWeekSalesItem {
+  day: string;
+  sales: number;
+  percentage: number;
+}
+
+export interface TimeOfDaySalesItem {
+  time: string;
+  sales: number;
+  percentage: number;
+}
+
+export interface GenderSalesItem {
+    male: number;
+    female: number;
+}
+
+export interface AgeSalesItem {
+    [key: string]: number; // e.g., '10s': 10, '20s': 20...
+}
+
+export interface StoreCategoryItem {
+    name: string;
+    count: number;
+    open?: number;
+    close?: number;
+}
+
+export interface PopulationAgeItem {
+     [key: string]: number;
+}
+
 export interface AnalysisData {
   meta: {
     yearQuarter: string;
@@ -5,15 +42,15 @@ export interface AnalysisData {
   };
   sales: {
     total: string;
-    trend: any[]; 
-    dayOfWeek: any;
-    timeOfDay: any;
-    gender: any;
-    age: any;
+    trend: SalesTrendItem[];
+    dayOfWeek: DayOfWeekSalesItem[];
+    timeOfDay: TimeOfDaySalesItem[];
+    gender: GenderSalesItem;
+    age: AgeSalesItem;
   };
   store: {
     total: number;
-    categories: Array<{ name: string; count: number; open?: number; close?: number }>;
+    categories: StoreCategoryItem[];
     openingRate?: number;
     closingRate?: number;
   };
@@ -21,7 +58,7 @@ export interface AnalysisData {
     total: number;
     male: number;
     female: number;
-    age: any;
+    age: PopulationAgeItem;
   } | null;
 }
 

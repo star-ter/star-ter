@@ -2,14 +2,11 @@
 import React from 'react';
 import { Info } from 'lucide-react';
 
-interface TrendItem {
-  quarter: string; // e.g. "20242"
-  sales: string;   // e.g. "1500000000"
-}
+import { SalesTrendItem } from '../../types/analysis-types';
 
 interface SalesTrendGraphProps {
   color?: string;
-  data?: TrendItem[] | number[]; // Accept both for backward compat or strictly TrendItem[]
+  data?: SalesTrendItem[]; 
 }
 
 export default function SalesTrendGraph({
@@ -20,22 +17,15 @@ export default function SalesTrendGraph({
   let pointsData: number[] = [];
   let labels: string[] = [];
 
-  if (Array.isArray(data) && data.length > 0) {
-      if (typeof data[0] === 'number') {
-          pointsData = data as number[];
-          labels = pointsData.map((_, i) => `${i + 1}`); // fallback labels
-      } else {
-          // It's TrendItem[]
-          const items = data as TrendItem[];
-          // Sort specific to quarters just in case
-          const sorted = [...items].sort((a, b) => a.quarter.localeCompare(b.quarter));
-          
-          pointsData = sorted.map(d => parseInt(d.sales, 10));
-          labels = sorted.map(d => {
-             const q = d.quarter.slice(4);
-             return `${q}분기`;
-          });
-      }
+  if (data && data.length > 0) {
+      // Sort specific to quarters just in case
+      const sorted = [...data].sort((a, b) => a.period.localeCompare(b.period));
+      
+      pointsData = sorted.map(d => d.sales);
+      labels = sorted.map(d => {
+          const q = d.period.slice(4);
+          return `${q}분기`;
+      });
   } else {
        // Placeholder mock if empty
        pointsData = [0, 0, 0, 0];
