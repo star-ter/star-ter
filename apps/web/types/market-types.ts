@@ -16,4 +16,5 @@ export interface MarketAnalysisData {
   stores: MarketStore[];
   openingRate: number;
   closureRate: number;
+  sales: any; //TODO 타입 수정 예정
 }

@@ -21,8 +21,16 @@ export interface KakaoMap {
 
 export interface KakaoPolygon {
   setMap: (map: KakaoMap | null) => void;
-  setOptions: (options: Record<string, unknown>) => void;
+  setOptions: (options: PolygonStyle | Record<string, unknown>) => void;
   fillColor?: string; // 성능 최적화를 위한 컬러 캐싱용
+}
+
+export interface PolygonStyle {
+  strokeColor: string;
+  strokeWeight: number;
+  strokeOpacity: number;
+  fillColor: string;
+  fillOpacity: number;
 }
 
 export interface KakaoCustomOverlay {
@@ -70,10 +78,23 @@ export interface KakaoNamespace {
     LatLngBounds: new (sw?: KakaoLatLng, ne?: KakaoLatLng) => KakaoBounds;
     Map: new (container: HTMLElement, options: KakaoMapOptions) => KakaoMap;
     Polygon: new (options: Record<string, unknown>) => KakaoPolygon;
-    Marker: new (options: Record<string, unknown>) => { setMap: (map: KakaoMap | null) => void };
+    Marker: new (options: Record<string, unknown>) => {
+      setMap: (map: KakaoMap | null) => void;
+    };
+    CustomOverlay: new (options: {
+      position: KakaoLatLng;
+      content: HTMLElement | string;
+      yAnchor?: number;
+      xAnchor?: number;
+      zIndex?: number;
+    }) => KakaoCustomOverlay;
     load: (callback: () => void) => void;
     event: {
-      addListener: (target: unknown, event: string, callback: () => void) => unknown;
+      addListener: (
+        target: unknown,
+        event: string,
+        callback: () => void,
+      ) => unknown;
       removeListener: (listener: unknown) => void;
     };
   };
@@ -85,7 +106,6 @@ declare global {
   }
 }
 
-// 상권
 // 상권
 export interface CommercialArea {
   commercialType: string;
