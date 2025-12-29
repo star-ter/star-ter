@@ -19,13 +19,13 @@ interface Props {
 }
 
 const IconMap: Record<string, IconType> = {
-  I1: GiForkKnifeSpoon, // 음식
-  I2: MdMenuBook, // 교육
-  I3: FaHospital, // 의료·건강
-  I4: IoLogoGameControllerB, // 오락·스포츠
-  I5: RiCustomerServiceFill, // 생활서비스
-  I6: IoIosBed, // 숙박
-  I7: IoBag, // 소매
+  I2: GiForkKnifeSpoon, // 음식
+  P1: MdMenuBook, // 교육
+  Q1: FaHospital, // 의료·건강
+  R1: IoLogoGameControllerB, // 오락·스포츠
+  S2: RiCustomerServiceFill, // 생활서비스
+  I1: IoIosBed, // 숙박
+  G2: IoBag, // 소매
 };
 
 export default function IndustryContents({

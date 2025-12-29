@@ -2,7 +2,7 @@ import { IndustryCategory } from '../types/bottom-menu-types';
 
 export const IndustryData: IndustryCategory[] = [
   {
-    code: 'I1',
+    code: 'I2',
     name: '음식',
     level: 1,
     children: [
@@ -19,7 +19,7 @@ export const IndustryData: IndustryCategory[] = [
     ],
   },
   {
-    code: 'I2',
+    code: 'P1',
     name: '교육',
     level: 1,
     children: [
@@ -30,7 +30,7 @@ export const IndustryData: IndustryCategory[] = [
     ],
   },
   {
-    code: 'I3',
+    code: 'Q1',
     name: '의료·건강',
     level: 1,
     children: [
@@ -40,7 +40,7 @@ export const IndustryData: IndustryCategory[] = [
     ],
   },
   {
-    code: 'I4',
+    code: 'R1',
     name: '오락·스포츠',
     level: 1,
     children: [
@@ -52,7 +52,7 @@ export const IndustryData: IndustryCategory[] = [
     ],
   },
   {
-    code: 'I5',
+    code: 'S2',
     name: '생활서비스',
     level: 1,
     children: [
@@ -67,7 +67,7 @@ export const IndustryData: IndustryCategory[] = [
     ],
   },
   {
-    code: 'I6',
+    code: 'I1',
     name: '숙박',
     level: 1,
     children: [
@@ -76,7 +76,7 @@ export const IndustryData: IndustryCategory[] = [
     ],
   },
   {
-    code: 'I7',
+    code: 'G2',
     name: '소매',
     level: 1,
     children: [

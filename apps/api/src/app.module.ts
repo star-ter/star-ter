@@ -10,6 +10,8 @@ import { MarketModule } from './market/market.module';
 import { RevenueModule } from './revenue/revenue.module';
 import { StoreModule } from './store/store.module';
 import { GeoModule } from './geo/geo.module';
+import { AiModule } from './ai/ai.module';
+import { AnalysisModule } from './analysis/analysis.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { GeoModule } from './geo/geo.module';
     RevenueModule,
     StoreModule,
     GeoModule,
+    AiModule,
+    AnalysisModule,
   ],
   controllers: [HealthController],
   providers: [],

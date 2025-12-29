@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
-import AIChatSidebar from '@/components/features/chat/AIChatSidebar';
 import { Toaster } from 'react-hot-toast';
 import RankNav from '@/components/rank-nav/RankNav';
+import { MyChat } from '@/components/chatkit/chatkit';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -27,12 +27,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" suppressHydrationWarning>
+    <html lang="ko">
+      <head>
+        <script
+          src="https://cdn.platform.openai.com/deployments/chatkit/chatkit.js"
+          async
+        ></script>
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
-        <AIChatSidebar />
+        <MyChat />
         <Toaster position="top-center" />
       </body>
     </html>
