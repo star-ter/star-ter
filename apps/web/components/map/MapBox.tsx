@@ -8,10 +8,10 @@ import LocationNav from '../location-nav/LocationNav';
 import { useMapStore } from '../../stores/useMapStore';
 
 interface MapBoxProps {
-  locationA: string;
-  locationB: string;
-  setLocationA: (area: string) => void;
-  setLocationB: (area: string) => void;
+  locationA: { name: string; code?: string };
+  locationB: { name: string; code?: string };
+  setLocationA: (area: { name: string; code?: string }) => void;
+  setLocationB: (area: { name: string; code?: string }) => void;
   handlePickMode: (target: 'A' | 'B') => void;
   population: ReturnType<typeof usePopulationVisual>;
   onCompare?: () => void;

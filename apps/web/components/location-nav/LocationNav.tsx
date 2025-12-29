@@ -116,7 +116,7 @@ export default function LocationNav() {
   };
 
   return (
-    <div className="flex items-center gap-2 rounded-2xl bg-gradient-to-br from-amber-50/90 via-white/90 to-rose-50/90 p-2 shadow-lg ring-1 ring-black/5 backdrop-blur">
+    <div className="flex items-center gap-2 rounded-2xl bg-linear-to-br from-amber-50/90 via-white/90 to-rose-50/90 p-2 shadow-lg ring-1 ring-black/5 backdrop-blur">
       <div className="relative">
         <select name="city" id="" defaultValue="11" className={selectBaseClass}>
           <option value="11">서울특별시</option>
