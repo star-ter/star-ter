@@ -29,3 +29,23 @@ export interface PopulationResponse {
 // UI에서 사용할 필터 타입
 export type GenderFilter = 'Total' | 'Male' | 'Female';
 export type AgeFilter = 'Total' | '0-10' | '10-20' | '20-30' | '30-40' | '40-50' | '50-60' | '60+';
+
+// --- 격자 및 인구 결합 데이터 타입 ---
+
+export interface GeoJsonGeometry {
+  type: 'Polygon' | 'MultiPolygon';
+  coordinates: number[][][] | number[][][][];
+}
+
+export interface CombinedFeature {
+  cell_id: string;
+  geometry: GeoJsonGeometry;
+  population: PopulationRow;
+  center?: { lat: number; lng: number };
+}
+
+export interface CombinedLayerResponse {
+  ymd: string;
+  tt: string;
+  features: CombinedFeature[];
+}
