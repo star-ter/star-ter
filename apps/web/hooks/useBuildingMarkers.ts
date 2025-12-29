@@ -43,6 +43,7 @@ export const useBuildingMarkers = (
   // Thresholds separation
   const TOTAL_VIEW_THRESHOLD = 2; // Default view (High threshold to reduce clutter)
   const CATEGORY_VIEW_THRESHOLD = 1; // Filtered view (Show all matches)
+  const DEFAULT_MARKET_COLOR = '#3B82F6';
 
   // 마커(오버레이) 모두 지우기
   const clearMarkers = useCallback(() => {
@@ -67,8 +68,7 @@ export const useBuildingMarkers = (
     const sw = bounds.getSouthWest();
     const ne = bounds.getNorthEast();
 
-    // Optimize: Reduce bounding box to 70% of view (Center focus)
-    // This reduces API overhead and markers on edges where user isn't looking.
+    // 중앙
     const REDUCTION_RATIO = 0.7;
 
     const width = ne.getLng() - sw.getLng();
@@ -88,14 +88,13 @@ export const useBuildingMarkers = (
         maxy: maxy.toString(),
       });
 
-      // Default settings (No selection)
       let currentThreshold = TOTAL_VIEW_THRESHOLD;
-      let currentColor = '#3B82F6'; // Default Blue
+      let currentColor = DEFAULT_MARKET_COLOR;
 
-      // If category is selected, apply filter and lower threshold
       if (selectedCategory) {
         currentThreshold = CATEGORY_VIEW_THRESHOLD;
-        currentColor = CATEGORY_COLORS[selectedCategory.code] || '#3B82F6';
+        currentColor =
+          CATEGORY_COLORS[selectedCategory.code] || DEFAULT_MARKET_COLOR;
 
         const categories = mapCodeToBackend(selectedCategory.code);
         categories.forEach((cat) => params.append('categories', cat));
@@ -115,55 +114,15 @@ export const useBuildingMarkers = (
         // Threshold Check
         if (item.count < currentThreshold) return;
 
-        const categoryName = selectedCategory
-          ? selectedCategory.name
-          : '점포수';
+        const categoryName = selectedCategory ? selectedCategory.name : '전체';
 
-        // Premium UI Content (Rounded Rectangle with Category + Count)
-        const content = `
-          <div style="
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 40px;
-            padding: 6px 10px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 2px solid ${currentColor};
-            border-radius: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            animation: bounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: pointer;
-            white-space: nowrap;
-          ">
-            <span style="
-              font-size: 13px;
-              font-weight: 700;
-              color: ${currentColor};
-              margin-right: 4px;
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            ">${categoryName}</span>
-            <span style="
-              font-size: 13px;
-              font-weight: 800;
-              color: #333;
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            ">${item.count}</span>
-            <div style="
-              position: absolute;
-              bottom: -6px;
-              left: 50%;
-              transform: translateX(-50%);
-              width: 0; 
-              height: 0; 
-              border-left: 5px solid transparent;
-              border-right: 5px solid transparent;
-              border-top: 6px solid ${currentColor};
-            "></div>
-          </div>
-        `;
+        // Premium UI Content (Refactored)
+        const content = createMarkerContent(
+          item.count,
+          currentColor,
+          categoryName,
+        );
+
         const position = new window.kakao.maps.LatLng(item.lat, item.lng);
 
         const customOverlay = new window.kakao.maps.CustomOverlay({
@@ -179,7 +138,7 @@ export const useBuildingMarkers = (
     } catch (err) {
       console.error('Building Marker Fetch Error:', err);
     }
-  }, [map, selectedCategory, clearMarkers]); // Dependency Updated
+  }, [map, selectedCategory, clearMarkers]);
 
   useEffect(() => {
     if (!map) return;
@@ -202,4 +161,56 @@ export const useBuildingMarkers = (
   return {
     refreshMarkers: fetchAndDrawMarkers,
   };
+};
+
+// Helper: Create Marker HTML String
+const createMarkerContent = (
+  count: number,
+  color: string,
+  categoryName: string,
+) => {
+  return `
+    <div style="
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 40px;
+      padding: 6px 10px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 2px solid ${color};
+      border-radius: 20px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      animation: bounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer;
+      white-space: nowrap;
+    ">
+      <span style="
+        font-size: 13px;
+        font-weight: 700;
+        color: ${color};
+        margin-right: 4px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      ">${categoryName}</span>
+      <span style="
+        font-size: 13px;
+        font-weight: 800;
+        color: #333;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      ">${count}</span>
+      <div style="
+        position: absolute;
+        bottom: -6px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0; 
+        height: 0; 
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-top: 6px solid ${color};
+      "></div>
+    </div>
+  `;
 };
