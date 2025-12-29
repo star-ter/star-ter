@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import SalesTrendGraph from './SalesTrendGraph';
 import WeeklySalesGraph from './WeeklySalesGraph';
@@ -15,8 +14,6 @@ export default function AnalysisCard({
   estimatedSales: initialEstimatedSales,
   storeCount: initialStoreCount,
   color = '#4A90E2',
-  onClose,
-  onClear,
   hoveredTab,
   onTabHover,
   activeTab = 'sales',
@@ -64,17 +61,8 @@ export default function AnalysisCard({
       return `${billion.toLocaleString()}억 원`;
   };
 
-
-
-
-
-
-
-
-
   return (
     <div className="bg-white/60 rounded-3xl shadow-xl p-5 w-[90vw] sm:w-[25vw] min-w-[280px] h-[64vh] min-h-[350px] flex flex-col relative animate-fade-in-up backdrop-blur-sm">
-      {/* Header */}
       <div className="text-center mb-4">
         <h3 className="text-lg font-bold text-gray-900 flex items-center justify-center gap-2">
           <span className="truncate max-w-[60%] block" title={title}>
@@ -89,7 +77,6 @@ export default function AnalysisCard({
         </h3>
       </div>
 
-      {/* Tabs */}
       <div className="flex border-b border-gray-100 mb-4">
         <button
           className={`flex-1 pb-2 text-sm transition-all ${
@@ -135,7 +122,6 @@ export default function AnalysisCard({
         </button>
       </div>
 
-      {/* Scrollable Content Area */}
       <div 
         ref={scrollRef}
         onScroll={onScroll}
@@ -143,7 +129,6 @@ export default function AnalysisCard({
       >
         {activeTab === 'sales' && (
           <div className="animate-fade-in space-y-6">
-            {/* Main Metric */}
             <div>
               <p className="text-xs font-bold text-gray-800 mb-1">
                 {data ? `${data.meta.yearQuarter.slice(0, 4)}년 ${data.meta.yearQuarter.slice(4)}분기 총 매출` : '11월 상권 추정 매출'}
@@ -162,19 +147,15 @@ export default function AnalysisCard({
               </div>
             </div>
 
-            {/* Graph */}
             <SalesTrendGraph color={color} data={data?.sales?.trend} />
 
-             {/* Weekly Sales */}
              <WeeklySalesGraph data={data?.sales?.dayOfWeek} />
 
-             {/* Age & Gender Sales */}
              <AgeGenderSalesGraph 
                 ageData={data?.sales?.age} 
                 genderData={data?.sales?.gender} 
              />
 
-             {/* Time Of Day Sales */}
              <TimeOfDaySalesGraph data={data?.sales?.timeOfDay} />
           </div>
         )}
@@ -205,9 +186,6 @@ export default function AnalysisCard({
           </div>
         )}
       </div>
-
-      {/* Footer Actions */}
-
     </div>
   );
 }

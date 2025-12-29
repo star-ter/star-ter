@@ -1,12 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { SalesRow, StoreRow, PopulationRow } from '../types/analysis';
+import {
+  SalesRow,
+  StoreRow,
+  PopulationRow,
+  AnalysisResponse,
+} from '../types/analysis';
 
 @Injectable()
 export class AnalysisService {
   constructor(private prisma: PrismaService) {}
 
-  async getAnalysis(regionCode: string) {
+  async getAnalysis(
+    regionCode: string,
+  ): Promise<AnalysisResponse | { error: string }> {
     let codes: string[] = [];
     let type: 'GU' | 'DONG' | 'COMMERCIAL' = 'COMMERCIAL';
 
@@ -203,8 +210,8 @@ export class AnalysisService {
     });
 
     const trendData = quartersToFetch.map((q) => ({
-      quarter: q,
-      sales: (historyMap.get(q) || BigInt(0)).toString(),
+      period: q,
+      sales: Number(historyMap.get(q) || BigInt(0)),
     }));
 
     let totalSales = BigInt(0);
@@ -330,34 +337,92 @@ export class AnalysisService {
       sales: {
         total: totalSales.toString(),
         trend: trendData,
-        dayOfWeek: {
-          mon: daySales.mon.toString(),
-          tue: daySales.tue.toString(),
-          wed: daySales.wed.toString(),
-          thu: daySales.thu.toString(),
-          fri: daySales.fri.toString(),
-          sat: daySales.sat.toString(),
-          sun: daySales.sun.toString(),
-        },
-        timeOfDay: {
-          t0006: timeSales.t0006.toString(),
-          t0611: timeSales.t0611.toString(),
-          t1114: timeSales.t1114.toString(),
-          t1417: timeSales.t1417.toString(),
-          t1721: timeSales.t1721.toString(),
-          t2124: timeSales.t2124.toString(),
-        },
+        dayOfWeek: [
+          {
+            day: 'mon',
+            sales: Number(daySales.mon),
+            percentage: (Number(daySales.mon) / Number(totalSales || 1)) * 100,
+          },
+          {
+            day: 'tue',
+            sales: Number(daySales.tue),
+            percentage: (Number(daySales.tue) / Number(totalSales || 1)) * 100,
+          },
+          {
+            day: 'wed',
+            sales: Number(daySales.wed),
+            percentage: (Number(daySales.wed) / Number(totalSales || 1)) * 100,
+          },
+          {
+            day: 'thu',
+            sales: Number(daySales.thu),
+            percentage: (Number(daySales.thu) / Number(totalSales || 1)) * 100,
+          },
+          {
+            day: 'fri',
+            sales: Number(daySales.fri),
+            percentage: (Number(daySales.fri) / Number(totalSales || 1)) * 100,
+          },
+          {
+            day: 'sat',
+            sales: Number(daySales.sat),
+            percentage: (Number(daySales.sat) / Number(totalSales || 1)) * 100,
+          },
+          {
+            day: 'sun',
+            sales: Number(daySales.sun),
+            percentage: (Number(daySales.sun) / Number(totalSales || 1)) * 100,
+          },
+        ],
+        timeOfDay: [
+          {
+            time: '00~06',
+            sales: Number(timeSales.t0006),
+            percentage:
+              (Number(timeSales.t0006) / Number(totalSales || 1)) * 100,
+          },
+          {
+            time: '06~11',
+            sales: Number(timeSales.t0611),
+            percentage:
+              (Number(timeSales.t0611) / Number(totalSales || 1)) * 100,
+          },
+          {
+            time: '11~14',
+            sales: Number(timeSales.t1114),
+            percentage:
+              (Number(timeSales.t1114) / Number(totalSales || 1)) * 100,
+          },
+          {
+            time: '14~17',
+            sales: Number(timeSales.t1417),
+            percentage:
+              (Number(timeSales.t1417) / Number(totalSales || 1)) * 100,
+          },
+          {
+            time: '17~21',
+            sales: Number(timeSales.t1721),
+            percentage:
+              (Number(timeSales.t1721) / Number(totalSales || 1)) * 100,
+          },
+          {
+            time: '21~24',
+            sales: Number(timeSales.t2124),
+            percentage:
+              (Number(timeSales.t2124) / Number(totalSales || 1)) * 100,
+          },
+        ],
         gender: {
-          male: genderSales.male.toString(),
-          female: genderSales.female.toString(),
+          male: Number(genderSales.male),
+          female: Number(genderSales.female),
         },
         age: {
-          a10: ageSales.a10.toString(),
-          a20: ageSales.a20.toString(),
-          a30: ageSales.a30.toString(),
-          a40: ageSales.a40.toString(),
-          a50: ageSales.a50.toString(),
-          a60: ageSales.a60.toString(),
+          a10: Number(ageSales.a10),
+          a20: Number(ageSales.a20),
+          a30: Number(ageSales.a30),
+          a40: Number(ageSales.a40),
+          a50: Number(ageSales.a50),
+          a60: Number(ageSales.a60),
         },
       },
       store: {

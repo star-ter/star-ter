@@ -1,5 +1,6 @@
 export interface SalesTrendItem {
   period: string;
+  quarter?: string;
   sales: number;
 }
 
@@ -21,7 +22,7 @@ export interface GenderSalesItem {
 }
 
 export interface AgeSalesItem {
-    [key: string]: number; // e.g., '10s': 10, '20s': 20...
+    [key: string]: number;
 }
 
 export interface StoreCategoryItem {
@@ -32,7 +33,14 @@ export interface StoreCategoryItem {
 }
 
 export interface PopulationAgeItem {
-     [key: string]: number;
+  [key: string]: number;
+}
+
+export interface PopulationData {
+  total: number;
+  male: number;
+  female: number;
+  age: PopulationAgeItem;
 }
 
 export interface AnalysisData {
