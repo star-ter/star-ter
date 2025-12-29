@@ -9,6 +9,8 @@ export interface OpenApiStoreItem {
   lat: string; // 위도
   lon: string; // 경도
   bldNm: string; // 건물명
+  ksicCd: string; // 표준산업분류코드
+  indsLclsCd: string; // 상권업종대분류코드
 }
 
 export interface OpenApiBody {

@@ -46,6 +46,9 @@ export class GetBuildingStoreQueryDto {
   @IsString()
   @IsNotEmpty()
   maxy: string;
+
+  @IsOptional()
+  categories?: string[] | string;
 }
 
 export class BuildingStoreCountDto {

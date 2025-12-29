@@ -27,8 +27,8 @@ export class MarketService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  private getCategoryByKsic(ksicCd: string): string {
-    return KSIC_TO_CATEGORY[String(ksicCd)] || '기타';
+  private getCategoryByCode(code: string): string {
+    return KSIC_TO_CATEGORY[String(code)] || '기타';
   }
 
   async getStoreList(
@@ -278,10 +278,30 @@ export class MarketService {
     const storesData = await this.fetchStoresInRectangle(query);
     const items = storesData.body?.items || [];
 
+    // 필터링할 카테고리 목록 (Array 보장)
+    let targetCategories: string[] = [];
+    if (query.categories) {
+      if (Array.isArray(query.categories)) {
+        targetCategories = query.categories;
+      } else {
+        targetCategories = [query.categories];
+      }
+    }
+
     const grouped = new Map<string, OpenApiStoreItem[]>();
 
     items.forEach((item) => {
       if (!item.bldMngNo) return;
+
+      // 카테고리 필터링 (indsLclsCd 사용)
+      if (targetCategories.length > 0) {
+        // 매핑 테이블에 없는 경우(undefined)도 고려해야 함
+        const category = this.getCategoryByCode(item.indsLclsCd);
+
+        // "category"가 매핑된 우리쪽 한글명(예: '음식')이고, targetCategories가 ['음식'] 형태임
+        if (!category || !targetCategories.includes(category)) return;
+      }
+
       if (!grouped.has(item.bldMngNo)) {
         grouped.set(item.bldMngNo, []);
       }

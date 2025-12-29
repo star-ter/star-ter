@@ -14,16 +14,16 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 // Frontend Code -> Backend Category List Mapping
 const mapCodeToBackend = (code: string): string[] => {
-  if (code === 'I2') return ['음식'];
-  if (code === 'G2') return ['소매'];
-  if (code === 'S2') return ['생활서비스'];
-  if (code === 'R2') return ['오락/여가', '문화'];
-  if (code === 'P1') return ['교육'];
-  if (code === 'I1') return ['숙박'];
-  if (code === 'L1') return ['생활서비스'];
-  if (code === 'M1') return ['전문 서비스'];
-  if (code === 'N1') return ['문화'];
-  if (code === 'Q1') return ['의료'];
+  if (code.startsWith('I2')) return ['음식'];
+  if (code.startsWith('G2')) return ['소매'];
+  if (code.startsWith('S2')) return ['생활서비스'];
+  if (code.startsWith('R2')) return ['오락/여가', '오락/스포츠']; // R2 name in mock is '오락/스포츠', backend has '오락/여가'? Check consistency.
+  if (code.startsWith('P1')) return ['교육'];
+  if (code.startsWith('I1')) return ['숙박'];
+  if (code.startsWith('L1')) return ['생활서비스', '부동산업']; // L1 is '부동산업' in mock
+  if (code.startsWith('M1')) return ['전문 서비스', '전문/기술']; // M1 is '전문/기술' in mock
+  if (code.startsWith('N1')) return ['문화', '시설관리/지원']; // N1 is '시설관리/지원' in mock
+  if (code.startsWith('Q1')) return ['의료', '보건/의료']; // Q1 is '보건/의료' in mock
   return [];
 };
 
@@ -46,7 +46,7 @@ export const useBuildingMarkers = (
 ) => {
   const customOverlaysRef = useRef<KakaoCustomOverlay[]>([]);
   // 개발자가 조절할 수 있는 Threshold (기본 3개 이상 표시)
-  const THRESHOLD = 1;
+  const THRESHOLD = 3;
 
   // 마커(오버레이) 모두 지우기
   const clearMarkers = useCallback(() => {
