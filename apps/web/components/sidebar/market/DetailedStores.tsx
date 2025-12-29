@@ -24,7 +24,7 @@ export default function DetailedStores({ stores, onBack }: Props) {
       </div>
 
       {/* List */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 pb-40 space-y-4">
         {stores.map((store, idx) => (
           <div 
             key={idx}
@@ -41,7 +41,7 @@ export default function DetailedStores({ stores, onBack }: Props) {
             <div className="space-y-2 mt-3 pt-3 border-t border-gray-100">
                {store.subcategory && (
                  <div className="flex items-center text-sm text-gray-600">
-                    <span className="w-24 font-medium text-gray-500">표준산업분류</span>
+                    <span className="w-24 font-medium text-gray-500">상세분류</span>
                     <span>{store.subcategory}</span>
                  </div>
                )}

@@ -58,7 +58,7 @@ export const useBuildingMarkers = (
     // 1. 줌 레벨 체크 (너무 넓은 영역이면 조회 안함)
     const level = map.getLevel();
     // 1~3: 상세, 4: 적당. 5부터는 숨김
-    if (level > 4) {
+    if (level > 3) {
       clearMarkers();
       return;
     }
