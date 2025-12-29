@@ -39,6 +39,7 @@ export interface FloatingPopulationRow extends MaleFields, FemaleFields {
   pop_40_50: number;
   pop_50_60: number;
   pop_60_plus: number;
+  [key: string]: string | number;
 }
 
 export interface SeoulApiResult {

@@ -97,6 +97,15 @@ export interface KakaoNamespace {
       ) => unknown;
       removeListener: (listener: unknown) => void;
     };
+    services: {
+      Geocoder: any;
+      Places: any;
+      Status: {
+        OK: any;
+        ERROR: any;
+        ZERO_RESULT: any;
+      };
+    };
   };
 }
 
