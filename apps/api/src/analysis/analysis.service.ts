@@ -56,34 +56,58 @@ export class AnalysisService {
         // e.g., "Gangnam-gu" -> "Gangnam", "Seoul Gangnam-gu Samsung-dong" -> "Samsung"
         const keywords = regionCode.trim().split(/\s+/);
         
-        // Define search helper
+        // Define search helper with smart priority based on suffix
         const searchInTables = async (term: string) => {
-            // Strip '동' suffix for better matching if term is long enough
              let processTerm = term;
-             if (processTerm.endsWith('동') && processTerm.length > 2) {
+             
+             // Determine search priority based on suffix
+             const endsWithGu = term.endsWith('구');
+             const endsWithDong = term.endsWith('동');
+             
+             // Strip '동' suffix for Dong search to broaden results
+             if (endsWithDong && processTerm.length > 2) {
                  processTerm = processTerm.slice(0, -1);
              }
 
-             // 1. Commercial (Prioritize specific names like 'Station Exit')
-            const commList = await this.prisma.areaCommercial.findMany({
-                where: { TRDAR_CD_NM: { contains: term } } // Use original term for exact phrases
-            });
-            if (commList.length > 0) return { type: 'COMMERCIAL', codes: [commList[0].TRDAR_CD] };
+             // Priority 1: If explicitly searching for Gu (ends with "구")
+             if (endsWithGu) {
+                 const guList = await this.prisma.areaGu.findMany({
+                     where: { SIGNGU_NM: { contains: term } }
+                 });
+                 if (guList.length > 0) return { type: 'GU', codes: [guList[0].SIGNGU_CD] };
+             }
 
-             // 2. Dong
-            const dongList = await this.prisma.areaDong.findMany({
-                where: { ADSTRD_NM: { contains: processTerm } }
-            });
-            if (dongList.length > 0) return { type: 'DONG', codes: [dongList[0].ADSTRD_CD] };
+             // Priority 2: If explicitly searching for Dong (ends with "동")
+             if (endsWithDong) {
+                 const dongList = await this.prisma.areaDong.findMany({
+                     where: { ADSTRD_NM: { contains: processTerm } }
+                 });
+                 if (dongList.length > 0) return { type: 'DONG', codes: [dongList[0].ADSTRD_CD] };
+             }
 
-            // 3. Gu
-            const guList = await this.prisma.areaGu.findMany({
-                where: { SIGNGU_NM: { contains: processTerm } }
-            });
-            if (guList.length > 0) return { type: 'GU', codes: [guList[0].SIGNGU_CD] };
+             // Default hierarchy for ambiguous searches: Gu → Dong → Commercial
+             if (!endsWithGu && !endsWithDong) {
+                 // Try Gu first
+                 const guList = await this.prisma.areaGu.findMany({
+                     where: { SIGNGU_NM: { contains: term } }
+                 });
+                 if (guList.length > 0) return { type: 'GU', codes: [guList[0].SIGNGU_CD] };
 
-            return null;
-        };
+                 // Then Dong
+                 const dongList = await this.prisma.areaDong.findMany({
+                     where: { ADSTRD_NM: { contains: term } }
+                 });
+                 if (dongList.length > 0) return { type: 'DONG', codes: [dongList[0].ADSTRD_CD] };
+
+                 // Finally Commercial
+                 const commList = await this.prisma.areaCommercial.findMany({
+                     where: { TRDAR_CD_NM: { contains: term } }
+                 });
+                 if (commList.length > 0) return { type: 'COMMERCIAL', codes: [commList[0].TRDAR_CD] };
+             }
+
+             return null;
+         };
 
         let result: { type: string, codes: string[] } | null = null;
 
