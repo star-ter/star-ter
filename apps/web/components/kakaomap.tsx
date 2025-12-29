@@ -45,9 +45,10 @@ export default function Kakaomap({
       setInfoBarOpen(true); // 데이터가 선택되면 사이드바 열기
     }
     if (polygonClick) {
-      const label = data.buld_nm || data.adm_nm || data.commercialName || 'Unknown';
+      const label =
+        data.buld_nm || data.adm_nm || data.commercialName || 'Unknown';
       const code = data.adm_cd || data.commercialCode;
-      
+
       polygonClick({ name: label, code: code });
     }
   });
@@ -64,9 +65,39 @@ export default function Kakaomap({
   }, [selectedCategory, setInfoBarOpen]);
 
   // 4. Map Store 연동 - 지도 중심 이동 및 마커 표시
-  const { center, zoom, markers } = useMapStore();
+  const { center, zoom, markers, setZoom, setCenter } = useMapStore();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const markersRef = useRef<any[]>([]);
+
+  useEffect(() => {
+    if (!map) return;
+    if (typeof window === 'undefined' || !window.kakao?.maps) return;
+
+    const handleZoom = () => {
+      setZoom(map.getLevel());
+    };
+
+    const handleCenter = () => {
+      const c = map.getCenter();
+      setCenter({ lat: c.getLat(), lng: c.getLng() });
+    };
+
+    window.kakao.maps.event.addListener(map, 'zoom_changed', handleZoom);
+    window.kakao.maps.event.addListener(map, 'center_changed', handleCenter);
+
+    // 초기값 동기화
+    handleZoom();
+    handleCenter();
+
+    return () => {
+      window.kakao.maps.event.removeListener(map, 'zoom_changed', handleZoom);
+      window.kakao.maps.event.removeListener(
+        map,
+        'center_changed',
+        handleCenter,
+      );
+    };
+  }, [map, setZoom, setCenter]);
 
   useEffect(() => {
     if (!map) return;
@@ -143,14 +174,13 @@ export default function Kakaomap({
     };
   }, [center, zoom, markers, map]);
 
-
   // 3. 유동인구 격자 레이어 추가
   usePopulationLayer(
     map,
     population.genderFilter,
     population.ageFilter,
     population.showLayer,
-    population.getPopulationValue
+    population.getPopulationValue,
   );
 
   return (

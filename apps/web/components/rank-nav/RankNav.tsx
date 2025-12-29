@@ -53,7 +53,7 @@ export default function RankNav({
         moveToLocation(
           { lat: result.lat, lng: result.lng },
           result.address || name,
-          7,
+          level === 'dong' ? 5 : 7,
         );
       }
     } finally {
@@ -109,13 +109,13 @@ export default function RankNav({
   };
 
   return (
-    <aside className="w-[400px] ml-4 z-100 rounded-2xl bg-white/90 p-4 shadow-lg ring-1 ring-black/5 backdrop-blur">
+    <aside className="w-[330px] ml-4 z-300 rounded-2xl bg-white/90 p-3.5 shadow-lg ring-1 ring-black/5 backdrop-blur">
       <header className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">
             {level === 'dong' ? '동 매출 순위' : '서울시 매출 순위'}
           </h2>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-500 mb-2">
             {level === 'dong' ? '현재 구 기준' : '서울시 기준'} 분기 매출
           </p>
         </div>
@@ -123,11 +123,7 @@ export default function RankNav({
 
       <div className="space-y-2">
         {isLoading ? (
-          <div className="rounded-xl bg-gray-50 px-3 py-4 text-center text-sm text-gray-500">
-            순위를 불러오는 중...
-          </div>
-        ) : formattedItems.length === 0 ? (
-          <div className="rounded-xl bg-gray-50 px-3 py-4 text-center text-sm text-gray-500">
+          <div className="rounded-xl bg-gray-50 px-2 py-3 text-center text-sm text-gray-500">
             {error || '표시할 순위가 없습니다.'}
           </div>
         ) : (
@@ -139,7 +135,7 @@ export default function RankNav({
               className="flex w-full items-center gap-3 rounded-xl border border-transparent bg-gray-50/80 px-3 py-2 text-left transition hover:border-gray-200 hover:bg-white disabled:cursor-wait disabled:opacity-70"
               disabled={isMoving}
             >
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-900 text-sm font-semibold text-white">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-900 text-sm font-semibold text-white">
                 {index + 1}
               </span>
               <div className="flex flex-1 items-center justify-between gap-4">
@@ -156,7 +152,9 @@ export default function RankNav({
                     ? 'bg-blue-100 text-blue-700'
                     : changeLabelMap[item.changeType || '']?.includes('위험')
                       ? 'bg-red-100 text-red-700'
-                      : changeLabelMap[item.changeType || '']?.includes('확장') ||
+                      : changeLabelMap[item.changeType || '']?.includes(
+                            '확장',
+                          ) ||
                           changeLabelMap[item.changeType || '']?.includes(
                             '변동',
                           )

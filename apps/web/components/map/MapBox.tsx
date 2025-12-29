@@ -32,7 +32,7 @@ export default function MapBox({
   const [currentGuCode, setCurrentGuCode] = useState<string | null>(null);
 
   useEffect(() => {
-    if (zoom < 7 && zoom >= 5 && center) {
+    if (zoom <= 7 && zoom >= 5 && center) {
       const fetchGuCode = async () => {
         try {
           const res = await fetch(
@@ -40,7 +40,6 @@ export default function MapBox({
           );
           if (res.ok) {
             const data = await res.json();
-            // API returns { signguCode: "11680", ... }
             if (data?.signguCode) {
               setCurrentGuCode(data.signguCode);
             }
@@ -60,16 +59,18 @@ export default function MapBox({
     <section className="h-full pointer-events-none">
       <div className="absolute left-4 top-4 flex flex-col items-start gap-3 pointer-events-auto">
         <SearchBox />
-
         {shouldShowRank && (
           <>
+            {/* 버튼은 클릭되어야 하므로 pointer-events-auto 추가 */}
             <button
               type="button"
               onClick={() => setIsRankOpen((prev) => !prev)}
-              className="ml-4 inline-flex items-center rounded-full bg-white/90 px-3 py-1.5 text-sm font-semibold text-gray-700 shadow-sm ring-1 ring-gray-200 transition hover:bg-white"
+              className="ml-4 inline-flex items-center rounded-full bg-white/90 px-3 py-1.5 text-sm font-semibold text-gray-700 shadow-sm ring-1 ring-gray-200 transition hover:bg-white pointer-events-auto"
             >
               {isRankOpen ? '순위 닫기' : '순위 열기'}
             </button>
+
+            {/* RankNav는 내부에서 clickable 요소가 있으므로 RankNav 컴포넌트에 pointer-events-auto가 있어야 함 (RankNav.tsx에서 처리됨) */}
             {isRankOpen && (
               <RankNav
                 level={rankLevel}
@@ -81,7 +82,7 @@ export default function MapBox({
           </>
         )}
       </div>
-      <div className=" absolute bottom-0 left-1/2 -translate-x-1/2 pointer-events-auto">
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 pointer-events-auto">
         <BottomMenuBox
           locationA={locationA}
           locationB={locationB}
