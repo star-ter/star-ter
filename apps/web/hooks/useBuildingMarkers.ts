@@ -41,8 +41,8 @@ export const useBuildingMarkers = (
   const customOverlaysRef = useRef<KakaoCustomOverlay[]>([]);
 
   // Thresholds separation
-  const TOTAL_VIEW_THRESHOLD = 3; // Default view (High threshold to reduce clutter)
-  const CATEGORY_VIEW_THRESHOLD = 2; // Filtered view (Show all matches)
+  const TOTAL_VIEW_THRESHOLD = 2; // Default view (High threshold to reduce clutter)
+  const CATEGORY_VIEW_THRESHOLD = 1; // Filtered view (Show all matches)
 
   // 마커(오버레이) 모두 지우기
   const clearMarkers = useCallback(() => {
@@ -67,10 +67,17 @@ export const useBuildingMarkers = (
     const sw = bounds.getSouthWest();
     const ne = bounds.getNorthEast();
 
-    const minx = sw.getLng();
-    const miny = sw.getLat();
-    const maxx = ne.getLng();
-    const maxy = ne.getLat();
+    // Optimize: Reduce bounding box to 70% of view (Center focus)
+    // This reduces API overhead and markers on edges where user isn't looking.
+    const REDUCTION_RATIO = 0.7;
+
+    const width = ne.getLng() - sw.getLng();
+    const height = ne.getLat() - sw.getLat();
+
+    const minx = sw.getLng() + (width * (1 - REDUCTION_RATIO)) / 2;
+    const miny = sw.getLat() + (height * (1 - REDUCTION_RATIO)) / 2;
+    const maxx = ne.getLng() - (width * (1 - REDUCTION_RATIO)) / 2;
+    const maxy = ne.getLat() - (height * (1 - REDUCTION_RATIO)) / 2;
 
     try {
       // 3. API 호출
