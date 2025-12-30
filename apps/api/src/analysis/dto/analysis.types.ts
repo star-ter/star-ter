@@ -123,3 +123,51 @@ export interface StoreDelegate {
 export interface PopDelegate {
   findMany(args: unknown): Promise<PopulationRow[]>;
 }
+
+export type RegionType = 'GU' | 'DONG' | 'COMMERCIAL';
+
+export interface ResolvedRegion {
+  type: RegionType;
+  codes: string[];
+  name?: string;
+}
+
+export interface AnalysisError {
+  error: string;
+}
+
+export interface ResponseMeta {
+  yearQuarter: string;
+  regionCode: string;
+  matchedRegions: string[];
+  type: RegionType;
+}
+
+export interface RegionSearchResult {
+  type: string;
+  code: string;
+  name: string;
+  fullName: string;
+}
+
+export interface SalesAggregate {
+  _sum: Record<string, bigint | number | null>;
+}
+
+export interface StoreAggregate {
+  _sum: Record<string, number | null>;
+}
+
+export interface PopulationAggregate {
+  _sum: Record<string, number | null>;
+}
+
+export interface StoreCategoryGroup {
+  SVC_INDUTY_CD_NM: string;
+  _sum: Record<string, number | null>;
+}
+
+export interface SalesTrendGroup {
+  STDR_YYQU_CD: string;
+  _sum: Record<string, bigint | null>;
+}

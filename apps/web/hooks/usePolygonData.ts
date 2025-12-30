@@ -190,7 +190,7 @@ export const usePolygonData = (
       let currentGroup = '';
       if (level >= 7) currentGroup = 'GU';
       else if (level >= 5) currentGroup = 'DONG';
-      else if (level >= 2) currentGroup = 'COMMERCIAL';
+      else if (level >= 3) currentGroup = 'COMMERCIAL';
       else currentGroup = 'BUILDING';
 
       const modeChanged = overlayMode !== lastOverlayModeRef.current;
@@ -207,7 +207,7 @@ export const usePolygonData = (
         fetchCombinedBoundary(mapInstance, 1);
       } else if (level >= 5) {
         fetchCombinedBoundary(mapInstance, 2);
-      } else if (level >= 2) {
+      } else if (level >= 3) {
         fetchCommercialData(mapInstance, shouldClear);
       } else {
         fetchBuildingData(mapInstance);
