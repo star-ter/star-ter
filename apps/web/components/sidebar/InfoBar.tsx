@@ -57,7 +57,7 @@ export default function InfoBar({
   }
 
   return createPortal(
-    <div className="fixed top-0 left-0 z-50 h-full w-90 bg-white shadow-xl transition-transform duration-300 ease-in-out transform translate-x-0">
+    <div className="fixed top-0 left-0 z-300 h-full w-90 bg-white shadow-xl transition-transform duration-300 ease-in-out transform translate-x-0">
       <div className="flex flex-col h-full">
         {/* 헤더 */}
         <InfoBarHeader title={title} subTitle={subTitle} onClose={onClose} />
