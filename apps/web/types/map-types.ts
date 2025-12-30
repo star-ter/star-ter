@@ -111,12 +111,3 @@ export interface PolygonClickData {
   name: string;
   code?: string;
 }
-
-export interface KakaoMarker {
-  setMap: (map: KakaoMap | null) => void;
-}
-
-export interface PolygonClickData {
-  name: string;
-  code?: string;
-}
