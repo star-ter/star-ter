@@ -9,6 +9,7 @@ interface MapMarker {
   id: string;
   coords: MapCoordinates;
   name: string;
+  style?: 'default' | 'pulse';
 }
 
 interface MapStore {
@@ -22,8 +23,13 @@ interface MapStore {
   setZoom: (level: number) => void;
   setSearchedLocation: (location: string | null) => void;
   setIsMoving: (moving: boolean) => void;
-  
-  moveToLocation: (coords: MapCoordinates, location: string, zoom?: number, centered?: boolean) => void;
+
+  moveToLocation: (
+    coords: MapCoordinates,
+    location: string,
+    zoom?: number,
+    centered?: boolean,
+  ) => void;
   moveToLocations: (locations: MapMarker[]) => void;
   clearMarkers: () => void;
   reset: () => void;
@@ -47,28 +53,32 @@ export const useMapStore = create<MapStore>((set) => ({
       zoom: centered ? -2 : zoom, // -2는 "중앙 정렬, 오프셋 없음" 신호
       searchedLocation: location,
       isMoving: true,
-      markers: [{ id: '1', coords, name: location }],
+      markers: [{ id: '1', coords, name: location, style: 'pulse' }],
     });
-    
-    setTimeout(() => set({ isMoving: false }), 500);
+
+    setTimeout(() => set({ isMoving: false }), 1300);
   },
 
   moveToLocations: (locations) => {
     if (locations.length === 0) return;
 
     // 중심점 계산 (모든 좌표의 평균)
-    const avgLat = locations.reduce((sum, loc) => sum + loc.coords.lat, 0) / locations.length;
-    const avgLng = locations.reduce((sum, loc) => sum + loc.coords.lng, 0) / locations.length;
+    const avgLat =
+      locations.reduce((sum, loc) => sum + loc.coords.lat, 0) /
+      locations.length;
+    const avgLng =
+      locations.reduce((sum, loc) => sum + loc.coords.lng, 0) /
+      locations.length;
 
     set({
       center: { lat: avgLat, lng: avgLng },
       zoom: -1, // -1은 "자동 bounds 맞춤" 신호
-      searchedLocation: locations.map(l => l.name).join(', '),
+      searchedLocation: locations.map((l) => l.name).join(', '),
       isMoving: true,
       markers: locations,
     });
-    
-    setTimeout(() => set({ isMoving: false }), 500);
+
+    setTimeout(() => set({ isMoving: false }), 1300);
   },
 
   clearMarkers: () => set({ markers: [] }),
@@ -82,4 +92,3 @@ export const useMapStore = create<MapStore>((set) => ({
       markers: [],
     }),
 }));
-

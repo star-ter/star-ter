@@ -31,6 +31,7 @@ export default function MapBox({
   const { center, zoom } = useMapStore();
   const [isRankOpen, setIsRankOpen] = useState(true);
   const [currentGuCode, setCurrentGuCode] = useState<string | null>(null);
+  const [currentGuName, setCurrentGuName] = useState<string | null>(null);
 
   useEffect(() => {
     if (zoom <= 7 && zoom >= 5 && center) {
@@ -40,9 +41,12 @@ export default function MapBox({
             `${process.env.NEXT_PUBLIC_API_BASE_URL}/geo/gu?lat=${center.lat}&lng=${center.lng}`,
           );
           if (res.ok) {
-            const data = await res.json();
+            const text = await res.text();
+            if (!text) return;
+            const data = JSON.parse(text);
             if (data?.signguCode) {
               setCurrentGuCode(data.signguCode);
+              setCurrentGuName(data.signguName);
             }
           }
         } catch (error) {
@@ -58,7 +62,7 @@ export default function MapBox({
 
   return (
     <section className="h-full pointer-events-none">
-      <div className="absolute left-4 top-4 flex flex-col items-start gap-3 pointer-events-auto">
+      <div className="absolute left-4 flex flex-col items-start gap-3 pointer-events-auto">
         <div className="flex items-center">
           <SearchBox />
           <LocationNav />
@@ -80,6 +84,9 @@ export default function MapBox({
                 level={rankLevel}
                 parentGuCode={
                   rankLevel === 'dong' ? currentGuCode || undefined : undefined
+                }
+                parentGuName={
+                  rankLevel === 'dong' ? currentGuName || undefined : undefined
                 }
               />
             )}

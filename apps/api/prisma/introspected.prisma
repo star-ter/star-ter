@@ -56,3 +56,32 @@ model building_integrated_info {
 
   @@index([geom], map: "building_integrated_info_geom_geom_idx", type: Gist)
 }
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model seoul_vitality {
+  service_name           String?
+  service_id             String?
+  local_gov_code         Int?
+  manage_no              String?
+  permit_date            DateTime? @db.Date
+  permit_cancel_date     DateTime? @db.Date
+  biz_status_code        Int?
+  biz_status_name        String?
+  biz_status_detail_code Int?
+  biz_status_detail_name String?
+  close_date             DateTime? @db.Date
+  suspend_start_date     DateTime? @db.Date
+  suspend_end_date       DateTime? @db.Date
+  reopen_date            DateTime? @db.Date
+  addr_jibun             String?
+  addr_road              String?
+  road_zipcode           String?
+  store_name             String?
+  updated_at             DateTime? @db.Timestamp(6)
+  biz_type_name          String?
+  x_5174                 Float?
+  y_5174                 Float?
+  source_file            String?
+
+  @@ignore
+}

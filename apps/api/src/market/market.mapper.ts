@@ -35,6 +35,8 @@ export class MarketMapper {
     groupedRows: AggregatedSalesRow[],
     areaName: string,
     isCommercial: boolean,
+    openingRate: number = 0,
+    closureRate: number = 0,
   ): MarketAnalyticsDto {
     if (!groupedRows || groupedRows.length === 0) {
       return this.getEmptySalesData(`${areaName} (데이터 없음)`);
@@ -91,9 +93,12 @@ export class MarketMapper {
         },
         topIndustries: [],
       },
-      vitality: { openingRate: 0, closureRate: 0 },
-      openingRate: 0,
-      closureRate: 0,
+      vitality: {
+        openingRate: Math.round(openingRate * 10) / 10,
+        closureRate: Math.round(closureRate * 10) / 10,
+      },
+      openingRate: Math.round(openingRate * 10) / 10,
+      closureRate: Math.round(closureRate * 10) / 10,
     };
   }
 

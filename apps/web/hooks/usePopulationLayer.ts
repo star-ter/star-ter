@@ -12,7 +12,6 @@ import {
 } from '../types/population-types';
 import { fetchPopulationLayer } from '../services/population/population-service';
 
-// 히트맵 컬러 팔레트 (기존 유지)
 const colorPalette = (function () {
   const palette = new Uint8ClampedArray(256 * 3);
   const gradient = [
@@ -112,30 +111,33 @@ export const usePopulationLayer = (
       if (!canvas) {
         canvas = document.createElement('canvas');
         canvas.id = CANVAS_ID;
-        canvas.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;z-index:100;pointer-events:none;';
+        canvas.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;z-index:10;pointer-events:none;';
         container.appendChild(canvas);
       }
       canvasRef.current = canvas;
 
+      const BUFFER_RATIO = 1.5; // 화면보다 1.5배 큰 캔버스 사용
       const fullWidth = container.offsetWidth;
       const fullHeight = container.offsetHeight;
       if (fullWidth <= 0 || fullHeight <= 0) return;
 
       const DOWNSAMPLE = 0.5;
-      const width = Math.floor(fullWidth * DOWNSAMPLE);
-      const height = Math.floor(fullHeight * DOWNSAMPLE);
+      const width = Math.floor(fullWidth * DOWNSAMPLE * BUFFER_RATIO);
+      const height = Math.floor(fullHeight * DOWNSAMPLE * BUFFER_RATIO);
 
       if (canvas.width !== width || canvas.height !== height) {
         canvas.width = width;
         canvas.height = height;
-        canvas.style.width = `${fullWidth}px`;
-        canvas.style.height = `${fullHeight}px`;
+        canvas.style.width = `${fullWidth * BUFFER_RATIO}px`;
+        canvas.style.height = `${fullHeight * BUFFER_RATIO}px`;
+        // 캔버스를 중앙에 배치 (화면 밖 사방으로 50%씩 더 나감)
+        canvas.style.left = `${-(fullWidth * (BUFFER_RATIO - 1)) / 2}px`;
+        canvas.style.top = `${-(fullHeight * (BUFFER_RATIO - 1)) / 2}px`;
       }
 
       const ctx = canvas.getContext('2d', { willReadFrequently: true });
       if (!ctx) return;
 
-      canvas.style.transform = 'translate(0, 0)';
       ctx.clearRect(0, 0, width, height);
 
       const values = currentFeatures.map((f: CombinedFeature) =>
@@ -158,8 +160,12 @@ export const usePopulationLayer = (
           const pos = projection.containerPointFromCoords(latlng);
           if (!pos || isNaN(pos.x) || isNaN(pos.y)) return;
 
-          const baseX = pos.x * DOWNSAMPLE;
-          const baseY = pos.y * DOWNSAMPLE;
+          // 보정 이동량 (캔버스가 왼쪽/위로 치우친 만큼 좌표를 더해줌)
+          const offsetX = (fullWidth * (BUFFER_RATIO - 1)) / 2;
+          const offsetY = (fullHeight * (BUFFER_RATIO - 1)) / 2;
+
+          const baseX = (pos.x + offsetX) * DOWNSAMPLE;
+          const baseY = (pos.y + offsetY) * DOWNSAMPLE;
 
           const value = getPopulationValue(f, timeFilter, genderFilter, ageFilter);
           const weight = value / maxValue;
@@ -214,7 +220,7 @@ export const usePopulationLayer = (
             data[i] = colorPalette[baseIdx];
             data[i + 1] = colorPalette[baseIdx + 1];
             data[i + 2] = colorPalette[baseIdx + 2];
-            data[i + 3] = alpha * 0.8;
+            data[i + 3] = alpha * 0.6;
           } else {
             data[i + 3] = 0;
           }
@@ -236,14 +242,27 @@ export const usePopulationLayer = (
 
       const sw = bounds.getSouthWest();
       const ne = bounds.getNorthEast();
+      
+      // 50% 패딩 추가 해서 잘리게 보이지 않게 하기
+      const latDiff = ne.getLat() - sw.getLat();
+      const lngDiff = ne.getLng() - sw.getLng();
+      
+      const paddedSw = {
+        lat: sw.getLat() - latDiff * 0.5,
+        lng: sw.getLng() - lngDiff * 0.5
+      };
+      const paddedNe = {
+        lat: ne.getLat() + latDiff * 0.5,
+        lng: ne.getLng() + lngDiff * 0.5
+      };
 
       if (abortControllerRef.current) abortControllerRef.current.abort();
       abortControllerRef.current = new AbortController();
 
       try {
         const data = await fetchPopulationLayer(
-          { lat: sw.getLat(), lng: sw.getLng() },
-          { lat: ne.getLat(), lng: ne.getLng() },
+          { lat: paddedSw.lat, lng: paddedSw.lng },
+          { lat: paddedNe.lat, lng: paddedNe.lng },
           abortControllerRef.current.signal,
         );
 
@@ -308,6 +327,7 @@ export const usePopulationLayer = (
       try {
         listeners.push(eventApi.addListener(map, 'idle', () => {
           if (!isVisibleRef.current) return;
+          // renderLayer 내부에서 transform을 초기화하도록 이동하여 동기화 최적화
           if (canvasRef.current) {
             canvasRef.current.style.transform = 'translate(0px, 0px)';
           }

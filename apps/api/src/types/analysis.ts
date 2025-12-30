@@ -110,3 +110,16 @@ export interface AnalysisResponse {
     age: PopulationAgeItem;
   } | null;
 }
+
+export interface SalesDelegate {
+  findFirst(args: unknown): Promise<{ STDR_YYQU_CD: string } | null>;
+  findMany(args: unknown): Promise<SalesRow[]>;
+}
+
+export interface StoreDelegate {
+  findMany(args: unknown): Promise<StoreRow[]>;
+}
+
+export interface PopDelegate {
+  findMany(args: unknown): Promise<PopulationRow[]>;
+}

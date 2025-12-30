@@ -22,6 +22,7 @@ type RevenueRankingResponse = {
 type RankNavProps = {
   level?: 'gu' | 'dong';
   parentGuCode?: string;
+  parentGuName?: string;
   industryCode?: string;
 };
 
@@ -35,6 +36,7 @@ const changeLabelMap: Record<string, string> = {
 export default function RankNav({
   level = 'gu',
   parentGuCode,
+  parentGuName,
   industryCode,
 }: RankNavProps) {
   const { moveToLocation } = useMapStore();
@@ -80,12 +82,23 @@ export default function RankNav({
     setIsLoading(true);
     setError(null);
 
+    const startTime = Date.now();
+
     fetch(url.toString(), { signal: controller.signal })
       .then((res) => {
         if (!res.ok) throw new Error('순위 데이터를 불러오지 못했습니다.');
         return res.json();
       })
-      .then((data: RevenueRankingResponse) => {
+      .then(async (data: RevenueRankingResponse) => {
+        // 최소 로딩 시간 보장 (깜빡임 방지)
+        const elapsed = Date.now() - startTime;
+        const minLoadingTime = 500; // 0.5초
+        if (elapsed < minLoadingTime) {
+          await new Promise((resolve) =>
+            setTimeout(resolve, minLoadingTime - elapsed),
+          );
+        }
+
         setItems(data.items || []);
         setQuarter(data.quarter || '');
       })
@@ -95,7 +108,12 @@ export default function RankNav({
         setItems([]);
       })
       .finally(() => {
-        setIsLoading(false);
+        // 컴포넌트가 언마운트되지 않았는지 확인하는 로직이 있으면 좋지만,
+        // useEffect cleanup에서 abort하므로 괜찮음.
+        // 다만 비동기 delay 후 state 업데이트 시 mounted 체크가 안전함.
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
       });
 
     return () => controller.abort();
@@ -113,16 +131,40 @@ export default function RankNav({
       <header className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">
-            {level === 'dong' ? '동 매출 순위' : '서울시 매출 순위'}
+            {level === 'dong' && parentGuName
+              ? `${parentGuName} 매출 순위`
+              : level === 'dong'
+                ? '동 매출 순위'
+                : '서울시 매출 순위'}
           </h2>
           <p className="text-xs text-gray-500 mb-2">
-            {level === 'dong' ? '현재 구 기준' : '서울시 기준'} 분기 매출
+            {level === 'dong' && parentGuName
+              ? `${parentGuName} 기준`
+              : level === 'dong'
+                ? '현재 구 기준'
+                : '서울시 기준'}{' '}
+            분기 매출
           </p>
         </div>
       </header>
 
       <div className="space-y-2">
         {isLoading ? (
+          // Skeleton UI
+          Array.from({ length: 10 }).map((_, index) => (
+            <div
+              key={`skeleton-${index}`}
+              className="flex w-full items-center gap-3 rounded-xl border border-transparent px-3 py-2"
+            >
+              <div className="h-5 w-5 rounded-full bg-gray-200 animate-pulse" />
+              <div className="flex flex-1 items-center justify-between gap-4">
+                <div className="h-4 w-24 rounded bg-gray-200 animate-pulse" />
+                <div className="h-4 w-16 rounded bg-gray-200 animate-pulse" />
+              </div>
+              <div className="h-5 w-12 rounded-full bg-gray-200 animate-pulse" />
+            </div>
+          ))
+        ) : items.length === 0 ? (
           <div className="rounded-xl bg-gray-50 px-2 py-3 text-center text-sm text-gray-500">
             {error || '표시할 순위가 없습니다.'}
           </div>

@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 import {
   KakaoMap,
   KakaoPolygon,
@@ -29,12 +29,7 @@ export const usePolygonData = (
     onPolygonClickRef.current = onPolygonClick;
   }, [onPolygonClick]);
 
-  /**
-   * 행정 구역(구/동) 폴리곤 데이터 가져오기
-   * @param map Kakao 지도 객체
-   * @param lowSearch 1: 구(레벨 7+), 2: 동(레벨 5-6)
-   */
-  async function fetchCombinedBoundary(map: KakaoMap, lowSearch: number) {
+  const fetchCombinedBoundary = useCallback(async (map: KakaoMap, lowSearch: number) => {
     console.log(`Fetching Combined Boundary...`);
     // lowSearch값에 따라 level 결정 (1: 구, 2: 동)
     const level = lowSearch === 1 ? 'gu' : 'dong';
@@ -63,9 +58,9 @@ export const usePolygonData = (
     } catch (err) {
       console.error('Combined Boundary Fetch Error:', err);
     }
-  }
+  }, []);
 
-  async function fetchBuildingData(map: KakaoMap) {
+  const fetchBuildingData = useCallback(async (map: KakaoMap) => {
     console.log(`Fetching Building Data (DB Filtered)...`);
 
     const bounds = map.getBounds();
@@ -100,9 +95,9 @@ export const usePolygonData = (
     } catch (err) {
       console.error('Building API Fetch Error:', err);
     }
-  }
+  }, []);
 
-  async function fetchCommercialData(map: KakaoMap) {
+  const fetchCommercialData = useCallback(async (map: KakaoMap) => {
     console.log(`Fetching Commercial Data...`);
 
     const bounds = map.getBounds();
@@ -162,9 +157,9 @@ export const usePolygonData = (
     } catch (err) {
       console.error('Commercial API Fetch Error:', err);
     }
-  }
+  }, []);
 
-  function refreshLayer(map: KakaoMap) {
+  const refreshLayer = useCallback((map: KakaoMap) => {
     const level = map.getLevel();
     console.log(`Current Zoom Level: ${level}`);
 
@@ -204,7 +199,7 @@ export const usePolygonData = (
     } else {
       fetchBuildingData(map);
     }
-  }
+  }, [fetchCombinedBoundary, fetchBuildingData, fetchCommercialData]);
 
   useEffect(() => {
     if (!map) return;
@@ -221,5 +216,10 @@ export const usePolygonData = (
 
     window.kakao.maps.event.addListener(map, 'idle', debouncedRefresh);
     window.kakao.maps.event.addListener(map, 'zoom_changed', debouncedRefresh);
-  }, [map]);
+
+    return () => {
+      window.kakao.maps.event.removeListener(map, 'idle', debouncedRefresh);
+      window.kakao.maps.event.removeListener(map, 'zoom_changed', debouncedRefresh);
+    };
+  }, [map, refreshLayer]);
 };

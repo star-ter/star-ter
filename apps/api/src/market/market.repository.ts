@@ -10,7 +10,6 @@ import {
 export class MarketRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  // PostGIS: 상권 영역 찾기
   async findCommercialArea(
     lat: number,
     lng: number,
@@ -24,7 +23,6 @@ export class MarketRepository {
     return result[0] || null;
   }
 
-  // PostGIS: 행정동 영역 찾기
   async findAdministrativeDistrict(
     lat: number,
     lng: number,
@@ -192,6 +190,22 @@ export class MarketRepository {
       },
       orderBy: { STDR_YYQU_CD: 'desc' },
       take: 5,
+    });
+  }
+
+  async getCommercialStoreStats(code: string) {
+    return this.prisma.storeCommercial.aggregate({
+      where: { TRDAR_CD: code },
+      _sum: { STOR_CO: true, OPBIZ_STOR_CO: true, CLSBIZ_STOR_CO: true },
+      _max: { STDR_YYQU_CD: true },
+    });
+  }
+
+  async getAdministrativeStoreStats(code: string) {
+    return this.prisma.storeDong.aggregate({
+      where: { ADSTRD_CD: code },
+      _sum: { STOR_CO: true, OPBIZ_STOR_CO: true, CLSBIZ_STOR_CO: true },
+      _max: { STDR_YYQU_CD: true },
     });
   }
 }
