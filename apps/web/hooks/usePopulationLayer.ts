@@ -94,7 +94,7 @@ export const usePopulationLayer = (
 
       const currentZoom = map.getLevel();
       const currentFeatures = featuresRef.current;
-      if (currentZoom < 2 || currentZoom > 4 || currentFeatures.length === 0) {
+      if (currentZoom < 1 || currentZoom > 4 || currentFeatures.length === 0) {
         const existing = document.getElementById('population-heatmap-canvas');
         if (existing) {
           const ctx = (existing as HTMLCanvasElement).getContext('2d');
@@ -146,6 +146,7 @@ export const usePopulationLayer = (
       const maxValue = values.length > 0 ? Math.max(...values, 1) : 1;
 
       const configMap: Record<number, { radius: number; intensity: number; points: number; spread: number }> = {
+        1: { radius: 25 * DOWNSAMPLE, intensity: 2.0, points: 100, spread: 700 * DOWNSAMPLE},
         2: { radius: 25 * DOWNSAMPLE, intensity: 1.8, points: 80, spread: 300 * DOWNSAMPLE },
         3: { radius: 35 * DOWNSAMPLE, intensity: 1.4, points: 40, spread: 200 * DOWNSAMPLE },
         4: { radius: 45 * DOWNSAMPLE, intensity: 1.1, points: 20, spread: 100 * DOWNSAMPLE },
