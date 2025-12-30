@@ -33,35 +33,9 @@ export class MarketService {
 
   constructor(private readonly marketRepository: MarketRepository) {}
 
-  private isValidOpenApiResponse(data: unknown): data is OpenApiResponse {
-    if (typeof data !== 'object' || data === null) return false;
-    const response = data as OpenApiResponse;
-    return 'header' in response && 'body' in response;
-  }
-
-  private getCategoryByCode(code: string): string {
-    return KSIC_TO_CATEGORY[String(code)] || '기타';
-  }
-
-  private normalizeCategories(categories?: string | string[]): string[] {
-    if (!categories) return [];
-    return Array.isArray(categories) ? categories : [categories];
-  }
-
-  private shouldIncludeStore(
-    item: OpenApiStoreItem,
-    targetCategories: string[],
-  ): boolean {
-    if (targetCategories.length === 0) return true;
-
-    const categoryByCode = this.getCategoryByCode(item.indsLclsCd);
-    const categoryByName = item.indsLclsNm;
-
-    return (
-      (!!categoryByCode && targetCategories.includes(categoryByCode)) ||
-      (!!categoryByName && targetCategories.includes(categoryByName))
-    );
-  }
+  // ===============================
+  // PUBLIC API 메서드
+  // ===============================
 
   async getStoreList(
     query: GetMarketAnalysisQueryDto,
@@ -102,6 +76,7 @@ export class MarketService {
       stores: stores,
     };
   }
+
   /**
    * 마커/폴리곤 클릭 시 Analytics 데이터 조회
    *
@@ -120,196 +95,42 @@ export class MarketService {
       `[Analytics 요청] lat: ${lat}, lng: ${lng}, level: ${level || 'default'}, signgu_cd: ${signgu_cd || 'none'}, adstrd_cd: ${adstrd_cd || 'none'}`,
     );
 
-    // ========================================
     // (1) level이 'gu'인 경우: 행정구 데이터 조회
-    // ========================================
     if (level === 'gu') {
-      // 코드가 직접 전달된 경우 코드 기반 조회
       if (signgu_cd) {
-        this.logger.log(`[행정구 코드 기반 조회] ${signgu_cd}`);
-
-        const [salesData, storeStats, topIndustries] = await Promise.all([
-          this.marketRepository.getAdminGuRevenueTrend(signgu_cd),
-          this.marketRepository.getGuStoreStats(signgu_cd),
-          this.marketRepository.getGuTopIndustries(signgu_cd),
-        ]);
-
-        const totalStores = storeStats._sum.STOR_CO || 0;
-        const openingRate =
-          totalStores > 0
-            ? ((storeStats._sum.OPBIZ_STOR_CO || 0) / totalStores) * 100
-            : 0;
-        const closureRate =
-          totalStores > 0
-            ? ((storeStats._sum.CLSBIZ_STOR_CO || 0) / totalStores) * 100
-            : 0;
-
-        // areaName을 signgu_cd에서 조회 (간단히 코드만 사용, 추후 개선 가능)
-        const guArea = await this.marketRepository.findGuByCode(signgu_cd);
-        const areaName = guArea?.SIGNGU_NM || signgu_cd;
-
-        return MarketMapper.mapToAnalyticsDto(
-          salesData,
-          areaName,
-          false,
-          openingRate,
-          closureRate,
-          topIndustries,
-        );
+        return this.fetchGuAnalytics(signgu_cd);
       }
-
-      // 코드가 없으면 좌표 기반 조회 (폴백)
       const guArea = await this.marketRepository.findAdministrativeGu(lat, lng);
-
       if (guArea) {
-        this.logger.log(
-          `[행정구 찾음] ${guArea.SIGNGU_NM} (${guArea.SIGNGU_CD})`,
-        );
-
-        const [salesData, storeStats, topIndustries] = await Promise.all([
-          this.marketRepository.getAdminGuRevenueTrend(guArea.SIGNGU_CD),
-          this.marketRepository.getGuStoreStats(guArea.SIGNGU_CD),
-          this.marketRepository.getGuTopIndustries(guArea.SIGNGU_CD),
-        ]);
-
-        const totalStores = storeStats._sum.STOR_CO || 0;
-        const openingRate =
-          totalStores > 0
-            ? ((storeStats._sum.OPBIZ_STOR_CO || 0) / totalStores) * 100
-            : 0;
-        const closureRate =
-          totalStores > 0
-            ? ((storeStats._sum.CLSBIZ_STOR_CO || 0) / totalStores) * 100
-            : 0;
-
-        return MarketMapper.mapToAnalyticsDto(
-          salesData,
-          guArea.SIGNGU_NM,
-          false,
-          openingRate,
-          closureRate,
-          topIndustries,
-        );
+        return this.fetchGuAnalytics(guArea.SIGNGU_CD);
       }
-
       return MarketMapper.getEmptySalesData('행정구 정보를 찾을 수 없습니다.');
     }
 
-    // ========================================
     // (2) level이 'dong'인 경우: 행정동 데이터 직접 조회
-    // ========================================
     if (level === 'dong') {
-      // 코드가 직접 전달된 경우 코드 기반 조회
       if (adstrd_cd) {
-        this.logger.log(`[행정동 코드 기반 조회] ${adstrd_cd}`);
-
-        const [salesData, storeStats, topIndustries] = await Promise.all([
-          this.marketRepository.getAdminDongRevenueTrend(adstrd_cd),
-          this.marketRepository.getAdministrativeStoreStats(adstrd_cd),
-          this.marketRepository.getDongTopIndustries(adstrd_cd),
-        ]);
-
-        const totalStores = storeStats._sum.STOR_CO || 0;
-        const openingRate =
-          totalStores > 0
-            ? ((storeStats._sum.OPBIZ_STOR_CO || 0) / totalStores) * 100
-            : 0;
-        const closureRate =
-          totalStores > 0
-            ? ((storeStats._sum.CLSBIZ_STOR_CO || 0) / totalStores) * 100
-            : 0;
-
-        // areaName을 adstrd_cd에서 조회
-        const dongArea = await this.marketRepository.findDongByCode(adstrd_cd);
-        const areaName = dongArea?.ADSTRD_NM || adstrd_cd;
-
-        return MarketMapper.mapToAnalyticsDto(
-          salesData,
-          areaName,
-          false,
-          openingRate,
-          closureRate,
-          topIndustries,
-        );
+        return this.fetchDongAnalytics(adstrd_cd);
       }
-
-      // 코드가 없으면 좌표 기반 조회 (폴백)
       const adminArea = await this.marketRepository.findAdministrativeDistrict(
         lat,
         lng,
       );
-
       if (adminArea) {
-        this.logger.log(
-          `[행정동 찾음] ${adminArea.ADSTRD_NM} (${adminArea.ADSTRD_CD})`,
-        );
-
-        const [salesData, storeStats, topIndustries] = await Promise.all([
-          this.marketRepository.getAdminDongRevenueTrend(adminArea.ADSTRD_CD),
-          this.marketRepository.getAdministrativeStoreStats(
-            adminArea.ADSTRD_CD,
-          ),
-          this.marketRepository.getDongTopIndustries(adminArea.ADSTRD_CD),
-        ]);
-
-        const totalStores = storeStats._sum.STOR_CO || 0;
-        const openingRate =
-          totalStores > 0
-            ? ((storeStats._sum.OPBIZ_STOR_CO || 0) / totalStores) * 100
-            : 0;
-        const closureRate =
-          totalStores > 0
-            ? ((storeStats._sum.CLSBIZ_STOR_CO || 0) / totalStores) * 100
-            : 0;
-
-        return MarketMapper.mapToAnalyticsDto(
-          salesData,
-          adminArea.ADSTRD_NM,
-          false,
-          openingRate,
-          closureRate,
-          topIndustries,
-        );
+        return this.fetchDongAnalytics(adminArea.ADSTRD_CD);
       }
-
       return MarketMapper.getEmptySalesData('행정동 정보를 찾을 수 없습니다.');
     }
 
-    // ========================================
     // (3) 기본 동작: 상권 → 행정동 순서로 조회
-    // ========================================
     const commercialArea = await this.marketRepository.findCommercialArea(
       lat,
       lng,
     );
     if (commercialArea) {
-      const [salesData, storeStats, topIndustries] = await Promise.all([
-        this.marketRepository.getCommercialRevenueTrend(
-          commercialArea.TRDAR_CD,
-        ),
-        this.marketRepository.getCommercialStoreStats(commercialArea.TRDAR_CD),
-        this.marketRepository.getCommercialTopIndustries(
-          commercialArea.TRDAR_CD,
-        ),
-      ]);
-
-      const totalStores = storeStats._sum.STOR_CO || 0;
-      const openingRate =
-        totalStores > 0
-          ? ((storeStats._sum.OPBIZ_STOR_CO || 0) / totalStores) * 100
-          : 0;
-      const closureRate =
-        totalStores > 0
-          ? ((storeStats._sum.CLSBIZ_STOR_CO || 0) / totalStores) * 100
-          : 0;
-
-      return MarketMapper.mapToAnalyticsDto(
-        salesData,
+      return this.fetchCommercialAnalytics(
+        commercialArea.TRDAR_CD,
         commercialArea.TRDAR_CD_NM,
-        true,
-        openingRate,
-        closureRate,
-        topIndustries,
       );
     }
 
@@ -317,32 +138,8 @@ export class MarketService {
       lat,
       lng,
     );
-
     if (adminArea) {
-      const [salesData, storeStats, topIndustries] = await Promise.all([
-        this.marketRepository.getAdminDongRevenueTrend(adminArea.ADSTRD_CD),
-        this.marketRepository.getAdministrativeStoreStats(adminArea.ADSTRD_CD),
-        this.marketRepository.getDongTopIndustries(adminArea.ADSTRD_CD),
-      ]);
-
-      const totalStores = storeStats._sum.STOR_CO || 0;
-      const openingRate =
-        totalStores > 0
-          ? ((storeStats._sum.OPBIZ_STOR_CO || 0) / totalStores) * 100
-          : 0;
-      const closureRate =
-        totalStores > 0
-          ? ((storeStats._sum.CLSBIZ_STOR_CO || 0) / totalStores) * 100
-          : 0;
-
-      return MarketMapper.mapToAnalyticsDto(
-        salesData,
-        adminArea.ADSTRD_NM,
-        false,
-        openingRate,
-        closureRate,
-        topIndustries,
-      );
+      return this.fetchDongAnalytics(adminArea.ADSTRD_CD);
     }
 
     return MarketMapper.getEmptySalesData('분석할 수 없는 지역입니다.');
@@ -387,6 +184,97 @@ export class MarketService {
     return result;
   }
 
+  // ===============================
+  // PRIVATE - Analytics 조회
+  // ===============================
+
+  private async fetchGuAnalytics(code: string): Promise<MarketAnalyticsDto> {
+    const [salesData, storeStats, topIndustries] = await Promise.all([
+      this.marketRepository.getAdminGuRevenueTrend(code),
+      this.marketRepository.getGuStoreStats(code),
+      this.marketRepository.getGuTopIndustries(code),
+    ]);
+
+    const { openingRate, closureRate } = this.calculateRates(storeStats);
+    const guArea = await this.marketRepository.findGuByCode(code);
+    const areaName = guArea?.SIGNGU_NM || code;
+
+    return MarketMapper.mapToAnalyticsDto(
+      salesData,
+      areaName,
+      false,
+      openingRate,
+      closureRate,
+      topIndustries,
+    );
+  }
+
+  private async fetchDongAnalytics(code: string): Promise<MarketAnalyticsDto> {
+    const [salesData, storeStats, topIndustries] = await Promise.all([
+      this.marketRepository.getAdminDongRevenueTrend(code),
+      this.marketRepository.getAdministrativeStoreStats(code),
+      this.marketRepository.getDongTopIndustries(code),
+    ]);
+
+    const { openingRate, closureRate } = this.calculateRates(storeStats);
+    const dongArea = await this.marketRepository.findDongByCode(code);
+    const areaName = dongArea?.ADSTRD_NM || code;
+
+    return MarketMapper.mapToAnalyticsDto(
+      salesData,
+      areaName,
+      false,
+      openingRate,
+      closureRate,
+      topIndustries,
+    );
+  }
+
+  private async fetchCommercialAnalytics(
+    code: string,
+    name: string,
+  ): Promise<MarketAnalyticsDto> {
+    const [salesData, storeStats, topIndustries] = await Promise.all([
+      this.marketRepository.getCommercialRevenueTrend(code),
+      this.marketRepository.getCommercialStoreStats(code),
+      this.marketRepository.getCommercialTopIndustries(code),
+    ]);
+
+    const { openingRate, closureRate } = this.calculateRates(storeStats);
+
+    return MarketMapper.mapToAnalyticsDto(
+      salesData,
+      name,
+      true,
+      openingRate,
+      closureRate,
+      topIndustries,
+    );
+  }
+
+  private calculateRates(storeStats: {
+    _sum: {
+      STOR_CO: number | null;
+      OPBIZ_STOR_CO: number | null;
+      CLSBIZ_STOR_CO: number | null;
+    };
+  }) {
+    const totalStores = storeStats._sum.STOR_CO || 0;
+    const openingRate =
+      totalStores > 0
+        ? ((storeStats._sum.OPBIZ_STOR_CO || 0) / totalStores) * 100
+        : 0;
+    const closureRate =
+      totalStores > 0
+        ? ((storeStats._sum.CLSBIZ_STOR_CO || 0) / totalStores) * 100
+        : 0;
+    return { totalStores, openingRate, closureRate };
+  }
+
+  // ===============================
+  // PRIVATE - 외부 API (Open API)
+  // ===============================
+
   private async fetchStoresInRectangle(
     query: GetBuildingStoreQueryDto,
   ): Promise<OpenApiResponse> {
@@ -396,7 +284,11 @@ export class MarketService {
     }
 
     try {
-      const firstPageResult = await this.fetchStorePage(1, query, SERVICE_KEY);
+      const firstPageResult = await this.fetchListInRectangleFromOpenApi(
+        1,
+        query,
+        SERVICE_KEY,
+      );
 
       const allItems = [...firstPageResult.items];
       const totalCount = firstPageResult.totalCount;
@@ -408,7 +300,9 @@ export class MarketService {
           pagesToFetch.push(p);
         }
         const results = await Promise.all(
-          pagesToFetch.map((p) => this.fetchStorePage(p, query, SERVICE_KEY)),
+          pagesToFetch.map((p) =>
+            this.fetchListInRectangleFromOpenApi(p, query, SERVICE_KEY),
+          ),
         );
         results.forEach((res) => allItems.push(...res.items));
       }
@@ -428,7 +322,8 @@ export class MarketService {
       };
     }
   }
-  private async fetchStorePage(
+
+  private async fetchListInRectangleFromOpenApi(
     page: number,
     query: GetBuildingStoreQueryDto,
     serviceKey: string,
@@ -515,11 +410,45 @@ export class MarketService {
     return data;
   }
 
+  // ===============================
+  // PRIVATE - 데이터 변환/유틸
+  // ===============================
+
   private mapToMarketStores(items: OpenApiStoreItem[]): MarketStore[] {
     return items.map((item) => ({
       name: item.bizesNm,
       category: item.indsLclsNm,
       subcategory: item.ksicNm,
     }));
+  }
+
+  private isValidOpenApiResponse(data: unknown): data is OpenApiResponse {
+    if (typeof data !== 'object' || data === null) return false;
+    const response = data as OpenApiResponse;
+    return 'header' in response && 'body' in response;
+  }
+
+  private getCategoryByCode(code: string): string {
+    return KSIC_TO_CATEGORY[String(code)] || '기타';
+  }
+
+  private normalizeCategories(categories?: string | string[]): string[] {
+    if (!categories) return [];
+    return Array.isArray(categories) ? categories : [categories];
+  }
+
+  private shouldIncludeStore(
+    item: OpenApiStoreItem,
+    targetCategories: string[],
+  ): boolean {
+    if (targetCategories.length === 0) return true;
+
+    const categoryByCode = this.getCategoryByCode(item.indsLclsCd);
+    const categoryByName = item.indsLclsNm;
+
+    return (
+      (!!categoryByCode && targetCategories.includes(categoryByCode)) ||
+      (!!categoryByName && targetCategories.includes(categoryByName))
+    );
   }
 }
