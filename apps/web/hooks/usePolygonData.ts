@@ -1,12 +1,9 @@
 import { useRef, useEffect } from 'react';
 import {
   KakaoMap,
-  AdminArea,
-  BuildingArea,
   KakaoPolygon,
   KakaoCustomOverlay,
   InfoBarData,
-  CommercialApiResponse,
 } from '../types/map-types';
 import { drawPolygons } from '../utils/kakao-draw-utils';
 import {

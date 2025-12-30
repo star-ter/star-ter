@@ -317,8 +317,28 @@ export function drawPolygons(
 
       contentEl.onclick = () => {
         console.log('Clicked Overlay:', props);
-        // TODO: Overlay 클릭 시에도 InfoBar에 상권 정보 전달
-        onPolygonClick(props as unknown as InfoBarData);
+
+        let finalX = 0;
+        let finalY = 0;
+
+        // Robust check: Ensure x/y are valid numbers and non-zero
+        const propX = 'x' in props ? Number(props.x) : NaN;
+        const propY = 'y' in props ? Number(props.y) : NaN;
+
+        if (!isNaN(propX) && propX !== 0) finalX = propX;
+        else if (position) finalX = position.getLng();
+
+        if (!isNaN(propY) && propY !== 0) finalY = propY;
+        else if (position) finalY = position.getLat();
+
+        console.log(`Overlay Click Sent: ${finalX}, ${finalY}`);
+
+        onPolygonClick({
+          ...props,
+          x: finalX,
+          y: finalY,
+          polygons: polygons,
+        } as unknown as InfoBarData);
       };
 
       const customOverlay = new window.kakao.maps.CustomOverlay({

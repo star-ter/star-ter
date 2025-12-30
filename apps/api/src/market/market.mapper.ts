@@ -1,8 +1,33 @@
 import { MarketAnalyticsDto } from './dto/market-analytics.dto';
 
+interface SalesSum {
+  THSMON_SELNG_AMT?: number | bigint | null;
+  TMZON_00_06_SELNG_AMT?: number | bigint | null;
+  TMZON_06_11_SELNG_AMT?: number | bigint | null;
+  TMZON_11_14_SELNG_AMT?: number | bigint | null;
+  TMZON_14_17_SELNG_AMT?: number | bigint | null;
+  TMZON_17_21_SELNG_AMT?: number | bigint | null;
+  TMZON_21_24_SELNG_AMT?: number | bigint | null;
+  MON_SELNG_AMT?: number | bigint | null;
+  TUES_SELNG_AMT?: number | bigint | null;
+  WED_SELNG_AMT?: number | bigint | null;
+  THUR_SELNG_AMT?: number | bigint | null;
+  FRI_SELNG_AMT?: number | bigint | null;
+  SAT_SELNG_AMT?: number | bigint | null;
+  SUN_SELNG_AMT?: number | bigint | null;
+  ML_SELNG_AMT?: number | bigint | null;
+  FML_SELNG_AMT?: number | bigint | null;
+  AGRDE_10_SELNG_AMT?: number | bigint | null;
+  AGRDE_20_SELNG_AMT?: number | bigint | null;
+  AGRDE_30_SELNG_AMT?: number | bigint | null;
+  AGRDE_40_SELNG_AMT?: number | bigint | null;
+  AGRDE_50_SELNG_AMT?: number | bigint | null;
+  AGRDE_60_ABOVE_SELNG_AMT?: number | bigint | null;
+}
+
 interface AggregatedSalesRow {
   STDR_YYQU_CD: string;
-  _sum: any;
+  _sum: SalesSum;
 }
 
 export class MarketMapper {
