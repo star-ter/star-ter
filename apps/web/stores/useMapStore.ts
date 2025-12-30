@@ -56,7 +56,7 @@ export const useMapStore = create<MapStore>((set) => ({
       markers: [{ id: '1', coords, name: location, style: 'pulse' }],
     });
 
-    setTimeout(() => set({ isMoving: false }), 2000);
+    setTimeout(() => set({ isMoving: false }), 1300);
   },
 
   moveToLocations: (locations) => {
@@ -78,7 +78,7 @@ export const useMapStore = create<MapStore>((set) => ({
       markers: locations,
     });
 
-    setTimeout(() => set({ isMoving: false }), 2000);
+    setTimeout(() => set({ isMoving: false }), 1300);
   },
 
   clearMarkers: () => set({ markers: [] }),
