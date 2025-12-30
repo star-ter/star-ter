@@ -95,7 +95,7 @@ export class FloatingPopulationRepository {
             'ts', s.ts,
             'ap', s.ap,
             'sp', s.sp,
-            ${GRANULAR_FIELDS.map((f) => `'${f.toLowerCase()}', s.${f.toLowerCase()}`).join(',\n            ')}
+            ${GRANULAR_FIELDS.map((f) => `'${f.toLowerCase()}', s.${f.toLowerCase()}`).join(',\n')}
           ) ORDER BY s.ts
         ) FILTER (WHERE s.ts IS NOT NULL) as slots
       FROM viewport_grids g
