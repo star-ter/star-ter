@@ -36,7 +36,7 @@ export default function Kakaomap({
   const { map } = useKakaoMap(mapRef);
   const { selectedArea, selectArea, clearSelection, setInfoBarOpen } =
     useSidebarStore();
-  const { center, zoom, markers } = useMapStore();
+  const { center, zoom, markers, setZoom, setCenter } = useMapStore();
 
   usePolygonData(map, (data: InfoBarData) => {
     if (!disableInfoBar) {
@@ -139,6 +139,50 @@ export default function Kakaomap({
       onClearCategory();
     }
   };
+
+  useEffect(() => {
+    if (!map) return;
+
+    setZoom(map.getLevel());
+    const initialCenter = map.getCenter();
+    setCenter({ lat: initialCenter.getLat(), lng: initialCenter.getLng() });
+
+    const handleZoomChange = () => {
+      const level = map.getLevel();
+      setZoom(level);
+    };
+
+    const handleCenterChange = () => {
+      const center = map.getCenter();
+      setCenter({ lat: center.getLat(), lng: center.getLng() });
+    };
+
+    window.kakao.maps.event.addListener(map, 'zoom_changed', handleZoomChange);
+    window.kakao.maps.event.addListener(
+      map,
+      'center_changed',
+      handleCenterChange,
+    );
+    window.kakao.maps.event.addListener(map, 'dragend', handleCenterChange);
+
+    return () => {
+      window.kakao.maps.event.removeListener(
+        map,
+        'zoom_changed',
+        handleZoomChange,
+      );
+      window.kakao.maps.event.removeListener(
+        map,
+        'center_changed',
+        handleCenterChange,
+      );
+      window.kakao.maps.event.removeListener(
+        map,
+        'dragend',
+        handleCenterChange,
+      );
+    };
+  }, [map, setZoom, setCenter]);
 
   return (
     <div className="relative w-full h-full">
