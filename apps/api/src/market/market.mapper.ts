@@ -30,13 +30,31 @@ interface AggregatedSalesRow {
   _sum: SalesSum;
 }
 
+// 업종별 매출 데이터 타입 (repository에서 groupBy 결과)
+interface IndustryData {
+  SVC_INDUTY_CD_NM: string;
+  _sum: {
+    THSMON_SELNG_AMT: number | bigint | null;
+  };
+}
+
 export class MarketMapper {
+  /**
+   * 매출 분석 DTO 매핑
+   * @param groupedRows - 분기별 매출 데이터
+   * @param areaName - 지역명
+   * @param isCommercial - 상권 여부
+   * @param openingRate - 개업률
+   * @param closureRate - 폐업률
+   * @param topIndustries - 업종별 매출 Top 5 (선택)
+   */
   static mapToAnalyticsDto(
     groupedRows: AggregatedSalesRow[],
     areaName: string,
     isCommercial: boolean,
     openingRate: number = 0,
     closureRate: number = 0,
+    topIndustries: IndustryData[] = [],
   ): MarketAnalyticsDto {
     if (!groupedRows || groupedRows.length === 0) {
       return this.getEmptySalesData(`${areaName} (데이터 없음)`);
@@ -47,6 +65,19 @@ export class MarketMapper {
 
     // Helper to safely get number
     const val = (v: bigint | number | null | undefined) => Number(v || 0);
+
+    // 업종별 매출 비율 계산
+    const totalIndustryRevenue = topIndustries.reduce(
+      (acc, item) => acc + val(item._sum.THSMON_SELNG_AMT),
+      0,
+    );
+    const mappedIndustries = topIndustries.map((item) => ({
+      name: item.SVC_INDUTY_CD_NM,
+      ratio:
+        totalIndustryRevenue > 0
+          ? val(item._sum.THSMON_SELNG_AMT) / totalIndustryRevenue
+          : 0,
+    }));
 
     return {
       areaName,
@@ -91,7 +122,7 @@ export class MarketMapper {
           age60: val(sum.AGRDE_60_ABOVE_SELNG_AMT),
           primaryGroupSummaryComment: '성별/연령별 매출 분포입니다.',
         },
-        topIndustries: [],
+        topIndustries: mappedIndustries,
       },
       vitality: {
         openingRate: Math.round(openingRate * 10) / 10,

@@ -78,7 +78,7 @@ export default function SalesTrendGraph({
   return (
     <div className="w-full mt-0">
       <div className="flex justify-between items-center mb-2 px-1">
-        <h4 className="text-[12px] font-semibold text-gray-900">
+        <h4 className="text-[15px] font-bold text-gray-900">
           최근 1년 동안 매출 변화 추정 그래프
         </h4>
         <div className="relative group">

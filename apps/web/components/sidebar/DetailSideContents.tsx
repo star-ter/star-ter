@@ -6,6 +6,7 @@ import ReviewSummary from './market/ReviewSummary';
 import StoreList from './market/StoreList';
 import VitalityStats from './market/VitalityStats';
 import DetailedStores from './market/DetailedStores';
+import SalesAnalysisSection from './market/SalesAnalysisSection';
 import { useMarketAnalysis } from '@/hooks/useMarketAnalysis';
 
 interface DetailContentsProps {
@@ -14,7 +15,7 @@ interface DetailContentsProps {
 
 export default function DetailContents({ data }: DetailContentsProps) {
   const {analysisData, loading } = useMarketAnalysis(data);
-  const [view, setView] = useState<'summary' | 'list'>('summary'); // 뷰 상태 관리
+  const [view, setView] = useState<'summary' | 'list'>('summary');
 
   if (view === 'list' && analysisData) {
     return (
@@ -33,29 +34,28 @@ export default function DetailContents({ data }: DetailContentsProps) {
     return <EmptyState />;
   }
 
+  const hasSalesData = analysisData.sales != null;
+
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-6">
         <>
-          {/* 상권 뱃지 (Hot Place vs 일반) */}
           <MarketBadge
             isCommercialZone={analysisData.isCommercialZone}
             areaName={analysisData.areaName}
           />
-          {/* 매출 카드 */}
           <RevenueCard
             title={analysisData.isCommercialZone ? "월평균 추정 매출" : "지역 평균 매출"}
             amount={`약 ${(analysisData.estimatedRevenue / 100000000).toFixed(1)}억 원`}
             description={analysisData.salesDescription}
             highlight={analysisData.isCommercialZone}
           />
-          {/* 주요 매장 리스트 */}
           <StoreList 
             stores={analysisData.stores} 
             onShowMore={() => setView('list')}
           />
-          {/* 주요 매장 리뷰 요약 */}
+          {hasSalesData && <SalesAnalysisSection salesData={analysisData.sales} />}
+
           <ReviewSummary reviewSummary={analysisData.reviewSummary} />
-          {/* 상권 생명력 (개폐업률) */}
           <VitalityStats
             openingRate={analysisData.openingRate}
             closureRate={analysisData.closureRate}
@@ -64,6 +64,7 @@ export default function DetailContents({ data }: DetailContentsProps) {
     </div>
   );
 }
+
 
 function LoadingSpinner(){
   return (
