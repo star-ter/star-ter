@@ -54,12 +54,9 @@ export class MarketService {
   ): boolean {
     if (targetCategories.length === 0) return true;
 
-    // 1. 코드로 매핑된 카테고리 확인
     const categoryByCode = this.getCategoryByCode(item.indsLclsCd);
-    // 2. API가 주는 대분류명(indsLclsNm) 직접 확인
     const categoryByName = item.indsLclsNm;
 
-    // 둘 중 하나라도 타겟 카테고리에 포함되면 통과
     return (
       (!!categoryByCode && targetCategories.includes(categoryByCode)) ||
       (!!categoryByName && targetCategories.includes(categoryByName))
@@ -82,7 +79,6 @@ export class MarketService {
         const externalStoreData = await this.fetchStoreDataFromOpenApi(polygon);
         const items = externalStoreData.body?.items;
 
-        // 데이터 구조 확인 및 매핑
         if (items && items.length > 0) {
           stores = this.mapToMarketStores(items);
           this.logger.log(`[데이터 매핑 완료] ${stores.length}개 업소`);
@@ -96,7 +92,6 @@ export class MarketService {
       this.logger.log('No polygon');
     }
 
-    // 데이터가 없으면 빈 배열 반환 (더미 데이터 제거)
     if (stores.length === 0) {
       this.logger.log('분석된 상가 데이터가 없습니다.');
     }
@@ -119,13 +114,27 @@ export class MarketService {
       lng,
     );
     if (commercialArea) {
-      const salesData = await this.marketRepository.getCommercialSales(
-        commercialArea.TRDAR_CD,
-      );
+      const [salesData, storeStats] = await Promise.all([
+        this.marketRepository.getCommercialSales(commercialArea.TRDAR_CD),
+        this.marketRepository.getCommercialStoreStats(commercialArea.TRDAR_CD),
+      ]);
+
+      const totalStores = storeStats._sum.STOR_CO || 0;
+      const openingRate =
+        totalStores > 0
+          ? ((storeStats._sum.OPBIZ_STOR_CO || 0) / totalStores) * 100
+          : 0;
+      const closureRate =
+        totalStores > 0
+          ? ((storeStats._sum.CLSBIZ_STOR_CO || 0) / totalStores) * 100
+          : 0;
+
       return MarketMapper.mapToAnalyticsDto(
         salesData,
         commercialArea.TRDAR_CD_NM,
         true,
+        openingRate,
+        closureRate,
       );
     }
 
@@ -134,13 +143,27 @@ export class MarketService {
       lng,
     );
     if (adminArea) {
-      const salesData = await this.marketRepository.getAdministrativeSales(
-        adminArea.ADSTRD_CD,
-      );
+      const [salesData, storeStats] = await Promise.all([
+        this.marketRepository.getAdministrativeSales(adminArea.ADSTRD_CD),
+        this.marketRepository.getAdministrativeStoreStats(adminArea.ADSTRD_CD),
+      ]);
+
+      const totalStores = storeStats._sum.STOR_CO || 0;
+      const openingRate =
+        totalStores > 0
+          ? ((storeStats._sum.OPBIZ_STOR_CO || 0) / totalStores) * 100
+          : 0;
+      const closureRate =
+        totalStores > 0
+          ? ((storeStats._sum.CLSBIZ_STOR_CO || 0) / totalStores) * 100
+          : 0;
+
       return MarketMapper.mapToAnalyticsDto(
         salesData,
         adminArea.ADSTRD_NM,
         false,
+        openingRate,
+        closureRate,
       );
     }
 
@@ -158,13 +181,10 @@ export class MarketService {
     const grouped = new Map<string, OpenApiStoreItem[]>();
 
     items.forEach((item) => {
-      // 1. 건물 번호 없으면 제외
       if (!item.bldMngNo) return;
 
-      // 2. 카테고리 필터링
       if (!this.shouldIncludeStore(item, targetCategories)) return;
 
-      // 3. 그룹화
       if (!grouped.has(item.bldMngNo)) {
         grouped.set(item.bldMngNo, []);
       }
@@ -209,11 +229,9 @@ export class MarketService {
         for (let p = 2; p <= totalPages && p <= MAX_PAGES_TO_FETCH; p++) {
           pagesToFetch.push(p);
         }
-        // 3. Parallel Fetch using Helper
         const results = await Promise.all(
           pagesToFetch.map((p) => this.fetchStorePage(p, query, SERVICE_KEY)),
         );
-        // 4. Merge
         results.forEach((res) => allItems.push(...res.items));
       }
       return {
@@ -292,7 +310,6 @@ export class MarketService {
       key: wkt,
       type: 'json',
     });
-    //this.logger.log(`${BASE_URL}?${queryParams.toString()}`);
 
     const response = await fetch(`${BASE_URL}?${queryParams.toString()}`, {
       method: 'GET',

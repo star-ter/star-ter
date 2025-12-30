@@ -27,6 +27,7 @@ export default function ComparisonOverlay({
   const { isOpen, width, isResizing } = useSidebarStore();
   const [hoveredTab, setHoveredTab] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'sales' | 'store' | 'population'>('sales');
+  const [isStoreExpanded, setIsStoreExpanded] = useState(false);
 
   const scrollRefA = useRef<HTMLDivElement>(null);
   const scrollRefB = useRef<HTMLDivElement>(null);
@@ -100,6 +101,8 @@ export default function ComparisonOverlay({
           onTabChange={setActiveTab}
           scrollRef={scrollRefA}
           onScroll={handleScroll('A')}
+          isStoreExpanded={isStoreExpanded}
+          onStoreExpand={setIsStoreExpanded}
         />
         <AnalysisCard
           title={dataB.title}
@@ -116,6 +119,8 @@ export default function ComparisonOverlay({
           onTabChange={setActiveTab}
           scrollRef={scrollRefB}
           onScroll={handleScroll('B')}
+          isStoreExpanded={isStoreExpanded}
+          onStoreExpand={setIsStoreExpanded}
         />
       </div>
     </div>

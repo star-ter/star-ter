@@ -65,7 +65,7 @@ export default function SearchBox() {
       <div
         ref={containerRef}
         onClick={() => inputRef.current?.focus()}
-        className="pointer-events-auto group flex h-12 w-12 hover:w-[320px] focus-within:w-[320px] items-center gap-3 rounded-full bg-white hover:bg-white focus-within:bg-white/90 shadow-lg ring-1 ring-gray-200 transition-all duration-500 ease-in-out overflow-hidden px-3 cursor-pointer"
+        className="pointer-events-auto group flex h-12 w-12 hover:w-[320px] focus-within:w-[320px] items-center gap-3 rounded-full bg-white/90 hover:bg-white/95 focus-within:bg-white/95 shadow-lg ring-1 ring-gray-200 transition-all duration-500 ease-in-out overflow-hidden px-3 cursor-pointer"
       >
         <figure
           className="flex shrink-0 h-6 w-6 items-center justify-center text-gray-800 ml-0.4 cursor-pointer hover:text-blue-600 transition-colors"
