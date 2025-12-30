@@ -1,57 +1,67 @@
-import { SalesCommercial, SalesDong } from 'generated/prisma/client';
 import { MarketAnalyticsDto } from './dto/market-analytics.dto';
+
+interface AggregatedSalesRow {
+  STDR_YYQU_CD: string;
+  _sum: any;
+}
 
 export class MarketMapper {
   static mapToAnalyticsDto(
-    rows: (SalesCommercial | SalesDong)[],
+    groupedRows: AggregatedSalesRow[],
     areaName: string,
     isCommercial: boolean,
   ): MarketAnalyticsDto {
-    if (!rows || rows.length === 0) {
+    if (!groupedRows || groupedRows.length === 0) {
       return this.getEmptySalesData(`${areaName} (데이터 없음)`);
     }
-    const latest = rows[0];
+
+    const latest = groupedRows[0];
+    const sum = latest._sum || {};
+
+    // Helper to safely get number
+    const val = (v: bigint | number | null | undefined) => Number(v || 0);
+
     return {
       areaName,
       isCommercialArea: isCommercial,
-      totalRevenue: Number(latest.THSMON_SELNG_AMT),
+      totalRevenue: val(sum.THSMON_SELNG_AMT),
       sales: {
-        trend: rows
+        trend: groupedRows
           .slice(0, 4)
           .reverse()
           .map((row) => ({
             year: row.STDR_YYQU_CD.substring(0, 4),
             quarter: row.STDR_YYQU_CD.substring(4, 5),
-            revenue: Number(row.THSMON_SELNG_AMT),
+            revenue: val(row._sum.THSMON_SELNG_AMT),
           })),
         timeSlot: {
-          time0006: Number(latest.TMZON_00_06_SELNG_AMT),
-          time0611: Number(latest.TMZON_06_11_SELNG_AMT),
-          time1114: Number(latest.TMZON_11_14_SELNG_AMT),
-          time1417: Number(latest.TMZON_14_17_SELNG_AMT),
-          time1721: Number(latest.TMZON_17_21_SELNG_AMT),
-          time2124: Number(latest.TMZON_21_24_SELNG_AMT),
+          time0006: val(sum.TMZON_00_06_SELNG_AMT),
+          time0611: val(sum.TMZON_06_11_SELNG_AMT),
+          time1114: val(sum.TMZON_11_14_SELNG_AMT),
+          time1417: val(sum.TMZON_14_17_SELNG_AMT),
+          time1721: val(sum.TMZON_17_21_SELNG_AMT),
+          time2124: val(sum.TMZON_21_24_SELNG_AMT),
           peakTimeSummaryComment: '시간대별 매출 분포입니다.',
         },
         dayOfWeek: {
-          mon: Number(latest.MON_SELNG_AMT),
-          tue: Number(latest.TUES_SELNG_AMT),
-          wed: Number(latest.WED_SELNG_AMT),
-          thu: Number(latest.THUR_SELNG_AMT),
-          fri: Number(latest.FRI_SELNG_AMT),
-          sat: Number(latest.SAT_SELNG_AMT),
-          sun: Number(latest.SUN_SELNG_AMT),
+          mon: val(sum.MON_SELNG_AMT),
+          tue: val(sum.TUES_SELNG_AMT),
+          wed: val(sum.WED_SELNG_AMT),
+          thu: val(sum.THUR_SELNG_AMT),
+          fri: val(sum.FRI_SELNG_AMT),
+          sat: val(sum.SAT_SELNG_AMT),
+          sun: val(sum.SUN_SELNG_AMT),
           peakDaySummaryComment: '요일별 매출 분포입니다.',
         },
         demographics: {
-          male: Number(latest.ML_SELNG_AMT),
-          female: Number(latest.FML_SELNG_AMT),
-          age10: Number(latest.AGRDE_10_SELNG_AMT),
-          age20: Number(latest.AGRDE_20_SELNG_AMT),
-          age30: Number(latest.AGRDE_30_SELNG_AMT),
-          age40: Number(latest.AGRDE_40_SELNG_AMT),
-          age50: Number(latest.AGRDE_50_SELNG_AMT),
-          age60: Number(latest.AGRDE_60_ABOVE_SELNG_AMT),
+          male: val(sum.ML_SELNG_AMT),
+          female: val(sum.FML_SELNG_AMT),
+          age10: val(sum.AGRDE_10_SELNG_AMT),
+          age20: val(sum.AGRDE_20_SELNG_AMT),
+          age30: val(sum.AGRDE_30_SELNG_AMT),
+          age40: val(sum.AGRDE_40_SELNG_AMT),
+          age50: val(sum.AGRDE_50_SELNG_AMT),
+          age60: val(sum.AGRDE_60_ABOVE_SELNG_AMT),
           primaryGroupSummaryComment: '성별/연령별 매출 분포입니다.',
         },
         topIndustries: [],

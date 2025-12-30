@@ -119,7 +119,7 @@ export class MarketService {
       lng,
     );
     if (commercialArea) {
-      const salesData = await this.marketRepository.getCommercialSales(
+      const salesData = await this.marketRepository.getCommercialRevenueTrend(
         commercialArea.TRDAR_CD,
       );
       return MarketMapper.mapToAnalyticsDto(
@@ -133,8 +133,9 @@ export class MarketService {
       lat,
       lng,
     );
+
     if (adminArea) {
-      const salesData = await this.marketRepository.getAdministrativeSales(
+      const salesData = await this.marketRepository.getAdminDongRevenueTrend(
         adminArea.ADSTRD_CD,
       );
       return MarketMapper.mapToAnalyticsDto(

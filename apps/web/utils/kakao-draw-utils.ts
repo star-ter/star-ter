@@ -271,14 +271,21 @@ export function drawPolygons(
       window.kakao.maps.event.addListener(polygon, 'click', () => {
         console.log(`Clicked: ${label}`);
 
-        const x = centerPoint ? centerPoint.getLng() : 0;
-        const y = centerPoint ? centerPoint.getLat() : 0;
+        let finalX = 0;
+        let finalY = 0;
+
+        // Prefer explicit coordinates if available (AdminArea/BuildingArea)
+        if ('x' in props && props.x) finalX = Number(props.x);
+        else if (centerPoint) finalX = centerPoint.getLng();
+
+        if ('y' in props && props.y) finalY = Number(props.y);
+        else if (centerPoint) finalY = centerPoint.getLat();
 
         // TODO: InfoBar에 상권 정보(TRDAR_SE_1 등)가 포함된 props를 전달하는 부분.
         onPolygonClick({
           ...props,
-          x: x,
-          y: y,
+          x: finalX,
+          y: finalY,
           polygons: polygons,
         } as unknown as InfoBarData);
       });

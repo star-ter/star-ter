@@ -30,7 +30,7 @@ export class MarketRepository {
     lng: number,
   ): Promise<AdministrativeAreaResult | null> {
     const result = await this.prisma.$queryRaw<AdministrativeAreaResult[]>`
-      SELECT adm_cd::text as "ADSTRD_CD", adm_nm as "ADSTRD_NM"
+      SELECT adstrd_cd as "ADSTRD_CD", adm_nm as "ADSTRD_NM"
       FROM admin_area_dong
       WHERE ST_Intersects(
         ST_SetSRID(
@@ -51,27 +51,71 @@ export class MarketRepository {
     return result[0] || null;
   }
 
-  // 상권 매출 데이터 조회
-  async getCommercialSales(
-    code: string,
-    limit: number = 5,
-  ): Promise<SalesCommercial[]> {
-    return this.prisma.salesCommercial.findMany({
+  // 상권 매출 추이 조회 (분기별 업종 합계)
+  async getCommercialRevenueTrend(code: string) {
+    return this.prisma.salesCommercial.groupBy({
+      by: ['STDR_YYQU_CD'],
       where: { TRDAR_CD: code },
+      _sum: {
+        THSMON_SELNG_AMT: true,
+        TMZON_00_06_SELNG_AMT: true,
+        TMZON_06_11_SELNG_AMT: true,
+        TMZON_11_14_SELNG_AMT: true,
+        TMZON_14_17_SELNG_AMT: true,
+        TMZON_17_21_SELNG_AMT: true,
+        TMZON_21_24_SELNG_AMT: true,
+        MON_SELNG_AMT: true,
+        TUES_SELNG_AMT: true,
+        WED_SELNG_AMT: true,
+        THUR_SELNG_AMT: true,
+        FRI_SELNG_AMT: true,
+        SAT_SELNG_AMT: true,
+        SUN_SELNG_AMT: true,
+        ML_SELNG_AMT: true,
+        FML_SELNG_AMT: true,
+        AGRDE_10_SELNG_AMT: true,
+        AGRDE_20_SELNG_AMT: true,
+        AGRDE_30_SELNG_AMT: true,
+        AGRDE_40_SELNG_AMT: true,
+        AGRDE_50_SELNG_AMT: true,
+        AGRDE_60_ABOVE_SELNG_AMT: true,
+      },
       orderBy: { STDR_YYQU_CD: 'desc' },
-      take: limit,
+      take: 5,
     });
   }
 
-  // 행정동 매출 데이터 조회
-  async getAdministrativeSales(
-    code: string,
-    limit: number = 5,
-  ): Promise<SalesDong[]> {
-    return this.prisma.salesDong.findMany({
+  // 행정동 매출 추이 조회 (분기별 업종 합계)
+  async getAdminDongRevenueTrend(code: string) {
+    return this.prisma.salesDong.groupBy({
+      by: ['STDR_YYQU_CD'],
       where: { ADSTRD_CD: code },
+      _sum: {
+        THSMON_SELNG_AMT: true,
+        TMZON_00_06_SELNG_AMT: true,
+        TMZON_06_11_SELNG_AMT: true,
+        TMZON_11_14_SELNG_AMT: true,
+        TMZON_14_17_SELNG_AMT: true,
+        TMZON_17_21_SELNG_AMT: true,
+        TMZON_21_24_SELNG_AMT: true,
+        MON_SELNG_AMT: true,
+        TUES_SELNG_AMT: true,
+        WED_SELNG_AMT: true,
+        THUR_SELNG_AMT: true,
+        FRI_SELNG_AMT: true,
+        SAT_SELNG_AMT: true,
+        SUN_SELNG_AMT: true,
+        ML_SELNG_AMT: true,
+        FML_SELNG_AMT: true,
+        AGRDE_10_SELNG_AMT: true,
+        AGRDE_20_SELNG_AMT: true,
+        AGRDE_30_SELNG_AMT: true,
+        AGRDE_40_SELNG_AMT: true,
+        AGRDE_50_SELNG_AMT: true,
+        AGRDE_60_ABOVE_SELNG_AMT: true,
+      },
       orderBy: { STDR_YYQU_CD: 'desc' },
-      take: limit,
+      take: 5,
     });
   }
 }
