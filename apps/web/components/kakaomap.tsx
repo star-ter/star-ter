@@ -132,24 +132,24 @@ export default function Kakaomap({
 
       if (isFar) {
         const moveLatLng = new window.kakao.maps.LatLng(center.lat, center.lng);
-        map.panTo(moveLatLng, { animate: { duration: 1500 } });
+        map.panTo(moveLatLng, { animate: { duration: 700 } });
 
         if (zoom === -2) {
           setTimeout(
-            () => map.setLevel(3, { animate: { duration: 800 } }),
-            1600,
+            () => map.setLevel(3, { animate: { duration: 400 } }),
+            700,
           );
         } else if (zoom > 0) {
           setTimeout(
-            () => map.setLevel(zoom, { animate: { duration: 800 } }),
-            1600,
+            () => map.setLevel(zoom, { animate: { duration: 400 } }),
+            700,
           );
         }
       } else {
         if (zoom === -2 && map.getLevel() !== 3) {
-          map.setLevel(3, { animate: { duration: 800 } });
+          map.setLevel(3, { animate: { duration: 400 } });
         } else if (zoom > 0 && map.getLevel() !== zoom) {
-          map.setLevel(zoom, { animate: { duration: 800 } });
+          map.setLevel(zoom, { animate: { duration: 400 } });
         }
       }
     }
