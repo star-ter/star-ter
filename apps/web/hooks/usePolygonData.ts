@@ -202,7 +202,6 @@ export const usePolygonData = (
     // Initial load
     refreshLayer(map);
 
-    // Debounce refresh
     let timeoutId: NodeJS.Timeout | null = null;
     const debouncedRefresh = () => {
       if (timeoutId) clearTimeout(timeoutId);
@@ -212,7 +211,21 @@ export const usePolygonData = (
     };
 
     // 지도가 변할 때 마다 refreshLayer 함수를 호출하여 데이터를 다시 그리는 함수.
-    window.kakao.maps.event.addListener(map, 'idle', debouncedRefresh);
-    window.kakao.maps.event.addListener(map, 'zoom_changed', debouncedRefresh);
+    const kakaoEvents = window.kakao?.maps?.event;
+    let handlers: any[] = [];
+    
+    if (kakaoEvents) {
+      handlers.push(kakaoEvents.addListener(map, 'idle', debouncedRefresh));
+      handlers.push(kakaoEvents.addListener(map, 'zoom_changed', debouncedRefresh));
+    }
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      if (window.kakao?.maps?.event) {
+        handlers.forEach(h => {
+          if (h) window.kakao.maps.event.removeListener(h);
+        });
+      }
+    };
   }, [map]);
 };

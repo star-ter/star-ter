@@ -133,6 +133,7 @@ export default function Kakaomap({
   // 3. 유동인구 격자 레이어 추가
   usePopulationLayer(
     map,
+    population.timeFilter,
     population.genderFilter,
     population.ageFilter,
     population.showLayer,

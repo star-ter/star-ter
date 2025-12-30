@@ -17,6 +17,12 @@ export interface KakaoMap {
   getCenter: () => KakaoLatLng;
   getBounds: () => KakaoBounds;
   setBounds: (bounds: KakaoBounds) => void;
+  getProjection: () => KakaoMapProjection;
+}
+
+export interface KakaoMapProjection {
+  containerPointFromCoords: (latlng: KakaoLatLng) => { x: number; y: number };
+  coordsFromContainerPoint: (point: { x: number; y: number }) => KakaoLatLng;
 }
 
 export interface KakaoPolygon {
@@ -135,3 +141,6 @@ export interface CommercialApiResponse {
     coordinates: number[][][][] | number[][][] | number[][];
   };
 }
+
+export type KakaoEventHandle = unknown;
+export type KakaoEventHandler = unknown;
