@@ -108,7 +108,7 @@ export default function Home() {
           disableInfoBar={!!pickTarget}
         />
       </div>
-      <div className="fixed inset-0 z-10 pointer-events-none">
+      <div className="z-10 pointer-events-none">
         <MapBox
           locationA={locationA}
           locationB={locationB}
