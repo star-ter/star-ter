@@ -1,111 +1,113 @@
-model IncomeConsumptionCity {
-  MEGA_CD                   String
-  STDR_YYQU_CD              String
-  MEGA_CD_NM                String
-  MT_AVRG_INCOME_AMT        Int
-  INCOME_SCTN_CD            String
-  EXPNDTR_TOTAMT            BigInt
-  FDSTFFS_EXPNDTR_TOTAMT    BigInt
-  CLTHS_FTWR_EXPNDTR_TOTAMT BigInt
-  LVSPL_EXPNDTR_TOTAMT      BigInt
-  MCP_EXPNDTR_TOTAMT        BigInt
-  TRNSPORT_EXPNDTR_TOTAMT   BigInt
-  EDC_EXPNDTR_TOTAMT        BigInt
-  PLESR_EXPNDTR_TOTAMT      BigInt
-  LSR_CLTUR_EXPNDTR_TOTAMT  BigInt
-  ETC_EXPNDTR_TOTAMT        BigInt
-  FD_EXPNDTR_TOTAMT         BigInt
+//  income_consumption_{city|gu|dong|backarea|commercial}
 
-  @@id([STDR_YYQU_CD, MEGA_CD])
-  @@map("income_consumption_city")
+model IncomeConsumptionCity {
+    MEGA_CD                   String //기준_년분기_코드
+    STDR_YYQU_CD              String //서울시_코드
+    MEGA_CD_NM                String //서울시_코드_명
+    MT_AVRG_INCOME_AMT        Int //월_평균_소득_금액
+    INCOME_SCTN_CD            String //소득_구간_코드
+    EXPNDTR_TOTAMT            BigInt //지출_총금액
+    FDSTFFS_EXPNDTR_TOTAMT    BigInt //식료품_지출_총금액
+    CLTHS_FTWR_EXPNDTR_TOTAMT BigInt //의류_신발_지출_총금액
+    LVSPL_EXPNDTR_TOTAMT      BigInt //생활용품_지출_총금액
+    MCP_EXPNDTR_TOTAMT        BigInt //의료비_지출_총금액
+    TRNSPORT_EXPNDTR_TOTAMT   BigInt //교통_지출_총금액
+    EDC_EXPNDTR_TOTAMT        BigInt //교육_지출_총금액
+    PLESR_EXPNDTR_TOTAMT      BigInt //유흥_지출_총금액
+    LSR_CLTUR_EXPNDTR_TOTAMT  BigInt //여가_문화_지출_총금액
+    ETC_EXPNDTR_TOTAMT        BigInt //기타_지출_총금액
+    FD_EXPNDTR_TOTAMT         BigInt //음식_지출_총금액
+
+    @@id([STDR_YYQU_CD, MEGA_CD])
+    @@map("income_consumption_city")
 }
 
 model IncomeConsumptionGu {
-  SIGNGU_CD                 String
-  STDR_YYQU_CD              String
-  SIGNGU_CD_NM              String
-  MT_AVRG_INCOME_AMT        Int
-  INCOME_SCTN_CD            String
-  EXPNDTR_TOTAMT            BigInt
-  FDSTFFS_EXPNDTR_TOTAMT    BigInt
-  CLTHS_FTWR_EXPNDTR_TOTAMT BigInt
-  LVSPL_EXPNDTR_TOTAMT      BigInt
-  MCP_EXPNDTR_TOTAMT        BigInt
-  TRNSPORT_EXPNDTR_TOTAMT   BigInt
-  EDC_EXPNDTR_TOTAMT        BigInt
-  PLESR_EXPNDTR_TOTAMT      BigInt
-  LSR_CLTUR_EXPNDTR_TOTAMT  BigInt
-  ETC_EXPNDTR_TOTAMT        BigInt
-  FD_EXPNDTR_TOTAMT         BigInt
+    SIGNGU_CD                 String //기준_년분기_코드
+    STDR_YYQU_CD              String //행정동_코드
+    SIGNGU_CD_NM              String //행정동_코드_명
+    MT_AVRG_INCOME_AMT        Int //월_평균_소득_금액
+    INCOME_SCTN_CD            String //소득_구간_코드
+    EXPNDTR_TOTAMT            BigInt //지출_총금액
+    FDSTFFS_EXPNDTR_TOTAMT    BigInt //식료품_지출_총금액
+    CLTHS_FTWR_EXPNDTR_TOTAMT BigInt //의류_신발_지출_총금액
+    LVSPL_EXPNDTR_TOTAMT      BigInt //생활용품_지출_총금액
+    MCP_EXPNDTR_TOTAMT        BigInt //의료비_지출_총금액
+    TRNSPORT_EXPNDTR_TOTAMT   BigInt //교통_지출_총금액
+    EDC_EXPNDTR_TOTAMT        BigInt //교육_지출_총금액
+    PLESR_EXPNDTR_TOTAMT      BigInt //유흥_지출_총금액
+    LSR_CLTUR_EXPNDTR_TOTAMT  BigInt //여가_문화_지출_총금액
+    ETC_EXPNDTR_TOTAMT        BigInt //기타_지출_총금액
+    FD_EXPNDTR_TOTAMT         BigInt //음식_지출_총금액
 
-  @@id([STDR_YYQU_CD, SIGNGU_CD])
-  @@map("income_consumption_gu")
+    @@id([STDR_YYQU_CD, SIGNGU_CD])
+    @@map("income_consumption_gu")
 }
 
 model IncomeConsumptionDong {
-  ADSTRD_CD                 String
-  STDR_YYQU_CD              String
-  ADSTRD_CD_NM              String
-  MT_AVRG_INCOME_AMT        Int
-  INCOME_SCTN_CD            String
-  EXPNDTR_TOTAMT            BigInt
-  FDSTFFS_EXPNDTR_TOTAMT    BigInt
-  CLTHS_FTWR_EXPNDTR_TOTAMT BigInt
-  LVSPL_EXPNDTR_TOTAMT      BigInt
-  MCP_EXPNDTR_TOTAMT        BigInt
-  TRNSPORT_EXPNDTR_TOTAMT   BigInt
-  EDC_EXPNDTR_TOTAMT        BigInt
-  PLESR_EXPNDTR_TOTAMT      BigInt
-  LSR_CLTUR_EXPNDTR_TOTAMT  BigInt
-  ETC_EXPNDTR_TOTAMT        BigInt
-  FD_EXPNDTR_TOTAMT         BigInt
+    ADSTRD_CD                 String //기준_년분기_코드
+    STDR_YYQU_CD              String //행정동_코드
+    ADSTRD_CD_NM              String //행정동_코드_명
+    MT_AVRG_INCOME_AMT        Int //월_평균_소득_금액
+    INCOME_SCTN_CD            String //소득_구간_코드
+    EXPNDTR_TOTAMT            BigInt //지출_총금액
+    FDSTFFS_EXPNDTR_TOTAMT    BigInt //식료품_지출_총금액
+    CLTHS_FTWR_EXPNDTR_TOTAMT BigInt //의류_신발_지출_총금액
+    LVSPL_EXPNDTR_TOTAMT      BigInt //생활용품_지출_총금액
+    MCP_EXPNDTR_TOTAMT        BigInt //의료비_지출_총금액
+    TRNSPORT_EXPNDTR_TOTAMT   BigInt //교통_지출_총금액
+    EDC_EXPNDTR_TOTAMT        BigInt //교육_지출_총금액
+    PLESR_EXPNDTR_TOTAMT      BigInt //유흥_지출_총금액
+    LSR_CLTUR_EXPNDTR_TOTAMT  BigInt //여가_문화_지출_총금액
+    ETC_EXPNDTR_TOTAMT        BigInt //기타_지출_총금액
+    FD_EXPNDTR_TOTAMT         BigInt //음식_지출_총금액
 
-  @@id([STDR_YYQU_CD, ADSTRD_CD])
-  @@map("income_consumption_dong")
+    @@id([STDR_YYQU_CD, ADSTRD_CD])
+    @@map("income_consumption_dong")
 }
 
 model IncomeConsumptionBackarea {
-  TRDAR_SE_CD               String
-  STDR_YYQU_CD              String
-  TRDAR_SE_CD_NM            String
-  TRDAR_CD                  String
-  TRDAR_CD_NM               String
-  MT_AVRG_INCOME_AMT        Int
-  INCOME_SCTN_CD            String
-  EXPNDTR_TOTAMT            BigInt
-  FDSTFFS_EXPNDTR_TOTAMT    BigInt
-  CLTHS_FTWR_EXPNDTR_TOTAMT BigInt
-  LVSPL_EXPNDTR_TOTAMT      BigInt
-  MCP_EXPNDTR_TOTAMT        BigInt
-  TRNSPORT_EXPNDTR_TOTAMT   BigInt
-  LSR_EXPNDTR_TOTAMT        BigInt
-  CLTUR_EXPNDTR_TOTAMT      BigInt
-  EDC_EXPNDTR_TOTAMT        BigInt
-  PLESR_EXPNDTR_TOTAMT      BigInt
+    TRDAR_SE_CD               String //상권_구분_코드
+    STDR_YYQU_CD              String //기준_년분기_코드
+    TRDAR_SE_CD_NM            String //상권_구분_코드_명
+    TRDAR_CD                  String //상권_코드
+    TRDAR_CD_NM               String //상권_코드_명
+    MT_AVRG_INCOME_AMT        Int //월_평균_소득_금액
+    INCOME_SCTN_CD            String //소득_구간_코드
+    EXPNDTR_TOTAMT            BigInt //지출_총금액
+    FDSTFFS_EXPNDTR_TOTAMT    BigInt //식료품_지출_총금액
+    CLTHS_FTWR_EXPNDTR_TOTAMT BigInt //의류_신발_지출_총금액
+    LVSPL_EXPNDTR_TOTAMT      BigInt //생활용품_지출_총금액
+    MCP_EXPNDTR_TOTAMT        BigInt //의료비_지출_총금액
+    TRNSPORT_EXPNDTR_TOTAMT   BigInt //교통_지출_총금액
+    LSR_EXPNDTR_TOTAMT        BigInt //여가_지출_총금액
+    CLTUR_EXPNDTR_TOTAMT      BigInt //문화_지출_총금액
+    EDC_EXPNDTR_TOTAMT        BigInt //교육_지출_총금액
+    PLESR_EXPNDTR_TOTAMT      BigInt //유흥_지출_총금액
 
-  @@id([STDR_YYQU_CD, TRDAR_CD])
-  @@map("income_consumption_backarea")
+    @@id([STDR_YYQU_CD, TRDAR_CD])
+    @@map("income_consumption_backarea")
 }
 
 model IncomeConsumptionCommercial {
-  TRDAR_SE_CD               String
-  STDR_YYQU_CD              String
-  TRDAR_SE_CD_NM            String
-  TRDAR_CD                  String
-  TRDAR_CD_NM               String
-  MT_AVRG_INCOME_AMT        Int
-  INCOME_SCTN_CD            String
-  EXPNDTR_TOTAMT            BigInt
-  FDSTFFS_EXPNDTR_TOTAMT    BigInt
-  CLTHS_FTWR_EXPNDTR_TOTAMT BigInt
-  LVSPL_EXPNDTR_TOTAMT      BigInt
-  MCP_EXPNDTR_TOTAMT        BigInt
-  TRNSPORT_EXPNDTR_TOTAMT   BigInt
-  LSR_EXPNDTR_TOTAMT        BigInt
-  CLTUR_EXPNDTR_TOTAMT      BigInt
-  EDC_EXPNDTR_TOTAMT        BigInt
-  PLESR_EXPNDTR_TOTAMT      BigInt
+    TRDAR_SE_CD               String //상권_구분_코드
+    STDR_YYQU_CD              String //기준_년분기_코드
+    TRDAR_SE_CD_NM            String //상권_구분_코드_명
+    TRDAR_CD                  String //상권_코드
+    TRDAR_CD_NM               String //상권_코드_명
+    MT_AVRG_INCOME_AMT        Int //월_평균_소득_금액
+    INCOME_SCTN_CD            String //소득_구간_코드
+    EXPNDTR_TOTAMT            BigInt //지출_총금액
+    FDSTFFS_EXPNDTR_TOTAMT    BigInt //식료품_지출_총금액
+    CLTHS_FTWR_EXPNDTR_TOTAMT BigInt //의류_신발_지출_총금액
+    LVSPL_EXPNDTR_TOTAMT      BigInt //생활용품_지출_총금액
+    MCP_EXPNDTR_TOTAMT        BigInt //의료비_지출_총금액
+    TRNSPORT_EXPNDTR_TOTAMT   BigInt //교통_지출_총금액
+    LSR_EXPNDTR_TOTAMT        BigInt //여가_지출_총금액
+    CLTUR_EXPNDTR_TOTAMT      BigInt //문화_지출_총금액
+    EDC_EXPNDTR_TOTAMT        BigInt //교육_지출_총금액
+    PLESR_EXPNDTR_TOTAMT      BigInt //유흥_지출_총금액
 
-  @@id([STDR_YYQU_CD, TRDAR_CD])
-  @@map("income_consumption_commercial")
+    @@id([STDR_YYQU_CD, TRDAR_CD])
+    @@map("income_consumption_commercial")
 }

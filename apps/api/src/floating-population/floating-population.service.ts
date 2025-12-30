@@ -1,21 +1,20 @@
-import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { XMLParser } from 'fast-xml-parser';
 import { FloatingPopulationRepository } from './floating-population.repository';
 import {
-  FloatingPopulationResponse,
-  CombinedLayerResponse,
+  TimeSegmentedLayerResponse,
   FloatingPopulationRow,
   RawSeoulXmlResponse,
 } from './dto/floating-population-response.dto';
 
 @Injectable()
 export class FloatingPopulationService implements OnModuleInit {
-  private readonly apiKey: string;
-  private readonly baseUrl = 'http://openapi.seoul.go.kr:8088';
-  private readonly parser = new XMLParser();
   private readonly logger = new Logger(FloatingPopulationService.name);
+  private readonly parser = new XMLParser();
+  private readonly baseUrl = 'http://openapi.seoul.go.kr:8088';
+  private readonly apiKey: string;
 
   constructor(
     private readonly configService: ConfigService,
@@ -30,7 +29,7 @@ export class FloatingPopulationService implements OnModuleInit {
     // 비동기로 실행하여 부팅 속도에 영향을 주지 않음
     /*
     void this.syncPopulationData().catch((err) => {
-      console.error('Initial sync failed', err);
+      this.logger.error('Initial sync failed', err);
     });
     */
     await Promise.resolve();
@@ -39,7 +38,7 @@ export class FloatingPopulationService implements OnModuleInit {
   // NestJS/Scheduler를 사용해 하루 한번 api와 db 동기화
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async handleCron() {
-    console.log('Starting scheduled daily population sync...');
+    this.logger.log('Starting scheduled daily population sync...');
     await this.syncPopulationData();
   }
 
@@ -98,9 +97,6 @@ export class FloatingPopulationService implements OnModuleInit {
       const uniqueRows = Array.from(uniqueMap.values());
       if (uniqueRows.length > 0) {
         await this.repository.upsertPopulation(uniqueRows);
-        this.logger.log(
-          `Successfully synced ${uniqueRows.length} unique population records.`,
-        );
       }
     } catch (error) {
       this.logger.error('Sync process failed', error);
@@ -125,46 +121,19 @@ export class FloatingPopulationService implements OnModuleInit {
     return cleaned;
   }
 
-  // 특정영역의 유동인구를 조회
+  // 특정영역의 유동인구를 조회 (프론트엔드 연동용)
   async getCombinedLayerByBounds(
     minLat: number,
     minLng: number,
     maxLat: number,
     maxLng: number,
-  ): Promise<CombinedLayerResponse> {
-    const features = await this.repository.findCombinedLayerByBounds(
+  ): Promise<TimeSegmentedLayerResponse> {
+    const features = await this.repository.findTimeSegmentedLayer(
       minLat,
       minLng,
       maxLat,
       maxLng,
     );
-
-    const firstPop = features[0]?.population;
-
-    return {
-      ymd: firstPop?.YMD || '',
-      tt: firstPop?.TT || '',
-      features: features,
-    };
-  }
-
-  // 전체 유동인구 데이터를 조회
-  async getPopulationData(
-    start: number,
-    end: number,
-  ): Promise<FloatingPopulationResponse> {
-    this.logger.warn(
-      `Direct getPopulationData called (start: ${start}, end: ${end}). Returning empty for now or implement DB paging.`,
-    );
-
-    return await Promise.resolve({
-      list_total_count: 0,
-      RESULT: {
-        CODE: 'INFO-200',
-        MESSAGE:
-          'DB 기반 조회로 전환되었습니다. Bounds 기반 조회를 권장합니다.',
-      },
-      row: [],
-    });
+    return { features };
   }
 }

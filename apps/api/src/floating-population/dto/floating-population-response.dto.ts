@@ -14,24 +14,20 @@ export type AgeGroup =
   | '65'
   | '70';
 
-// for문 돌듯이 M00 부터 M70 까지의 타입을 생성
 export type MaleFields = {
   [K in AgeGroup as `M${K}`]: number;
 };
 
-// for문 돌듯이 F00 부터 F70 까지의 타입을 생성
 export type FemaleFields = {
   [K in AgeGroup as `F${K}`]: number;
 };
 
-// MaleFields와 FemaleFields를 합쳐서 FloatingPopulationRow 타입을 생성
 export interface FloatingPopulationRow extends MaleFields, FemaleFields {
-  YMD: string; // 일자
-  TT: string; // 시간
-  H_DNG_CD: string; // 행정동코드
-  CELL_ID: string; // 250M격자
-  SPOP: number; // 생활인구 합계
-  // 10단위로 나이 정제
+  YMD: string;
+  TT: string;
+  H_DNG_CD: string;
+  CELL_ID: string;
+  SPOP: number;
   pop_0_10: number;
   pop_10_20: number;
   pop_20_30: number;
@@ -47,13 +43,10 @@ export interface SeoulApiResult {
   MESSAGE: string;
 }
 
-/**
- * 전체 API 응답 구조
- */
 export interface FloatingPopulationResponse {
-  list_total_count: number; // 총 데이터 건수
+  list_total_count: number;
   RESULT: SeoulApiResult;
-  row: FloatingPopulationRow[]; // 실제 데이터 목록
+  row: FloatingPopulationRow[];
 }
 
 export type RawSeoulApiResponse = {
@@ -62,9 +55,6 @@ export type RawSeoulApiResponse = {
   RESULT: SeoulApiResult;
 };
 
-/**
- * 서울시 XML API 응답을 위한 타입 (fast-xml-parser 결과물용)
- */
 export interface SeoulXmlRow extends Omit<
   FloatingPopulationRow,
   | 'SPOP'
@@ -77,7 +67,7 @@ export interface SeoulXmlRow extends Omit<
   | 'pop_60_plus'
 > {
   SPOP: string | number;
-  [key: string]: string | number; // M00, F00 등 동적 필드 대응
+  [key: string]: string | number;
 }
 
 export interface SeoulXmlResponse {
@@ -94,19 +84,46 @@ export type RawSeoulXmlResponse = {
 
 // --- New DTOs for Grid Integration ---
 
-export interface GeoJsonGeometry {
+export class GeoJsonGeometry {
   type: string;
-  coordinates: any[]; // GeoJSON coordinates can be complex nested arrays
+  coordinates: any[];
 }
 
-export interface CombinedPopulationFeature {
+export class CombinedPopulationFeature {
   cell_id: string;
   geometry: GeoJsonGeometry;
   population: FloatingPopulationRow;
 }
 
-export interface CombinedLayerResponse {
+export class CombinedLayerResponse {
   ymd: string;
   tt: string;
   features: CombinedPopulationFeature[];
+}
+
+// --- Time Segmented DTOs (used by frontend population layer) ---
+
+export class TimeSlotPopulation {
+  time_slot: string; // '0-8', '8-16', '16-24'
+  avg_population: number;
+  sum_population: number;
+
+  male_total: number;
+  female_total: number;
+  age_10s_total: number;
+  age_20s_total: number;
+  age_30s_total: number;
+  age_40s_total: number;
+  age_50s_total: number;
+  age_60s_plus_total: number;
+}
+
+export class TimeSegmentedPopulationFeature {
+  cell_id: string;
+  geometry: GeoJsonGeometry;
+  time_slots: TimeSlotPopulation[];
+}
+
+export class TimeSegmentedLayerResponse {
+  features: TimeSegmentedPopulationFeature[];
 }

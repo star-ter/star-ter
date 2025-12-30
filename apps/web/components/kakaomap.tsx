@@ -126,6 +126,7 @@ export default function Kakaomap({
 
   usePopulationLayer(
     map,
+    population.timeFilter,
     population.genderFilter,
     population.ageFilter,
     population.showLayer,

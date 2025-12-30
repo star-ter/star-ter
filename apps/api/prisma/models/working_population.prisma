@@ -1,153 +1,155 @@
-model WorkingPopulationCity {
-  STDR_YYQU_CD                 String
-  MEGA_CD                      String
-  MEGA_CD_NM                   String
-  TOT_WRC_POPLTN_CO            Int
-  ML_WRC_POPLTN_CO             Int
-  FML_WRC_POPLTN_CO            Int
-  AGRDE_10_WRC_POPLTN_CO       Int
-  AGRDE_20_WRC_POPLTN_CO       Int
-  AGRDE_30_WRC_POPLTN_CO       Int
-  AGRDE_40_WRC_POPLTN_CO       Int
-  AGRDE_50_WRC_POPLTN_CO       Int
-  AGRDE_60_ABOVE_WRC_POPLTN_CO Int
-  MAG_10_WRC_POPLTN_CO         Int
-  MAG_20_WRC_POPLTN_CO         Int
-  MAG_30_WRC_POPLTN_CO         Int
-  MAG_40_WRC_POPLTN_CO         Int
-  MAG_50_WRC_POPLTN_CO         Int
-  MAG_60_ABOVE_WRC_POPLTN_CO   Int
-  FAG_10_WRC_POPLTN_CO         Int
-  FAG_20_WRC_POPLTN_CO         Int
-  FAG_30_WRC_POPLTN_CO         Int
-  FAG_40_WRC_POPLTN_CO         Int
-  FAG_50_WRC_POPLTN_CO         Int
-  FAG_60_ABOVE_WRC_POPLTN_CO   Int
+//  working_population_{city|gu|dong|backarea|commercial}
 
-  @@id([STDR_YYQU_CD, MEGA_CD])
-  @@map("working_population_city")
+model WorkingPopulationCity {
+    STDR_YYQU_CD                 String //기준_년분기_코드
+    MEGA_CD                      String //서울시_코드
+    MEGA_CD_NM                   String //서울시_코드_명
+    TOT_WRC_POPLTN_CO            Int //총_직장_인구_수
+    ML_WRC_POPLTN_CO             Int //남성_직장_인구_수
+    FML_WRC_POPLTN_CO            Int //여성_직장_인구_수
+    AGRDE_10_WRC_POPLTN_CO       Int //연령대_10_직장_인구_수
+    AGRDE_20_WRC_POPLTN_CO       Int //연령대_20_직장_인구_수
+    AGRDE_30_WRC_POPLTN_CO       Int //연령대_30_직장_인구_수
+    AGRDE_40_WRC_POPLTN_CO       Int //연령대_40_직장_인구_수
+    AGRDE_50_WRC_POPLTN_CO       Int //연령대_50_직장_인구_수
+    AGRDE_60_ABOVE_WRC_POPLTN_CO Int //연령대_60_이상_직장_인구_수
+    MAG_10_WRC_POPLTN_CO         Int //남성연령대_10_직장_인구_수
+    MAG_20_WRC_POPLTN_CO         Int //남성연령대_20_직장_인구_수
+    MAG_30_WRC_POPLTN_CO         Int //남성연령대_30_직장_인구_수
+    MAG_40_WRC_POPLTN_CO         Int //남성연령대_40_직장_인구_수
+    MAG_50_WRC_POPLTN_CO         Int //남성연령대_50_직장_인구_수
+    MAG_60_ABOVE_WRC_POPLTN_CO   Int //남성연령대_60_이상_직장_인구_수
+    FAG_10_WRC_POPLTN_CO         Int //여성연령대_10_직장_인구_수
+    FAG_20_WRC_POPLTN_CO         Int //여성연령대_20_직장_인구_수
+    FAG_30_WRC_POPLTN_CO         Int //여성연령대_30_직장_인구_수
+    FAG_40_WRC_POPLTN_CO         Int //여성연령대_40_직장_인구_수
+    FAG_50_WRC_POPLTN_CO         Int //여성연령대_50_직장_인구_수
+    FAG_60_ABOVE_WRC_POPLTN_CO   Int //여성연령대_60_이상_직장_인구_수
+
+    @@id([STDR_YYQU_CD, MEGA_CD])
+    @@map("working_population_city")
 }
 
 model WorkingPopulationGu {
-  STDR_YYQU_CD                 String
-  SIGNGU_CD                    String
-  SIGNGU_CD_NM                 String
-  TOT_WRC_POPLTN_CO            Int
-  ML_WRC_POPLTN_CO             Int
-  FML_WRC_POPLTN_CO            Int
-  AGRDE_10_WRC_POPLTN_CO       Int
-  AGRDE_20_WRC_POPLTN_CO       Int
-  AGRDE_30_WRC_POPLTN_CO       Int
-  AGRDE_40_WRC_POPLTN_CO       Int
-  AGRDE_50_WRC_POPLTN_CO       Int
-  AGRDE_60_ABOVE_WRC_POPLTN_CO Int
-  MAG_10_WRC_POPLTN_CO         Int
-  MAG_20_WRC_POPLTN_CO         Int
-  MAG_30_WRC_POPLTN_CO         Int
-  MAG_40_WRC_POPLTN_CO         Int
-  MAG_50_WRC_POPLTN_CO         Int
-  MAG_60_ABOVE_WRC_POPLTN_CO   Int
-  FAG_10_WRC_POPLTN_CO         Int
-  FAG_20_WRC_POPLTN_CO         Int
-  FAG_30_WRC_POPLTN_CO         Int
-  FAG_40_WRC_POPLTN_CO         Int
-  FAG_50_WRC_POPLTN_CO         Int
-  FAG_60_ABOVE_WRC_POPLTN_CO   Int
+    STDR_YYQU_CD                 String //기준_년분기_코드
+    SIGNGU_CD                    String //자치구_코드
+    SIGNGU_CD_NM                 String //자치구_코드_명
+    TOT_WRC_POPLTN_CO            Int //총_직장_인구_수
+    ML_WRC_POPLTN_CO             Int //남성_직장_인구_수
+    FML_WRC_POPLTN_CO            Int //여성_직장_인구_수
+    AGRDE_10_WRC_POPLTN_CO       Int //연령대_10_직장_인구_수
+    AGRDE_20_WRC_POPLTN_CO       Int //연령대_20_직장_인구_수
+    AGRDE_30_WRC_POPLTN_CO       Int //연령대_30_직장_인구_수
+    AGRDE_40_WRC_POPLTN_CO       Int //연령대_40_직장_인구_수
+    AGRDE_50_WRC_POPLTN_CO       Int //연령대_50_직장_인구_수
+    AGRDE_60_ABOVE_WRC_POPLTN_CO Int //연령대_60_이상_직장_인구_수
+    MAG_10_WRC_POPLTN_CO         Int //남성연령대_10_직장_인구_수
+    MAG_20_WRC_POPLTN_CO         Int //남성연령대_20_직장_인구_수
+    MAG_30_WRC_POPLTN_CO         Int //남성연령대_30_직장_인구_수
+    MAG_40_WRC_POPLTN_CO         Int //남성연령대_40_직장_인구_수
+    MAG_50_WRC_POPLTN_CO         Int //남성연령대_50_직장_인구_수
+    MAG_60_ABOVE_WRC_POPLTN_CO   Int //남성연령대_60_이상_직장_인구_수
+    FAG_10_WRC_POPLTN_CO         Int //여성연령대_10_직장_인구_수
+    FAG_20_WRC_POPLTN_CO         Int //여성연령대_20_직장_인구_수
+    FAG_30_WRC_POPLTN_CO         Int //여성연령대_30_직장_인구_수
+    FAG_40_WRC_POPLTN_CO         Int //여성연령대_40_직장_인구_수
+    FAG_50_WRC_POPLTN_CO         Int //여성연령대_50_직장_인구_수
+    FAG_60_ABOVE_WRC_POPLTN_CO   Int //여성연령대_60_이상_직장_인구_수
 
-  @@id([STDR_YYQU_CD, SIGNGU_CD])
-  @@map("working_population_gu")
+    @@id([STDR_YYQU_CD, SIGNGU_CD])
+    @@map("working_population_gu")
 }
 
 model WorkingPopulationDong {
-  STDR_YYQU_CD                 String
-  ADSTRD_CD                    String
-  ADSTRD_CD_NM                 String
-  TOT_WRC_POPLTN_CO            Int
-  ML_WRC_POPLTN_CO             Int
-  FML_WRC_POPLTN_CO            Int
-  AGRDE_10_WRC_POPLTN_CO       Int
-  AGRDE_20_WRC_POPLTN_CO       Int
-  AGRDE_30_WRC_POPLTN_CO       Int
-  AGRDE_40_WRC_POPLTN_CO       Int
-  AGRDE_50_WRC_POPLTN_CO       Int
-  AGRDE_60_ABOVE_WRC_POPLTN_CO Int
-  MAG_10_WRC_POPLTN_CO         Int
-  MAG_20_WRC_POPLTN_CO         Int
-  MAG_30_WRC_POPLTN_CO         Int
-  MAG_40_WRC_POPLTN_CO         Int
-  MAG_50_WRC_POPLTN_CO         Int
-  MAG_60_ABOVE_WRC_POPLTN_CO   Int
-  FAG_10_WRC_POPLTN_CO         Int
-  FAG_20_WRC_POPLTN_CO         Int
-  FAG_30_WRC_POPLTN_CO         Int
-  FAG_40_WRC_POPLTN_CO         Int
-  FAG_50_WRC_POPLTN_CO         Int
-  FAG_60_ABOVE_WRC_POPLTN_CO   Int
+    STDR_YYQU_CD                 String //기준_년분기_코드
+    ADSTRD_CD                    String //행정동_코드
+    ADSTRD_CD_NM                 String //행정동_코드_명
+    TOT_WRC_POPLTN_CO            Int //총_직장_인구_수
+    ML_WRC_POPLTN_CO             Int //남성_직장_인구_수
+    FML_WRC_POPLTN_CO            Int //여성_직장_인구_수
+    AGRDE_10_WRC_POPLTN_CO       Int //연령대_10_직장_인구_수
+    AGRDE_20_WRC_POPLTN_CO       Int //연령대_20_직장_인구_수
+    AGRDE_30_WRC_POPLTN_CO       Int //연령대_30_직장_인구_수
+    AGRDE_40_WRC_POPLTN_CO       Int //연령대_40_직장_인구_수
+    AGRDE_50_WRC_POPLTN_CO       Int //연령대_50_직장_인구_수
+    AGRDE_60_ABOVE_WRC_POPLTN_CO Int //연령대_60_이상_직장_인구_수
+    MAG_10_WRC_POPLTN_CO         Int //남성연령대_10_직장_인구_수
+    MAG_20_WRC_POPLTN_CO         Int //남성연령대_20_직장_인구_수
+    MAG_30_WRC_POPLTN_CO         Int //남성연령대_30_직장_인구_수
+    MAG_40_WRC_POPLTN_CO         Int //남성연령대_40_직장_인구_수
+    MAG_50_WRC_POPLTN_CO         Int //남성연령대_50_직장_인구_수
+    MAG_60_ABOVE_WRC_POPLTN_CO   Int //남성연령대_60_이상_직장_인구_수
+    FAG_10_WRC_POPLTN_CO         Int //여성연령대_10_직장_인구_수
+    FAG_20_WRC_POPLTN_CO         Int //여성연령대_20_직장_인구_수
+    FAG_30_WRC_POPLTN_CO         Int //여성연령대_30_직장_인구_수
+    FAG_40_WRC_POPLTN_CO         Int //여성연령대_40_직장_인구_수
+    FAG_50_WRC_POPLTN_CO         Int //여성연령대_50_직장_인구_수
+    FAG_60_ABOVE_WRC_POPLTN_CO   Int //여성연령대_60_이상_직장_인구_수
 
-  @@id([STDR_YYQU_CD, ADSTRD_CD])
-  @@map("working_population_dong")
+    @@id([STDR_YYQU_CD, ADSTRD_CD])
+    @@map("working_population_dong")
 }
 
 model WorkingPopulationBackarea {
-  STDR_YYQU_CD                 String
-  TRDAR_SE_CD                  String
-  TRDAR_SE_CD_NM               String
-  TRDAR_CD                     String
-  TRDAR_CD_NM                  String
-  TOT_WRC_POPLTN_CO            Int
-  ML_WRC_POPLTN_CO             Int
-  FML_WRC_POPLTN_CO            Int
-  AGRDE_10_WRC_POPLTN_CO       Int
-  AGRDE_20_WRC_POPLTN_CO       Int
-  AGRDE_30_WRC_POPLTN_CO       Int
-  AGRDE_40_WRC_POPLTN_CO       Int
-  AGRDE_50_WRC_POPLTN_CO       Int
-  AGRDE_60_ABOVE_WRC_POPLTN_CO Int
-  MAG_10_WRC_POPLTN_CO         Int
-  MAG_20_WRC_POPLTN_CO         Int
-  MAG_30_WRC_POPLTN_CO         Int
-  MAG_40_WRC_POPLTN_CO         Int
-  MAG_50_WRC_POPLTN_CO         Int
-  MAG_60_ABOVE_WRC_POPLTN_CO   Int
-  FAG_10_WRC_POPLTN_CO         Int
-  FAG_20_WRC_POPLTN_CO         Int
-  FAG_30_WRC_POPLTN_CO         Int
-  FAG_40_WRC_POPLTN_CO         Int
-  FAG_50_WRC_POPLTN_CO         Int
-  FAG_60_ABOVE_WRC_POPLTN_CO   Int
+    STDR_YYQU_CD                 String //기준_년분기_코드
+    TRDAR_SE_CD                  String //상권_구분_코드
+    TRDAR_SE_CD_NM               String //상권_구분_코드_명
+    TRDAR_CD                     String //상권배후지_코드
+    TRDAR_CD_NM                  String //상권배후지_코드_명
+    TOT_WRC_POPLTN_CO            Int //총_직장_인구_수
+    ML_WRC_POPLTN_CO             Int //남성_직장_인구_수
+    FML_WRC_POPLTN_CO            Int //여성_직장_인구_수
+    AGRDE_10_WRC_POPLTN_CO       Int //연령대_10_직장_인구_수
+    AGRDE_20_WRC_POPLTN_CO       Int //연령대_20_직장_인구_수
+    AGRDE_30_WRC_POPLTN_CO       Int //연령대_30_직장_인구_수
+    AGRDE_40_WRC_POPLTN_CO       Int //연령대_40_직장_인구_수
+    AGRDE_50_WRC_POPLTN_CO       Int //연령대_50_직장_인구_수
+    AGRDE_60_ABOVE_WRC_POPLTN_CO Int //연령대_60_이상_직장_인구_수
+    MAG_10_WRC_POPLTN_CO         Int //남성연령대_10_직장_인구_수
+    MAG_20_WRC_POPLTN_CO         Int //남성연령대_20_직장_인구_수
+    MAG_30_WRC_POPLTN_CO         Int //남성연령대_30_직장_인구_수
+    MAG_40_WRC_POPLTN_CO         Int //남성연령대_40_직장_인구_수
+    MAG_50_WRC_POPLTN_CO         Int //남성연령대_50_직장_인구_수
+    MAG_60_ABOVE_WRC_POPLTN_CO   Int //남성연령대_60_이상_직장_인구_수
+    FAG_10_WRC_POPLTN_CO         Int //여성연령대_10_직장_인구_수
+    FAG_20_WRC_POPLTN_CO         Int //여성연령대_20_직장_인구_수
+    FAG_30_WRC_POPLTN_CO         Int //여성연령대_30_직장_인구_수
+    FAG_40_WRC_POPLTN_CO         Int //여성연령대_40_직장_인구_수
+    FAG_50_WRC_POPLTN_CO         Int //여성연령대_50_직장_인구_수
+    FAG_60_ABOVE_WRC_POPLTN_CO   Int //여성연령대_60_이상_직장_인구_수
 
-  @@id([STDR_YYQU_CD, TRDAR_CD])
-  @@map("working_population_backarea")
+    @@id([STDR_YYQU_CD, TRDAR_CD])
+    @@map("working_population_backarea")
 }
 
 model WorkingPopulationCommercial {
-  STDR_YYQU_CD                 String
-  TRDAR_SE_CD                  String
-  TRDAR_SE_CD_NM               String
-  TRDAR_CD                     String
-  TRDAR_CD_NM                  String
-  TOT_WRC_POPLTN_CO            Int
-  ML_WRC_POPLTN_CO             Int
-  FML_WRC_POPLTN_CO            Int
-  AGRDE_10_WRC_POPLTN_CO       Int
-  AGRDE_20_WRC_POPLTN_CO       Int
-  AGRDE_30_WRC_POPLTN_CO       Int
-  AGRDE_40_WRC_POPLTN_CO       Int
-  AGRDE_50_WRC_POPLTN_CO       Int
-  AGRDE_60_ABOVE_WRC_POPLTN_CO Int
-  MAG_10_WRC_POPLTN_CO         Int
-  MAG_20_WRC_POPLTN_CO         Int
-  MAG_30_WRC_POPLTN_CO         Int
-  MAG_40_WRC_POPLTN_CO         Int
-  MAG_50_WRC_POPLTN_CO         Int
-  MAG_60_ABOVE_WRC_POPLTN_CO   Int
-  FAG_10_WRC_POPLTN_CO         Int
-  FAG_20_WRC_POPLTN_CO         Int
-  FAG_30_WRC_POPLTN_CO         Int
-  FAG_40_WRC_POPLTN_CO         Int
-  FAG_50_WRC_POPLTN_CO         Int
-  FAG_60_ABOVE_WRC_POPLTN_CO   Int
+    STDR_YYQU_CD                 String //기준_년분기_코드
+    TRDAR_SE_CD                  String //상권_구분_코드
+    TRDAR_SE_CD_NM               String //상권_구분_코드_명
+    TRDAR_CD                     String //상권_코드
+    TRDAR_CD_NM                  String //상권_코드_명
+    TOT_WRC_POPLTN_CO            Int //총_직장_인구_수
+    ML_WRC_POPLTN_CO             Int //남성_직장_인구_수
+    FML_WRC_POPLTN_CO            Int //여성_직장_인구_수
+    AGRDE_10_WRC_POPLTN_CO       Int //연령대_10_직장_인구_수
+    AGRDE_20_WRC_POPLTN_CO       Int //연령대_20_직장_인구_수
+    AGRDE_30_WRC_POPLTN_CO       Int //연령대_30_직장_인구_수
+    AGRDE_40_WRC_POPLTN_CO       Int //연령대_40_직장_인구_수
+    AGRDE_50_WRC_POPLTN_CO       Int //연령대_50_직장_인구_수
+    AGRDE_60_ABOVE_WRC_POPLTN_CO Int //연령대_60_이상_직장_인구_수
+    MAG_10_WRC_POPLTN_CO         Int //남성연령대_10_직장_인구_수
+    MAG_20_WRC_POPLTN_CO         Int //남성연령대_20_직장_인구_수
+    MAG_30_WRC_POPLTN_CO         Int //남성연령대_30_직장_인구_수
+    MAG_40_WRC_POPLTN_CO         Int //남성연령대_40_직장_인구_수
+    MAG_50_WRC_POPLTN_CO         Int //남성연령대_50_직장_인구_수
+    MAG_60_ABOVE_WRC_POPLTN_CO   Int //남성연령대_60_이상_직장_인구_수
+    FAG_10_WRC_POPLTN_CO         Int //여성연령대_10_직장_인구_수
+    FAG_20_WRC_POPLTN_CO         Int //여성연령대_20_직장_인구_수
+    FAG_30_WRC_POPLTN_CO         Int //여성연령대_30_직장_인구_수
+    FAG_40_WRC_POPLTN_CO         Int //여성연령대_40_직장_인구_수
+    FAG_50_WRC_POPLTN_CO         Int //여성연령대_50_직장_인구_수
+    FAG_60_ABOVE_WRC_POPLTN_CO   Int //여성연령대_60_이상_직장_인구_수
 
-  @@id([STDR_YYQU_CD, TRDAR_CD])
-  @@map("working_population_commercial")
+    @@id([STDR_YYQU_CD, TRDAR_CD])
+    @@map("working_population_commercial")
 }

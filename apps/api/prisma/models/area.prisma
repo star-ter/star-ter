@@ -1,59 +1,66 @@
-model AreaCity {
-  MEGA_CD     String @id
-  MEGA_NM     String
-  XCNTS_VALUE Int
-  YDNTS_VALUE Int
-  RELM_AR     Int
+//  area_{city|gu|dong|backarea|commercial}
 
-  @@map("area_city")
+model AreaCity {
+    MEGA_CD     String //자치구코드
+    MEGA_NM     String //자치구명
+    XCNTS_VALUE Int //X좌표_중점
+    YDNTS_VALUE Int //Y좌표_중점
+    RELM_AR     Int //영역_면적
+
+    @@id([MEGA_CD])
+    @@map("area_city")
 }
 
 model AreaGu {
-  SIGNGU_CD   String @id
-  SIGNGU_NM   String
-  XCNTS_VALUE Int
-  YDNTS_VALUE Int
-  RELM_AR     Int
+    SIGNGU_CD   String //자치구_코드
+    SIGNGU_NM   String //자치구_명
+    XCNTS_VALUE Int //엑스좌표_값
+    YDNTS_VALUE Int //와이좌표_값
+    RELM_AR     Int //영역_면적
 
-  @@map("area_gu")
+    @@id([SIGNGU_CD])
+    @@map("area_gu")
 }
 
 model AreaDong {
-  ADSTRD_CD   String @id
-  ADSTRD_NM   String
-  XCNTS_VALUE Int
-  YDNTS_VALUE Int
-  RELM_AR     Int
+    ADSTRD_CD   String //행정동_코드
+    ADSTRD_NM   String //행정동_명
+    XCNTS_VALUE Int //엑스좌표_값
+    YDNTS_VALUE Int //와이좌표_값
+    RELM_AR     Int //영역_면적
 
-  @@map("area_dong")
+    @@id([ADSTRD_CD])
+    @@map("area_dong")
 }
 
 model AreaBackarea {
-  ALLEY_TRDAR_CD String @id
-  ALLEY_TRDAR_NM String
-  XCNTS_VALUE    Int
-  YDNTS_VALUE    Int
-  SIGNGU_CD      String
-  SIGNGU_CD_NM   String
-  ADSTRD_CD      String
-  ADSTRD_CD_NM   String
-  RELM_AR        Int
+    ALLEY_TRDAR_CD  String //상권_구분_코드
+    ALLEY_TRDAR_NM  String //상권_구분_코드_명
+    XCNTS_VALUE  Int //엑스좌표_값
+    YDNTS_VALUE  Int //와이좌표_값
+    SIGNGU_CD    String //자치구_코드
+    SIGNGU_CD_NM String //자치구_코드_명
+    ADSTRD_CD    String //행정동_코드
+    ADSTRD_CD_NM String //행정동_코드_명
+    RELM_AR      Int //영역_면적
 
-  @@map("area_backarea")
+    @@id([ALLEY_TRDAR_CD])
+    @@map("area_backarea")
 }
 
 model AreaCommercial {
-  TRDAR_SE_CD    String
-  TRDAR_SE_CD_NM String
-  TRDAR_CD       String @id
-  TRDAR_CD_NM    String
-  XCNTS_VALUE    Int
-  YDNTS_VALUE    Int
-  SIGNGU_CD      String
-  SIGNGU_CD_NM   String
-  ADSTRD_CD      String
-  ADSTRD_CD_NM   String
-  RELM_AR        Int
+    TRDAR_SE_CD  String //상권_구분_코드
+    TRDAR_SE_CD_NM  String //상권_구분_코드_명
+    TRDAR_CD     String //상권_코드
+    TRDAR_CD_NM  String //상권_코드_명
+    XCNTS_VALUE  Int //엑스좌표_값
+    YDNTS_VALUE  Int //와이좌표_값
+    SIGNGU_CD    String //자치구_코드
+    SIGNGU_CD_NM String //자치구_코드_명
+    ADSTRD_CD    String //행정동_코드
+    ADSTRD_CD_NM String //행정동_코드_명
+    RELM_AR      Int //영역_면적
 
-  @@map("area_commercial")
+    @@id([TRDAR_CD])
+    @@map("area_commercial")
 }

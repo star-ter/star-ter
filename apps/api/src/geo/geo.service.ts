@@ -34,7 +34,9 @@ export class GeoService {
     `;
 
     if (!rows.length) {
-      throw new NotFoundException('해당 좌표에 대한 구/동 정보를 찾을 수 없습니다.');
+      throw new NotFoundException(
+        '해당 좌표에 대한 구/동 정보를 찾을 수 없습니다.',
+      );
     }
 
     const row = rows[0];

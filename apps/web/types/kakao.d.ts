@@ -56,6 +56,12 @@ interface KakaoMapClass {
   getCenter: () => KakaoLatLngClass;
   getBounds: () => KakaoLatLngBoundsClass;
   setBounds: (bounds: KakaoLatLngBoundsClass) => void;
+  getProjection: () => KakaoProjection;
+}
+
+export interface KakaoProjection {
+  containerPointFromCoords: (latlng: KakaoLatLngClass) => { x: number; y: number };
+  coordsFromContainerPoint: (point: { x: number; y: number }) => KakaoLatLngClass;
 }
 
 interface KakaoMaps {
@@ -70,14 +76,14 @@ interface KakaoMaps {
   ) => KakaoCustomOverlayClass;
   event: {
     addListener: (
-      target: KakaoMapClass | KakaoPolygonClass,
+      target: any,
       type: string,
-      handler: () => void,
-    ) => void;
+      handler: (...args: any[]) => void,
+    ) => any;
     removeListener: (
-      target: KakaoMapClass | KakaoPolygonClass,
-      type: string,
-      handler: () => void,
+      targetOrHandle: any,
+      type?: string,
+      handler?: (...args: any[]) => void,
     ) => void;
   };
   services: KakaoMapsServices;
@@ -108,7 +114,7 @@ interface KakaoPolygonOptions {
 
 interface KakaoPolygonClass {
   setMap: (map: KakaoMapClass | null) => void;
-  setOptions: (options: Partial<KakaoPolygonOptions>) => void;
+  setOptions: (options: Partial<KakaoPolygonOptions> | Record<string, any>) => void;
 }
 
 interface KakaoCustomOverlayOptions {

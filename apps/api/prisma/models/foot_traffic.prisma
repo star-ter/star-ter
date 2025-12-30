@@ -1,158 +1,160 @@
-model FootTrafficCity {
-  STDR_YYQU_CD            String
-  MEGA_CD                 String
-  MEGA_CD_NM              String
-  TOT_FLPOP_CO            BigInt
-  ML_FLPOP_CO             BigInt
-  FML_FLPOP_CO            BigInt
-  AGRDE_10_FLPOP_CO       BigInt
-  AGRDE_20_FLPOP_CO       BigInt
-  AGRDE_30_FLPOP_CO       BigInt
-  AGRDE_40_FLPOP_CO       BigInt
-  AGRDE_50_FLPOP_CO       BigInt
-  AGRDE_60_ABOVE_FLPOP_CO BigInt
-  TMZON_00_06_FLPOP_CO    BigInt
-  TMZON_06_11_FLPOP_CO    BigInt
-  TMZON_11_14_FLPOP_CO    BigInt
-  TMZON_14_17_FLPOP_CO    BigInt
-  TMZON_17_21_FLPOP_CO    BigInt
-  TMZON_21_24_FLPOP_CO    BigInt
-  MON_FLPOP_CO            BigInt
-  TUES_FLPOP_CO           BigInt
-  WED_FLPOP_CO            BigInt
-  THUR_FLPOP_CO           BigInt
-  FRI_FLPOP_CO            BigInt
-  SAT_FLPOP_CO            BigInt
-  SUN_FLPOP_CO            BigInt
+//  foot_traffic_{city|gu|dong|backarea|commercial}
 
-  @@id([STDR_YYQU_CD, MEGA_CD])
-  @@map("foot_traffic_city")
+model FootTrafficCity {
+    STDR_YYQU_CD            String //기준_년분기_코드
+    MEGA_CD                 String //서울시_코드
+    MEGA_CD_NM              String //서울시_코드_명
+    TOT_FLPOP_CO            BigInt //총_유동인구_수
+    ML_FLPOP_CO             BigInt //남성_유동인구_수
+    FML_FLPOP_CO            BigInt //여성_유동인구_수
+    AGRDE_10_FLPOP_CO       BigInt //연령대_10_유동인구_수
+    AGRDE_20_FLPOP_CO       BigInt //연령대_20_유동인구_수
+    AGRDE_30_FLPOP_CO       BigInt //연령대_30_유동인구_수
+    AGRDE_40_FLPOP_CO       BigInt //연령대_40_유동인구_수
+    AGRDE_50_FLPOP_CO       BigInt //연령대_50_유동인구_수
+    AGRDE_60_ABOVE_FLPOP_CO BigInt //연령대_60_이상_유동인구_수
+    TMZON_00_06_FLPOP_CO    BigInt //시간대_00_06_유동인구_수
+    TMZON_06_11_FLPOP_CO    BigInt //시간대_06_11_유동인구_수
+    TMZON_11_14_FLPOP_CO    BigInt //시간대_11_14_유동인구_수
+    TMZON_14_17_FLPOP_CO    BigInt //시간대_14_17_유동인구_수
+    TMZON_17_21_FLPOP_CO    BigInt //시간대_17_21_유동인구_수
+    TMZON_21_24_FLPOP_CO    BigInt //시간대_21_24_유동인구_수
+    MON_FLPOP_CO            BigInt //월요일_유동인구_수
+    TUES_FLPOP_CO           BigInt //화요일_유동인구_수
+    WED_FLPOP_CO            BigInt //수요일_유동인구_수
+    THUR_FLPOP_CO           BigInt //목요일_유동인구_수
+    FRI_FLPOP_CO            BigInt //금요일_유동인구_수
+    SAT_FLPOP_CO            BigInt //토요일_유동인구_수
+    SUN_FLPOP_CO            BigInt //일요일_유동인구_수
+
+    @@id([STDR_YYQU_CD, MEGA_CD])
+    @@map("foot_traffic_city")
 }
 
 model FootTrafficGu {
-  STDR_YYQU_CD            String
-  SIGNGU_CD               String
-  SIGNGU_CD_NM            String
-  TOT_FLPOP_CO            BigInt
-  ML_FLPOP_CO             BigInt
-  FML_FLPOP_CO            BigInt
-  AGRDE_10_FLPOP_CO       BigInt
-  AGRDE_20_FLPOP_CO       BigInt
-  AGRDE_30_FLPOP_CO       BigInt
-  AGRDE_40_FLPOP_CO       BigInt
-  AGRDE_50_FLPOP_CO       BigInt
-  AGRDE_60_ABOVE_FLPOP_CO BigInt
-  TMZON_00_06_FLPOP_CO    BigInt
-  TMZON_06_11_FLPOP_CO    BigInt
-  TMZON_11_14_FLPOP_CO    BigInt
-  TMZON_14_17_FLPOP_CO    BigInt
-  TMZON_17_21_FLPOP_CO    BigInt
-  TMZON_21_24_FLPOP_CO    BigInt
-  MON_FLPOP_CO            BigInt
-  TUES_FLPOP_CO           BigInt
-  WED_FLPOP_CO            BigInt
-  THUR_FLPOP_CO           BigInt
-  FRI_FLPOP_CO            BigInt
-  SAT_FLPOP_CO            BigInt
-  SUN_FLPOP_CO            BigInt
+    STDR_YYQU_CD            String //기준_년분기_코드
+    SIGNGU_CD               String //자치구_코드
+    SIGNGU_CD_NM            String //자치구_코드_명
+    TOT_FLPOP_CO            BigInt //총_유동인구_수
+    ML_FLPOP_CO             BigInt //남성_유동인구_수
+    FML_FLPOP_CO            BigInt //여성_유동인구_수
+    AGRDE_10_FLPOP_CO       BigInt //연령대_10_유동인구_수
+    AGRDE_20_FLPOP_CO       BigInt //연령대_20_유동인구_수
+    AGRDE_30_FLPOP_CO       BigInt //연령대_30_유동인구_수
+    AGRDE_40_FLPOP_CO       BigInt //연령대_40_유동인구_수
+    AGRDE_50_FLPOP_CO       BigInt //연령대_50_유동인구_수
+    AGRDE_60_ABOVE_FLPOP_CO BigInt //연령대_60_이상_유동인구_수
+    TMZON_00_06_FLPOP_CO    BigInt //시간대_00_06_유동인구_수
+    TMZON_06_11_FLPOP_CO    BigInt //시간대_06_11_유동인구_수
+    TMZON_11_14_FLPOP_CO    BigInt //시간대_11_14_유동인구_수
+    TMZON_14_17_FLPOP_CO    BigInt //시간대_14_17_유동인구_수
+    TMZON_17_21_FLPOP_CO    BigInt //시간대_17_21_유동인구_수
+    TMZON_21_24_FLPOP_CO    BigInt //시간대_21_24_유동인구_수
+    MON_FLPOP_CO            BigInt //월요일_유동인구_수
+    TUES_FLPOP_CO           BigInt //화요일_유동인구_수
+    WED_FLPOP_CO            BigInt //수요일_유동인구_수
+    THUR_FLPOP_CO           BigInt //목요일_유동인구_수
+    FRI_FLPOP_CO            BigInt //금요일_유동인구_수
+    SAT_FLPOP_CO            BigInt //토요일_유동인구_수
+    SUN_FLPOP_CO            BigInt //일요일_유동인구_수
 
-  @@id([STDR_YYQU_CD, SIGNGU_CD])
-  @@map("foot_traffic_gu")
+    @@id([STDR_YYQU_CD, SIGNGU_CD])
+    @@map("foot_traffic_gu")
 }
 
 model FootTrafficDong {
-  STDR_YYQU_CD            String
-  ADSTRD_CD               String
-  ADSTRD_CD_NM            String
-  TOT_FLPOP_CO            BigInt
-  ML_FLPOP_CO             BigInt
-  FML_FLPOP_CO            BigInt
-  AGRDE_10_FLPOP_CO       BigInt
-  AGRDE_20_FLPOP_CO       BigInt
-  AGRDE_30_FLPOP_CO       BigInt
-  AGRDE_40_FLPOP_CO       BigInt
-  AGRDE_50_FLPOP_CO       BigInt
-  AGRDE_60_ABOVE_FLPOP_CO BigInt
-  TMZON_00_06_FLPOP_CO    BigInt
-  TMZON_06_11_FLPOP_CO    BigInt
-  TMZON_11_14_FLPOP_CO    BigInt
-  TMZON_14_17_FLPOP_CO    BigInt
-  TMZON_17_21_FLPOP_CO    BigInt
-  TMZON_21_24_FLPOP_CO    BigInt
-  MON_FLPOP_CO            BigInt
-  TUES_FLPOP_CO           BigInt
-  WED_FLPOP_CO            BigInt
-  THUR_FLPOP_CO           BigInt
-  FRI_FLPOP_CO            BigInt
-  SAT_FLPOP_CO            BigInt
-  SUN_FLPOP_CO            BigInt
+    STDR_YYQU_CD            String //기준_년분기_코드
+    ADSTRD_CD               String //행정동_코드
+    ADSTRD_CD_NM            String //행정동_코드_명
+    TOT_FLPOP_CO            BigInt //총_유동인구_수
+    ML_FLPOP_CO             BigInt //남성_유동인구_수
+    FML_FLPOP_CO            BigInt //여성_유동인구_수
+    AGRDE_10_FLPOP_CO       BigInt //연령대_10_유동인구_수
+    AGRDE_20_FLPOP_CO       BigInt //연령대_20_유동인구_수
+    AGRDE_30_FLPOP_CO       BigInt //연령대_30_유동인구_수
+    AGRDE_40_FLPOP_CO       BigInt //연령대_40_유동인구_수
+    AGRDE_50_FLPOP_CO       BigInt //연령대_50_유동인구_수
+    AGRDE_60_ABOVE_FLPOP_CO BigInt //연령대_60_이상_유동인구_수
+    TMZON_00_06_FLPOP_CO    BigInt //시간대_00_06_유동인구_수
+    TMZON_06_11_FLPOP_CO    BigInt //시간대_06_11_유동인구_수
+    TMZON_11_14_FLPOP_CO    BigInt //시간대_11_14_유동인구_수
+    TMZON_14_17_FLPOP_CO    BigInt //시간대_14_17_유동인구_수
+    TMZON_17_21_FLPOP_CO    BigInt //시간대_17_21_유동인구_수
+    TMZON_21_24_FLPOP_CO    BigInt //시간대_21_24_유동인구_수
+    MON_FLPOP_CO            BigInt //월요일_유동인구_수
+    TUES_FLPOP_CO           BigInt //화요일_유동인구_수
+    WED_FLPOP_CO            BigInt //수요일_유동인구_수
+    THUR_FLPOP_CO           BigInt //목요일_유동인구_수
+    FRI_FLPOP_CO            BigInt //금요일_유동인구_수
+    SAT_FLPOP_CO            BigInt //토요일_유동인구_수
+    SUN_FLPOP_CO            BigInt //일요일_유동인구_수
 
-  @@id([STDR_YYQU_CD, ADSTRD_CD])
-  @@map("foot_traffic_dong")
+    @@id([STDR_YYQU_CD, ADSTRD_CD])
+    @@map("foot_traffic_dong")
 }
 
 model FootTrafficBackarea {
-  STDR_YYQU_CD            String
-  TRDAR_SE_CD             String
-  TRDAR_SE_CD_NM          String
-  TRDAR_CD                String
-  TRDAR_CD_NM             String
-  TOT_FLPOP_CO            BigInt
-  ML_FLPOP_CO             BigInt
-  FML_FLPOP_CO            BigInt
-  AGRDE_10_FLPOP_CO       BigInt
-  AGRDE_20_FLPOP_CO       BigInt
-  AGRDE_30_FLPOP_CO       BigInt
-  AGRDE_40_FLPOP_CO       BigInt
-  AGRDE_50_FLPOP_CO       BigInt
-  AGRDE_60_ABOVE_FLPOP_CO BigInt
-  TMZON_00_06_FLPOP_CO    BigInt
-  TMZON_06_11_FLPOP_CO    BigInt
-  TMZON_11_14_FLPOP_CO    BigInt
-  TMZON_14_17_FLPOP_CO    BigInt
-  TMZON_17_21_FLPOP_CO    BigInt
-  TMZON_21_24_FLPOP_CO    BigInt
-  MON_FLPOP_CO            BigInt
-  TUES_FLPOP_CO           BigInt
-  WED_FLPOP_CO            BigInt
-  THUR_FLPOP_CO           BigInt
-  FRI_FLPOP_CO            BigInt
-  SAT_FLPOP_CO            BigInt
-  SUN_FLPOP_CO            BigInt
+    STDR_YYQU_CD            String //기준_년분기_코드
+    TRDAR_SE_CD             String //상권_구분_코드
+    TRDAR_SE_CD_NM          String //상권_구분_코드_명
+    TRDAR_CD                String //상권배후지_코드
+    TRDAR_CD_NM             String //상권배후지_코드_명
+    TOT_FLPOP_CO            BigInt //총_유동인구_수
+    ML_FLPOP_CO             BigInt //남성_유동인구_수
+    FML_FLPOP_CO            BigInt //여성_유동인구_수
+    AGRDE_10_FLPOP_CO       BigInt //연령대_10_유동인구_수
+    AGRDE_20_FLPOP_CO       BigInt //연령대_20_유동인구_수
+    AGRDE_30_FLPOP_CO       BigInt //연령대_30_유동인구_수
+    AGRDE_40_FLPOP_CO       BigInt //연령대_40_유동인구_수
+    AGRDE_50_FLPOP_CO       BigInt //연령대_50_유동인구_수
+    AGRDE_60_ABOVE_FLPOP_CO BigInt //연령대_60_이상_유동인구_수
+    TMZON_00_06_FLPOP_CO    BigInt //시간대_00_06_유동인구_수
+    TMZON_06_11_FLPOP_CO    BigInt //시간대_06_11_유동인구_수
+    TMZON_11_14_FLPOP_CO    BigInt //시간대_11_14_유동인구_수
+    TMZON_14_17_FLPOP_CO    BigInt //시간대_14_17_유동인구_수
+    TMZON_17_21_FLPOP_CO    BigInt //시간대_17_21_유동인구_수
+    TMZON_21_24_FLPOP_CO    BigInt //시간대_21_24_유동인구_수
+    MON_FLPOP_CO            BigInt //월요일_유동인구_수
+    TUES_FLPOP_CO           BigInt //화요일_유동인구_수
+    WED_FLPOP_CO            BigInt //수요일_유동인구_수
+    THUR_FLPOP_CO           BigInt //목요일_유동인구_수
+    FRI_FLPOP_CO            BigInt //금요일_유동인구_수
+    SAT_FLPOP_CO            BigInt //토요일_유동인구_수
+    SUN_FLPOP_CO            BigInt //일요일_유동인구_수
 
-  @@id([STDR_YYQU_CD, TRDAR_CD])
-  @@map("foot_traffic_backarea")
+    @@id([STDR_YYQU_CD, TRDAR_CD])
+    @@map("foot_traffic_backarea")
 }
 
 model FootTrafficCommercial {
-  STDR_YYQU_CD            String
-  TRDAR_SE_CD             String
-  TRDAR_SE_CD_NM          String
-  TRDAR_CD                String
-  TRDAR_CD_NM             String
-  TOT_FLPOP_CO            BigInt
-  ML_FLPOP_CO             BigInt
-  FML_FLPOP_CO            BigInt
-  AGRDE_10_FLPOP_CO       BigInt
-  AGRDE_20_FLPOP_CO       BigInt
-  AGRDE_30_FLPOP_CO       BigInt
-  AGRDE_40_FLPOP_CO       BigInt
-  AGRDE_50_FLPOP_CO       BigInt
-  AGRDE_60_ABOVE_FLPOP_CO BigInt
-  TMZON_00_06_FLPOP_CO    BigInt
-  TMZON_06_11_FLPOP_CO    BigInt
-  TMZON_11_14_FLPOP_CO    BigInt
-  TMZON_14_17_FLPOP_CO    BigInt
-  TMZON_17_21_FLPOP_CO    BigInt
-  TMZON_21_24_FLPOP_CO    BigInt
-  MON_FLPOP_CO            BigInt
-  TUES_FLPOP_CO           BigInt
-  WED_FLPOP_CO            BigInt
-  THUR_FLPOP_CO           BigInt
-  FRI_FLPOP_CO            BigInt
-  SAT_FLPOP_CO            BigInt
-  SUN_FLPOP_CO            BigInt
+    STDR_YYQU_CD            String //기준_년분기_코드
+    TRDAR_SE_CD             String //상권_구분_코드
+    TRDAR_SE_CD_NM          String //상권_구분_코드_명
+    TRDAR_CD                String //상권_코드
+    TRDAR_CD_NM             String //상권_코드_명
+    TOT_FLPOP_CO            BigInt //총_유동인구_수
+    ML_FLPOP_CO             BigInt //남성_유동인구_수
+    FML_FLPOP_CO            BigInt //여성_유동인구_수
+    AGRDE_10_FLPOP_CO       BigInt //연령대_10_유동인구_수
+    AGRDE_20_FLPOP_CO       BigInt //연령대_20_유동인구_수
+    AGRDE_30_FLPOP_CO       BigInt //연령대_30_유동인구_수
+    AGRDE_40_FLPOP_CO       BigInt //연령대_40_유동인구_수
+    AGRDE_50_FLPOP_CO       BigInt //연령대_50_유동인구_수
+    AGRDE_60_ABOVE_FLPOP_CO BigInt //연령대_60_이상_유동인구_수
+    TMZON_00_06_FLPOP_CO    BigInt //시간대_00_06_유동인구_수
+    TMZON_06_11_FLPOP_CO    BigInt //시간대_06_11_유동인구_수
+    TMZON_11_14_FLPOP_CO    BigInt //시간대_11_14_유동인구_수
+    TMZON_14_17_FLPOP_CO    BigInt //시간대_14_17_유동인구_수
+    TMZON_17_21_FLPOP_CO    BigInt //시간대_17_21_유동인구_수
+    TMZON_21_24_FLPOP_CO    BigInt //시간대_21_24_유동인구_수
+    MON_FLPOP_CO            BigInt //월요일_유동인구_수
+    TUES_FLPOP_CO           BigInt //화요일_유동인구_수
+    WED_FLPOP_CO            BigInt //수요일_유동인구_수
+    THUR_FLPOP_CO           BigInt //목요일_유동인구_수
+    FRI_FLPOP_CO            BigInt //금요일_유동인구_수
+    SAT_FLPOP_CO            BigInt //토요일_유동인구_수
+    SUN_FLPOP_CO            BigInt //일요일_유동인구_수
 
-  @@id([STDR_YYQU_CD, TRDAR_CD])
-  @@map("foot_traffic_commercial")
+    @@id([STDR_YYQU_CD, TRDAR_CD])
+    @@map("foot_traffic_commercial")
 }

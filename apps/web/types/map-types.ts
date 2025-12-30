@@ -17,6 +17,12 @@ export interface KakaoMap {
   getCenter: () => KakaoLatLng;
   getBounds: () => KakaoBounds;
   setBounds: (bounds: KakaoBounds) => void;
+  getProjection: () => KakaoMapProjection;
+}
+
+export interface KakaoMapProjection {
+  containerPointFromCoords: (latlng: KakaoLatLng) => { x: number; y: number };
+  coordsFromContainerPoint: (point: { x: number; y: number }) => KakaoLatLng;
 }
 
 export interface KakaoPolygon {
@@ -36,6 +42,9 @@ export interface PolygonStyle {
 export interface KakaoCustomOverlay {
   setMap: (map: KakaoMap | null) => void;
 }
+
+export type KakaoEventHandle = any;
+export type KakaoEventHandler = (...args: any[]) => void;
 
 export interface InfoBarData {
   adm_nm?: string;

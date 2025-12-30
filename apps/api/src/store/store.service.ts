@@ -1,6 +1,10 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { GetStoreQueryDto, StoreLevel, StoreResponseDto } from './dto/store.dto';
+import {
+  GetStoreQueryDto,
+  StoreLevel,
+  StoreResponseDto,
+} from './dto/store.dto';
 
 type ModelConfig = {
   codeField: string;
@@ -18,11 +22,31 @@ export class StoreService {
   private readonly logger = new Logger(StoreService.name);
 
   private readonly modelMap: Record<StoreLevel, ModelConfig> = {
-    city: { codeField: 'MEGA_CD', nameField: 'MEGA_CD_NM', modelName: 'storeCity' },
-    gu: { codeField: 'SIGNGU_CD', nameField: 'SIGNGU_CD_NM', modelName: 'storeGu' },
-    dong: { codeField: 'ADSTRD_CD', nameField: 'ADSTRD_CD_NM', modelName: 'storeDong' },
-    backarea: { codeField: 'TRDAR_CD', nameField: 'TRDAR_CD_NM', modelName: 'storeBackarea' },
-    commercial: { codeField: 'TRDAR_CD', nameField: 'TRDAR_CD_NM', modelName: 'storeCommercial' },
+    city: {
+      codeField: 'MEGA_CD',
+      nameField: 'MEGA_CD_NM',
+      modelName: 'storeCity',
+    },
+    gu: {
+      codeField: 'SIGNGU_CD',
+      nameField: 'SIGNGU_CD_NM',
+      modelName: 'storeGu',
+    },
+    dong: {
+      codeField: 'ADSTRD_CD',
+      nameField: 'ADSTRD_CD_NM',
+      modelName: 'storeDong',
+    },
+    backarea: {
+      codeField: 'TRDAR_CD',
+      nameField: 'TRDAR_CD_NM',
+      modelName: 'storeBackarea',
+    },
+    commercial: {
+      codeField: 'TRDAR_CD',
+      nameField: 'TRDAR_CD_NM',
+      modelName: 'storeCommercial',
+    },
   };
 
   constructor(private readonly prisma: PrismaService) {}
