@@ -34,27 +34,35 @@ export default function MapBox({
   const [currentGuName, setCurrentGuName] = useState<string | null>(null);
 
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
     if (zoom <= 7 && zoom >= 5 && center) {
-      const fetchGuCode = async () => {
-        try {
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_BASE_URL}/geo/gu?lat=${center.lat}&lng=${center.lng}`,
-          );
-          if (res.ok) {
-            const text = await res.text();
-            if (!text) return;
-            const data = JSON.parse(text);
-            if (data?.signguCode) {
-              setCurrentGuCode(data.signguCode);
-              setCurrentGuName(data.signguName);
+      timeoutId = setTimeout(() => {
+        const fetchGuCode = async () => {
+          try {
+            const res = await fetch(
+              `${process.env.NEXT_PUBLIC_API_BASE_URL}/geo/gu?lat=${center.lat}&lng=${center.lng}`,
+            );
+            if (res.ok) {
+              const text = await res.text();
+              if (!text) return;
+              const data = JSON.parse(text);
+              if (data?.signguCode) {
+                setCurrentGuCode(data.signguCode);
+                setCurrentGuName(data.signguName);
+              }
             }
+          } catch (error) {
+            console.error('Failed to fetch Gu code:', error);
           }
-        } catch (error) {
-          console.error('Failed to fetch Gu code:', error);
-        }
-      };
-      fetchGuCode();
+        };
+        fetchGuCode();
+      }, 500); // 500ms debounce (wait until map stops moving)
     }
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [center, zoom]);
 
   const shouldShowRank = zoom >= 5;
