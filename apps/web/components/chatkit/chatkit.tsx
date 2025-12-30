@@ -25,69 +25,23 @@ const options: ChatKitOptions = {
     },
   },
   onClientTool: async (toolCall) => {
-    console.log('🔥 [ChatKit] Tool Called:', toolCall.name, toolCall.params);
+    if (toolCall.name === 'move_map') {
+      console.log('🔥 [ChatKit] Executing move_map:', toolCall.params);
 
-    // 툴 이름이 지도 이동 관련이면 처리 (move_map or show_map_location)
-    const isMoveMap = ['move_map', 'show_map_location'].includes(
-      toolCall.name.toLowerCase(),
-    );
-
-    if (isMoveMap) {
       const store = useMapStore.getState();
       const params = toolCall.params as any;
-
-      // AI가 lat/lng을 직접 줬다면 그걸 우선 쓸 수도 있겠지만,
-      // "DB 기반 정확한 이동"을 위해 검색어가 있으면 백엔드에 물어보는 로직을 우선 수행
-      const query =
-        params.query || params.place_query || params.location || params.place;
-
-      if (query) {
-        try {
-          // 백엔드에 좌표 질의
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_BASE_URL}/ai/resolve-navigation`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                place_query: query,
-                current_zoom: store.zoom ?? 3, // 줌 레벨이 없으면 기본값 3
-              }),
-            },
-          );
-
-          if (res.ok) {
-            const data = await res.json();
-            if (
-              data &&
-              typeof data.lat === 'number' &&
-              typeof data.lng === 'number'
-            ) {
-              console.log('📍 Resolved Coordinates from DB:', data);
-              store.moveToLocation(
-                { lat: data.lat, lng: data.lng },
-                query,
-                data.zoom || 3,
-              );
-              return { result: 'moved to ' + query };
-            }
-          }
-        } catch (error) {
-          console.error('Failed to resolve navigation:', error);
-        }
-      }
-
-      // 백엔드 조회 실패 시, 혹은 검색어 없이 lat/lng만 왔을 경우의 Fallback
       const { lat, lng, zoom } = params;
-      if (typeof lat === 'number' && typeof lng === 'number') {
-        console.log('📍 Moving Map to fallback coords:', lat, lng);
-        store.setCenter({ lat, lng });
-      }
-      if (typeof zoom === 'number') {
-        store.setZoom(zoom);
-      }
 
-      return { result: 'moved' };
+      const targetName = '목적지';
+      const targetZoom = typeof zoom === 'number' ? zoom : 3;
+
+      if (typeof lat === 'number' && typeof lng === 'number') {
+        store.moveToLocation({ lat, lng }, targetName, targetZoom);
+        return { result: `Moved map to ${lat}, ${lng} (Zoom: ${targetZoom})` };
+      } else {
+        console.warn('⚠️ move_map called without valid coordinates');
+        return { error: 'Invalid coordinates' };
+      }
     }
 
     return {};
