@@ -100,7 +100,7 @@ const COMMERCIAL_STYLES: Record<
 export function drawPolygons(
   map: KakaoMap,
   features: AdminArea[] | BuildingArea[] | CommercialArea[],
-  type: 'admin' | 'building_store' | 'commercial',
+  type: 'admin' | 'building_store' | 'commercial' | 'sido',
   polygonsRef: Ref<KakaoPolygon[]>,
   customOverlaysRef: Ref<KakaoCustomOverlay[]>,
   onPolygonClick: (data: InfoBarData) => void,
@@ -242,6 +242,16 @@ export function drawPolygons(
           normalStyle = styles.normal;
           hoverStyle = styles.hover;
         }
+      } else if (type === 'sido') {
+        // 서울시 전체 테두리 스타일
+        normalStyle = {
+          strokeColor: '#000000', // Black
+          strokeWeight: 3, // 두꺼운 테두리
+          strokeOpacity: 0.8,
+          fillColor: '#FFFFFF',
+          fillOpacity: 0, // 채우기 없음
+        };
+        hoverStyle = { ...normalStyle }; // 호버 시에도 유지
       }
 
       const polygon = new window.kakao.maps.Polygon({

@@ -13,6 +13,7 @@ import { useMapStore } from '../stores/useMapStore';
 import { useSidebarStore } from '../stores/useSidebarStore';
 import { useBuildingMarkers } from '../hooks/useBuildingMarkers';
 import { PopulationBar } from './population/PopulationBar';
+import { useSeoulBoundary } from '../hooks/useSeoulBoundary';
 
 initProj4();
 
@@ -53,6 +54,7 @@ export default function Kakaomap({
   });
 
   useBuildingMarkers(map, selectedCategory ?? null);
+  useSeoulBoundary(map);
 
   const prevCategoryRef = useRef(selectedCategory);
   useEffect(() => {

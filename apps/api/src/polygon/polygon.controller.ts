@@ -43,4 +43,9 @@ export class PolygonController {
   ): Promise<CommercialPolygonResponse[]> {
     return this.polygonService.getCommercialPolygon(minx, miny, maxx, maxy);
   }
+
+  @Get('sido')
+  getSeoulSidoPolygon(): Promise<AdminPolygonResponse | null> {
+    return this.polygonService.getSeoulSidoPolygon();
+  }
 }
