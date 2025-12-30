@@ -86,7 +86,12 @@ const COMMERCIAL_STYLES: Record<
 };
 
 function isRankableFeature(f: MapFeature): f is AdminArea | CommercialArea {
-  return 'revenue' in f || 'residentPopulation' in f || 'openingStores' in f;
+  return (
+    'revenue' in f ||
+    'residentPopulation' in f ||
+    'openingStores' in f ||
+    'closingStores' in f
+  );
 }
 
 function getTop3Features(
@@ -106,6 +111,9 @@ function getTop3Features(
       if (mode === 'opening') {
         return (f.openingStores || 0) > 0;
       }
+      if (mode === 'shutting') {
+        return (f.closingStores || 0) >= 0; // 0 is valid for 'shutting' (least closures)
+      }
       return false;
     },
   );
@@ -117,6 +125,8 @@ function getTop3Features(
         return (b.residentPopulation || 0) - (a.residentPopulation || 0);
       if (mode === 'opening')
         return (b.openingStores || 0) - (a.openingStores || 0);
+      if (mode === 'shutting')
+        return (a.closingStores || 0) - (b.closingStores || 0); // Ascending sort for least closures
       return 0;
     })
     .slice(0, 3);
@@ -152,6 +162,10 @@ function getValueTag(feature: MapFeature, mode: OverlayMode): string {
     const count = Math.round(feature.openingStores);
     return ` <span style="color: #2563eb;">${count.toLocaleString()}개</span>`;
   }
+  if (mode === 'shutting' && feature.closingStores !== undefined) {
+    const count = Math.round(feature.closingStores);
+    return ` <span style="color: #2563eb;">${count.toLocaleString()}개</span>`;
+  }
   return '';
 }
 
@@ -160,6 +174,7 @@ function createMarkerContent(
   isTop3: boolean,
   ranking: number | undefined,
   mode: OverlayMode,
+  isHotSpot: boolean,
 ): HTMLElement {
   const shortName = getShortName(feature) + getValueTag(feature, mode);
 
@@ -169,6 +184,12 @@ function createMarkerContent(
   let boxStyle =
     'background: white; border: 1px solid #ccc; color: #333; padding: 4px 8px; font-weight: bold;';
   let zIndexStyle = '';
+
+  let hotSpotIcon = '';
+  if (isHotSpot) {
+    // Star icon logic removed as per user request
+    hotSpotIcon = '';
+  }
 
   if (isTop3) {
     iconMarker = `
@@ -187,6 +208,7 @@ function createMarkerContent(
   contentEl.innerHTML = `
     <div style="position: relative; ${zIndexStyle}">
       ${iconMarker}
+      ${hotSpotIcon}
       <div style="text-align: center; white-space: nowrap; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.15); cursor: pointer; transition: all 0.2s; ${boxStyle} font-size: 13px;">
         ${shortName}
       </div>
@@ -359,7 +381,18 @@ export function drawPolygons(
     });
 
     if (position && type !== 'building_store') {
-      const contentEl = createMarkerContent(feature, isTop3, ranking, mode);
+      const isHotSpot =
+        'openingStores' in feature &&
+        'closingStores' in feature &&
+        (feature.openingStores || 0) > (feature.closingStores || 0);
+
+      const contentEl = createMarkerContent(
+        feature,
+        isTop3,
+        ranking,
+        mode,
+        isHotSpot,
+      );
 
       contentEl.onclick = () => {
         onPolygonClick({

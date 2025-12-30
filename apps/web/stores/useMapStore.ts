@@ -18,7 +18,7 @@ export const useMapStore = create<MapStore>((set) => ({
   moveToLocation: (coords, location, zoom = 3, centered = false) => {
     set({
       center: coords,
-      zoom: centered ? -2 : zoom, // -2는 "중앙 정렬, 오프셋 없음" 신호
+      zoom: centered ? -2 : zoom,
       searchedLocation: location,
       isMoving: true,
       markers: [{ id: '1', coords, name: location, style: 'pulse' }],
@@ -30,7 +30,6 @@ export const useMapStore = create<MapStore>((set) => ({
   moveToLocations: (locations) => {
     if (locations.length === 0) return;
 
-    // 중심점 계산 (모든 좌표의 평균)
     const avgLat =
       locations.reduce((sum, loc) => sum + loc.coords.lat, 0) /
       locations.length;
@@ -40,7 +39,7 @@ export const useMapStore = create<MapStore>((set) => ({
 
     set({
       center: { lat: avgLat, lng: avgLng },
-      zoom: -1, // -1은 "자동 bounds 맞춤" 신호
+      zoom: -1,
       searchedLocation: locations.map((l) => l.name).join(', '),
       isMoving: true,
       markers: locations,

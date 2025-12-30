@@ -34,6 +34,7 @@ export class PolygonService {
     const revenueMap = new Map<string, number>();
     const populationMap = new Map<string, number>();
     const openingStoresMap = new Map<string, number>();
+    const closingStoresMap = new Map<string, number>();
 
     if (trdarCds.length > 0) {
       const sales = await this.prisma.salesCommercial.groupBy({
@@ -65,11 +66,12 @@ export class PolygonService {
           TRDAR_CD: { in: trdarCds },
           STDR_YYQU_CD: LATEST_QUARTER,
         },
-        _sum: { OPBIZ_STOR_CO: true },
+        _sum: { OPBIZ_STOR_CO: true, CLSBIZ_STOR_CO: true },
       });
       openings.forEach((s) => {
         if (s.TRDAR_CD) {
           openingStoresMap.set(s.TRDAR_CD, s._sum.OPBIZ_STOR_CO || 0);
+          closingStoresMap.set(s.TRDAR_CD, s._sum.CLSBIZ_STOR_CO || 0);
         }
       });
     }
@@ -85,6 +87,7 @@ export class PolygonService {
       revenue: revenueMap.get(row.trdar_cd) || 0,
       residentPopulation: populationMap.get(row.trdar_cd) || 0,
       openingStores: openingStoresMap.get(row.trdar_cd) || 0,
+      closingStores: closingStoresMap.get(row.trdar_cd) || 0,
       polygons: JSON.parse(row.geom) as {
         type: string;
         coordinates: number[][][][] | number[][][] | number[][];
@@ -108,11 +111,13 @@ export class PolygonService {
     const revenueMap = new Map<string, number>();
     const populationMap = new Map<string, number>();
     const openingStoresMap = new Map<string, number>();
+    const closingStoresMap = new Map<string, number>();
 
     let polygons: AdminPolygonResponse[] = [];
 
     if (type === 'dong') {
-      polygons = (await this.prisma.adminAreaDong.findMany()) as unknown as AdminPolygonResponse[];
+      polygons =
+        (await this.prisma.adminAreaDong.findMany()) as unknown as AdminPolygonResponse[];
 
       const sales = await this.prisma.salesDong.groupBy({
         by: ['ADSTRD_CD'],
@@ -134,12 +139,13 @@ export class PolygonService {
       const openings = await this.prisma.storeDong.groupBy({
         by: ['ADSTRD_CD'],
         where: { STDR_YYQU_CD: LATEST_QUARTER },
-        _sum: { OPBIZ_STOR_CO: true },
+        _sum: { OPBIZ_STOR_CO: true, CLSBIZ_STOR_CO: true },
       });
       openings.forEach(
         (s) =>
           s.ADSTRD_CD &&
-          openingStoresMap.set(s.ADSTRD_CD, s._sum.OPBIZ_STOR_CO || 0),
+          (openingStoresMap.set(s.ADSTRD_CD, s._sum.OPBIZ_STOR_CO || 0),
+          closingStoresMap.set(s.ADSTRD_CD, s._sum.CLSBIZ_STOR_CO || 0)),
       );
 
       return polygons.map((p) => ({
@@ -149,9 +155,11 @@ export class PolygonService {
           ? populationMap.get(p.adstrd_cd) || 0
           : 0,
         openingStores: p.adstrd_cd ? openingStoresMap.get(p.adstrd_cd) || 0 : 0,
+        closingStores: p.adstrd_cd ? closingStoresMap.get(p.adstrd_cd) || 0 : 0,
       }));
     } else {
-      polygons = (await this.prisma.adminAreaGu.findMany()) as unknown as AdminPolygonResponse[];
+      polygons =
+        (await this.prisma.adminAreaGu.findMany()) as unknown as AdminPolygonResponse[];
 
       const sales = await this.prisma.salesGu.groupBy({
         by: ['SIGNGU_CD'],
@@ -173,12 +181,13 @@ export class PolygonService {
       const openings = await this.prisma.storeGu.groupBy({
         by: ['SIGNGU_CD'],
         where: { STDR_YYQU_CD: LATEST_QUARTER },
-        _sum: { OPBIZ_STOR_CO: true },
+        _sum: { OPBIZ_STOR_CO: true, CLSBIZ_STOR_CO: true },
       });
       openings.forEach(
         (s) =>
           s.SIGNGU_CD &&
-          openingStoresMap.set(s.SIGNGU_CD, s._sum.OPBIZ_STOR_CO || 0),
+          (openingStoresMap.set(s.SIGNGU_CD, s._sum.OPBIZ_STOR_CO || 0),
+          closingStoresMap.set(s.SIGNGU_CD, s._sum.CLSBIZ_STOR_CO || 0)),
       );
 
       return polygons.map((p) => ({
@@ -188,6 +197,7 @@ export class PolygonService {
           ? populationMap.get(p.signgu_cd) || 0
           : 0,
         openingStores: p.signgu_cd ? openingStoresMap.get(p.signgu_cd) || 0 : 0,
+        closingStores: p.signgu_cd ? closingStoresMap.get(p.signgu_cd) || 0 : 0,
       }));
     }
   }

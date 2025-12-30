@@ -15,14 +15,14 @@ export interface MapStore {
   zoom: number;
   searchedLocation: string | null;
   isMoving: boolean;
-  overlayMode: 'revenue' | 'population' | 'opening';
+  overlayMode: 'revenue' | 'population' | 'opening' | 'shutting';
   markers: MapMarker[];
 
   setCenter: (coords: MapCoordinates) => void;
   setZoom: (level: number) => void;
   setSearchedLocation: (location: string | null) => void;
   setIsMoving: (moving: boolean) => void;
-  setOverlayMode: (mode: 'revenue' | 'population' | 'opening') => void;
+  setOverlayMode: (mode: 'revenue' | 'population' | 'opening' | 'shutting') => void;
 
   moveToLocation: (
     coords: MapCoordinates,

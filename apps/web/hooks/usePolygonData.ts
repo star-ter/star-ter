@@ -123,6 +123,7 @@ export const usePolygonData = (
               revenue: feature.revenue,
               residentPopulation: feature.residentPopulation,
               openingStores: feature.openingStores,
+              closingStores: feature.closingStores,
             }),
           );
 
@@ -166,7 +167,7 @@ export const usePolygonData = (
 
       const modeChanged = overlayMode !== lastOverlayModeRef.current;
 
-      if (currentGroup !== lastLevelGroupRef.current || modeChanged) {
+      if (currentGroup !== lastLevelGroupRef.current) {
         polygonsRef.current.forEach((polygon) => {
           polygon.setMap(null);
         });
@@ -176,7 +177,9 @@ export const usePolygonData = (
         });
         customOverlaysRef.current = [];
         visitedCommercialRef.current.clear();
+      }
 
+      if (currentGroup !== lastLevelGroupRef.current || modeChanged) {
         lastOverlayModeRef.current = overlayMode;
       }
 
@@ -200,7 +203,12 @@ export const usePolygonData = (
         fetchBuildingData(mapInstance);
       }
     },
-    [fetchCombinedBoundary, fetchBuildingData, fetchCommercialData, overlayMode],
+    [
+      fetchCombinedBoundary,
+      fetchBuildingData,
+      fetchCommercialData,
+      overlayMode,
+    ],
   );
 
   useEffect(() => {

@@ -14,12 +14,12 @@ export interface KakaoMap {
   getLevel: () => number;
   setLevel: (
     level: number,
-    options?: { animate?: boolean | { duration: number } }
+    options?: { animate?: boolean | { duration: number } },
   ) => void;
   setCenter: (latlng: KakaoLatLng) => void;
   panTo: (
     latlng: KakaoLatLng,
-    options?: { animate?: boolean | { duration: number } }
+    options?: { animate?: boolean | { duration: number } },
   ) => void;
   getCenter: () => KakaoLatLng;
   getBounds: () => KakaoBounds;
@@ -64,6 +64,7 @@ export interface AdminArea {
   revenue?: number; // 매출 (Optional)
   residentPopulation?: number; // 주거인구 (Optional)
   openingStores?: number; // 개업 점포 수 (Optional)
+  closingStores?: number; // 폐업 점포 수 (Optional)
 }
 
 // 건물
@@ -86,9 +87,8 @@ export interface CommercialArea {
   revenue?: number; // 매출 (Optional)
   residentPopulation?: number; // 주거인구 (Optional)
   openingStores?: number; // 개업 점포 수 (Optional)
+  closingStores?: number; // 폐업 점포 수 (Optional)
 }
-
-
 
 export interface CommercialApiResponse {
   properties: {
@@ -105,6 +105,7 @@ export interface CommercialApiResponse {
   revenue?: number;
   residentPopulation?: number;
   openingStores?: number;
+  closingStores?: number;
 }
 
 export interface KakaoMarker {
@@ -130,7 +131,6 @@ export interface ReverseGeocodeResult {
   guName?: string;
   dongName?: string;
 }
-
 
 // Utility Types (Moved from kakao-draw-utils.ts)
 export interface Ref<T> {
@@ -158,9 +158,8 @@ export interface InfoBarData {
    * - 'commercial': 상권 (줌 레벨 2-4)
    */
   level?: 'gu' | 'dong' | 'commercial';
-
 }
 
 export type MapFeature = AdminArea | BuildingArea | CommercialArea;
 export type MapFeatureType = 'admin' | 'building_store' | 'commercial';
-export type OverlayMode = 'revenue' | 'population' | 'opening';
+export type OverlayMode = 'revenue' | 'population' | 'opening' | 'shutting';
