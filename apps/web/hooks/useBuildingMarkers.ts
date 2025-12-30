@@ -24,7 +24,7 @@ const mapCodeToBackend = (code: string): string[] => {
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
-  I2: '#F97316', 
+  I2: '#F97316',
   G2: '#EF4444',
   S2: '#8B5CF6',
   R1: '#EC4899',
@@ -39,8 +39,9 @@ export const useBuildingMarkers = (
 ) => {
   const customOverlaysRef = useRef<KakaoCustomOverlay[]>([]);
 
-  const TOTAL_VIEW_THRESHOLD = 2; 
-  const CATEGORY_VIEW_THRESHOLD = 1; 
+  const TOTAL_VIEW_THRESHOLD = 2;
+  const CATEGORY_VIEW_THRESHOLD = 1;
+
   const DEFAULT_MARKET_COLOR = '#3B82F6';
 
   const clearMarkers = useCallback(() => {
