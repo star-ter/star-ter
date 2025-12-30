@@ -1,14 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, Info } from 'lucide-react';
 import AnimatedNumber from '../common/AnimatedNumber';
-import { AnalysisData } from '../../types/analysis-types';
-
-interface StoreTabContentProps {
-    data: AnalysisData | null;
-    initialStoreCount: string;
-    isExpanded?: boolean;
-    onExpand?: (expanded: boolean) => void;
-}
+import { StoreTabContentProps } from '../../types/analysis-types';
 
 const StoreTabContent: React.FC<StoreTabContentProps> = ({ 
   data, 
@@ -75,7 +68,17 @@ const StoreTabContent: React.FC<StoreTabContentProps> = ({
         </div>
         
         <div className="space-y-1">
-          <h4 className="text-xs font-bold text-gray-700 border-b border-gray-100 pb-2 mb-2">주요 업종 분포</h4>
+          <div className="flex justify-between items-center border-b border-gray-100 pb-2 mb-2">
+            <h4 className="text-xs font-bold text-gray-700">주요 업종 분포</h4>
+            <div className="relative group">
+              <Info size={14} className="text-gray-400 cursor-help" />
+              <div className="absolute right-0 bottom-full mb-2 hidden group-hover:block z-50 w-max px-2 py-1 bg-gray-800 text-white text-[10px] rounded shadow-lg">
+                {data?.meta.yearQuarter 
+                  ? `${data.meta.yearQuarter.slice(0, 4)}년 ${data.meta.yearQuarter.slice(4)}분기 기준` 
+                  : '데이터 없음'}
+              </div>
+            </div>
+          </div>
           
           {data && data.store.categories ? (
               (() => {
@@ -146,21 +149,6 @@ const StoreTabContent: React.FC<StoreTabContentProps> = ({
                                             <span className="font-bold text-red-500">
                                                 <AnimatedNumber value={item.close || 0} />개
                                             </span>
-                                        </div>
-
-                                        <div className="group/tooltip relative flex items-center">
-                                            <AlertCircle size={14} className="text-gray-400 hover:text-gray-600 cursor-help" />
-                                            <div className="absolute bottom-full right-1/2 translate-x-1/2 mb-2 hidden group-hover/tooltip:block w-max z-50">
-                                                <div className="bg-gray-800 text-white text-[10px] px-2 py-1.5 rounded-md shadow-lg flex flex-col items-center">
-                                                    <span>데이터 기준</span>
-                                                    <span className="font-bold">
-                                                        {data?.meta.yearQuarter 
-                                                            ? `${data.meta.yearQuarter.slice(0, 4)}년 ${data.meta.yearQuarter.slice(4)}분기` 
-                                                            : '-'}
-                                                    </span>
-                                                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
-                                                </div>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>

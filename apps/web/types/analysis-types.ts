@@ -89,3 +89,10 @@ export interface AnalysisCardProps {
   isStoreExpanded?: boolean;
   onStoreExpand?: (expanded: boolean) => void;
 }
+
+export interface StoreTabContentProps {
+  data: AnalysisData | null;
+  initialStoreCount: string;
+  isExpanded?: boolean;
+  onExpand?: (expanded: boolean) => void;
+}
