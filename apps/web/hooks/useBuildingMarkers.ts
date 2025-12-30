@@ -40,7 +40,7 @@ export const useBuildingMarkers = (
 ) => {
   const customOverlaysRef = useRef<KakaoCustomOverlay[]>([]);
 
-  const TOTAL_VIEW_THRESHOLD = 2;
+  const TOTAL_VIEW_THRESHOLD = 1;
   const CATEGORY_VIEW_THRESHOLD = 1;
 
   const DEFAULT_MARKET_COLOR = '#3B82F6';
@@ -99,9 +99,18 @@ export const useBuildingMarkers = (
 
       const data: BuildingStoreData[] = await res.json();
 
+      let displayData = data;
+      
+      // 레벨 3일때만 필터링
+      if (level == 3 || level == 2) {
+        displayData = [...data]
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 35);
+      }
+      
       clearMarkers();
 
-      data.forEach((item) => {
+      displayData.forEach((item) => {
         if (item.count < currentThreshold) return;
 
         const categoryName = selectedCategory ? selectedCategory.name : '전체';
