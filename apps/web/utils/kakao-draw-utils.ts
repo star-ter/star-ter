@@ -352,7 +352,7 @@ export function drawPolygons(
       } else if (type === 'sido') {
         // 서울시 전체 테두리 스타일
         normalStyle = {
-          strokeColor: '#000000', // Black
+          strokeColor: '#6961FF', // Black
           strokeWeight: 3, // 두꺼운 테두리
           strokeOpacity: 0.8,
           fillColor: '#FFFFFF',
