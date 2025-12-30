@@ -17,12 +17,18 @@ export interface KakaoMap {
   getCenter: () => KakaoLatLng;
   getBounds: () => KakaoBounds;
   setBounds: (bounds: KakaoBounds) => void;
+  getProjection: () => KakaoMapProjection;
+}
+
+export interface KakaoMapProjection {
+  containerPointFromCoords: (latlng: KakaoLatLng) => { x: number; y: number };
+  coordsFromContainerPoint: (point: { x: number; y: number }) => KakaoLatLng;
 }
 
 export interface KakaoPolygon {
   setMap: (map: KakaoMap | null) => void;
   setOptions: (options: PolygonStyle | Record<string, unknown>) => void;
-  fillColor?: string; // 성능 최적화를 위한 컬러 캐싱용
+  fillColor?: string;
 }
 
 export interface PolygonStyle {
@@ -37,6 +43,9 @@ export interface KakaoCustomOverlay {
   setMap: (map: KakaoMap | null) => void;
 }
 
+export type KakaoEventHandle = any;
+export type KakaoEventHandler = (...args: any[]) => void;
+
 export interface InfoBarData {
   adm_nm?: string;
   adm_cd?: string;
@@ -47,15 +56,14 @@ export interface InfoBarData {
   x: string | number;
   y: string | number;
   polygons?: number[][][][] | number[][][] | number[][];
-  // [key: string]: any;
 }
 
 // 행정구역
 export interface AdminArea {
   adm_cd: number;
   adm_nm: string;
-  x: number;
-  y: number;
+  x: number | string;
+  y: number | string;
   polygons: number[][][][] | number[][][] | number[][];
   revenue?: number; // 매출 (Optional)
 }
@@ -63,7 +71,9 @@ export interface AdminArea {
 // 건물
 export interface BuildingArea {
   buld_nm: string;
-  adm_nm: string;
+  adm_nm?: string;
+  x?: number | string;
+  y?: number | string;
   polygons: number[][][][] | number[][][] | number[][];
 }
 
@@ -72,8 +82,8 @@ export interface CommercialArea {
   commercialType: string;
   commercialName: string;
   commercialCode: string;
-  guCode: string; // 구 정보
-  dongCode: string; // 동 정보
+  guCode: string;
+  dongCode: string;
   polygons: number[][][][] | number[][][] | number[][];
   revenue?: number; // 매출 (Optional)
 }
@@ -91,4 +101,22 @@ export interface CommercialApiResponse {
     coordinates: number[][][][] | number[][][] | number[][];
   };
   revenue?: number;
+}
+
+export interface KakaoMarker {
+  setMap: (map: KakaoMap | null) => void;
+}
+
+export interface PolygonClickData {
+  name: string;
+  code?: string;
+}
+
+export interface KakaoMarker {
+  setMap: (map: KakaoMap | null) => void;
+}
+
+export interface PolygonClickData {
+  name: string;
+  code?: string;
 }

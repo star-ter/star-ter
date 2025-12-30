@@ -1,6 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { GeoGuResponseDto, GetGeoGuQueryDto } from './dto/geo.dto';
+import {
+  GeoAreaListResponseDto,
+  GeoGuResponseDto,
+  GetGeoDongListQueryDto,
+  GetGeoGuListQueryDto,
+  GetGeoGuQueryDto,
+} from './dto/geo.dto';
 
 type GeoRow = {
   signgu_cd: string;
@@ -28,7 +34,9 @@ export class GeoService {
     `;
 
     if (!rows.length) {
-      throw new NotFoundException('해당 좌표에 대한 구/동 정보를 찾을 수 없습니다.');
+      throw new NotFoundException(
+        '해당 좌표에 대한 구/동 정보를 찾을 수 없습니다.',
+      );
     }
 
     const row = rows[0];
@@ -37,6 +45,41 @@ export class GeoService {
       signguName: row.signgu_cd_,
       adstrdCode: row.adstrd_cd,
       adstrdName: row.adstrd_cd_,
+    };
+  }
+
+  async getGuList(
+    query: GetGeoGuListQueryDto,
+  ): Promise<GeoAreaListResponseDto> {
+    const cityCode = query.cityCode || '11';
+    const rows = await this.prisma.areaGu.findMany({
+      where: cityCode ? { SIGNGU_CD: { startsWith: cityCode } } : undefined,
+      select: { SIGNGU_CD: true, SIGNGU_NM: true },
+      orderBy: { SIGNGU_NM: 'asc' },
+    });
+
+    return {
+      items: rows.map((row) => ({
+        code: row.SIGNGU_CD,
+        name: row.SIGNGU_NM,
+      })),
+    };
+  }
+
+  async getDongList(
+    query: GetGeoDongListQueryDto,
+  ): Promise<GeoAreaListResponseDto> {
+    const rows = await this.prisma.areaDong.findMany({
+      where: { ADSTRD_CD: { startsWith: query.guCode } },
+      select: { ADSTRD_CD: true, ADSTRD_NM: true },
+      orderBy: { ADSTRD_NM: 'asc' },
+    });
+
+    return {
+      items: rows.map((row) => ({
+        code: row.ADSTRD_CD,
+        name: row.ADSTRD_NM,
+      })),
     };
   }
 }

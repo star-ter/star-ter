@@ -4,6 +4,7 @@ import {
   GeoJsonGeometry,
   FloatingPopulationRow,
   CombinedPopulationFeature,
+  TimeSegmentedPopulationFeature,
 } from './dto/floating-population-response.dto';
 
 export interface GridCellGeometry {
@@ -21,35 +22,44 @@ interface GridCombinedRawResult extends FloatingPopulationRow {
   geometry: string;
 }
 
+interface RawTimeSegmentedResult {
+  cell_id: string;
+  geometry: string;
+  time_slot: string;
+  avg_population: number;
+  sum_population: number;
+  male_total: number;
+  female_total: number;
+  age_10s: number;
+  age_20s: number;
+  age_30s: number;
+  age_40s: number;
+  age_50s: number;
+  age_60s: number;
+}
+
 @Injectable()
 export class FloatingPopulationRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  // cell_id 리스트에 해당하는 격자정보 db에서 조회, ST_AsGeoJSON를 사용해서 이진데이터를 geojson으로 받아오기
+  // cell_id 리스트에 해당하는 격자정보 db에서 조회
   async findGridCellsByIds(cellIds: string[]): Promise<GridCellGeometry[]> {
-    if (!cellIds || cellIds.length === 0) {
-      return [];
-    }
-
+    if (!cellIds || cellIds.length === 0) return [];
     const ids = cellIds.map((id) => `'${id}'`).join(',');
     const query = `
-      SELECT 
-        cell_id, 
-        ST_AsGeoJSON(geom) as geometry
+      SELECT cell_id, ST_AsGeoJSON(geom) as geometry
       FROM "seoul_250_grid"
       WHERE cell_id IN (${ids})
     `;
-
     const result =
       await this.prisma.$queryRawUnsafe<GridCellRawResult[]>(query);
-
     return result.map((row) => ({
       cell_id: row.cell_id,
       geometry: JSON.parse(row.geometry) as GeoJsonGeometry,
     }));
   }
 
-  // 격자 정보를 조회, ST_Intersects와 ST_MakeEnvelope를 사용해서 공간검색 수행
+  // 격자 정보를 조회 (공간검색)
   async findGridCellsByBounds(
     minLat: number,
     minLng: number,
@@ -57,19 +67,12 @@ export class FloatingPopulationRepository {
     maxLng: number,
   ): Promise<GridCellGeometry[]> {
     const query = `
-      SELECT 
-        cell_id, 
-        ST_AsGeoJSON(geom) as geometry
+      SELECT cell_id, ST_AsGeoJSON(geom) as geometry
       FROM "seoul_250_grid"
-      WHERE ST_Intersects(
-        geom,
-        ST_MakeEnvelope(${minLng}, ${minLat}, ${maxLng}, ${maxLat}, 4326)
-      )
+      WHERE ST_Intersects(geom, ST_MakeEnvelope(${minLng}, ${minLat}, ${maxLng}, ${maxLat}, 4326))
     `;
-
     const result =
       await this.prisma.$queryRawUnsafe<GridCellRawResult[]>(query);
-
     return result.map((row) => ({
       cell_id: row.cell_id,
       geometry: JSON.parse(row.geometry) as GeoJsonGeometry,
@@ -84,32 +87,95 @@ export class FloatingPopulationRepository {
     maxLng: number,
   ): Promise<CombinedPopulationFeature[]> {
     const query = `
-      SELECT 
-        g.cell_id, 
-        ST_AsGeoJSON(g.geom) as geometry,
-        p.*
+      SELECT g.cell_id, ST_AsGeoJSON(g.geom) as geometry, p.*
       FROM "seoul_250_grid" g
       JOIN "seoul_250_population" p ON g.cell_id = p."CELL_ID"
-      WHERE ST_Intersects(
-        g.geom,
-        ST_MakeEnvelope(${minLng}, ${minLat}, ${maxLng}, ${maxLat}, 4326)
-      )
+      WHERE ST_Intersects(g.geom, ST_MakeEnvelope(${minLng}, ${minLat}, ${maxLng}, ${maxLat}, 4326))
     `;
-
     const result =
       await this.prisma.$queryRawUnsafe<GridCombinedRawResult[]>(query);
-
-    return result.map((row) => {
-      const feature: CombinedPopulationFeature = {
-        cell_id: row.cell_id,
-        geometry: JSON.parse(row.geometry) as GeoJsonGeometry,
-        population: this.mapRawToPopulationRow(row),
-      };
-      return feature;
-    });
+    return result.map((row) => ({
+      cell_id: row.cell_id,
+      geometry: JSON.parse(row.geometry) as GeoJsonGeometry,
+      population: this.mapRawToPopulationRow(row),
+    }));
   }
 
-  // 대량의 인구 데이터를 db에 업데이트, 삽입 PostgreSQL 전용
+  /**
+   * 지도 영역 내의 격자 정보와 시간대별(0-8, 8-16, 16-24) 인구 데이터를 한 번에 가져오는 쿼리
+   */
+  async findTimeSegmentedLayer(
+    minLat: number,
+    minLng: number,
+    maxLat: number,
+    maxLng: number,
+  ): Promise<TimeSegmentedPopulationFeature[]> {
+    const query = `
+      WITH grid_selection AS (
+        SELECT cell_id, geom 
+        FROM "seoul_250_grid"
+        WHERE ST_Intersects(geom, ST_MakeEnvelope(${minLng}, ${minLat}, ${maxLng}, ${maxLat}, 4326))
+      ),
+      time_aggregated AS (
+        SELECT 
+          p."CELL_ID" as cell_id,
+          CASE 
+            WHEN CAST(p."TT" AS INTEGER) BETWEEN 0 AND 7 THEN '0-8'
+            WHEN CAST(p."TT" AS INTEGER) BETWEEN 8 AND 15 THEN '8-16'
+            ELSE '16-24'
+          END as time_slot,
+          AVG(p."SPOP") as avg_pop,
+          SUM(p."SPOP") as sum_pop,
+          SUM(p."M00"+p."M10"+p."M15"+p."M20"+p."M25"+p."M30"+p."M35"+p."M40"+p."M45"+p."M50"+p."M55"+p."M60"+p."M65"+p."M70") as male_total,
+          SUM(p."F00"+p."F10"+p."F15"+p."F20"+p."F25"+p."F30"+p."F35"+p."F40"+p."F45"+p."F50"+p."F55"+p."F60"+p."F65"+p."F70") as female_total,
+          SUM(p."M10"+p."M15"+p."F10"+p."F15") as age_10s,
+          SUM(p."M20"+p."M25"+p."F20"+p."F25") as age_20s,
+          SUM(p."M30"+p."M35"+p."F30"+p."F35") as age_30s,
+          SUM(p."M40"+p."M45"+p."F40"+p."F45") as age_40s,
+          SUM(p."M50"+p."M55"+p."F50"+p."F55") as age_50s,
+          SUM(p."M60"+p."M65"+p."M70"+p."F60"+p."F65"+p."F70") as age_60s
+        FROM "seoul_250_population" p
+        JOIN grid_selection g ON p."CELL_ID" = g.cell_id
+        GROUP BY p."CELL_ID", time_slot
+      )
+      SELECT 
+        g.cell_id, ST_AsGeoJSON(g.geom) as geometry, t.time_slot,
+        t.avg_pop as avg_population, t.sum_pop as sum_population, t.male_total, t.female_total,
+        t.age_10s, t.age_20s, t.age_30s, t.age_40s, t.age_50s, t.age_60s
+      FROM grid_selection g
+      JOIN time_aggregated t ON g.cell_id = t.cell_id
+      ORDER BY g.cell_id, t.time_slot;
+    `;
+    const rawResults =
+      await this.prisma.$queryRawUnsafe<RawTimeSegmentedResult[]>(query);
+    const featuresMap = new Map<string, TimeSegmentedPopulationFeature>();
+    for (const row of rawResults) {
+      if (!featuresMap.has(row.cell_id)) {
+        featuresMap.set(row.cell_id, {
+          cell_id: row.cell_id,
+          geometry: JSON.parse(row.geometry) as GeoJsonGeometry,
+          time_slots: [],
+        });
+      }
+      const feature = featuresMap.get(row.cell_id)!;
+      feature.time_slots.push({
+        time_slot: row.time_slot,
+        avg_population: Number(row.avg_population) || 0,
+        sum_population: Number(row.sum_population) || 0,
+        male_total: Number(row.male_total) || 0,
+        female_total: Number(row.female_total) || 0,
+        age_10s_total: Number(row.age_10s) || 0,
+        age_20s_total: Number(row.age_20s) || 0,
+        age_30s_total: Number(row.age_30s) || 0,
+        age_40s_total: Number(row.age_40s) || 0,
+        age_50s_total: Number(row.age_50s) || 0,
+        age_60s_plus_total: Number(row.age_60s) || 0,
+      });
+    }
+    return Array.from(featuresMap.values());
+  }
+
+  // 대량의 인구 데이터를 db에 업데이트, 삽입
   async upsertPopulation(rows: FloatingPopulationRow[]) {
     const CHUNK_SIZE = 1000;
     for (let i = 0; i < rows.length; i += CHUNK_SIZE) {
@@ -123,7 +189,6 @@ export class FloatingPopulationRepository {
   ): FloatingPopulationRow {
     const cleaned = { ...raw };
     const getVal = (key: string) => Number(cleaned[key]) || 0;
-
     return {
       ...cleaned,
       YMD: raw.YMD,
@@ -148,7 +213,7 @@ export class FloatingPopulationRepository {
   }
 
   private buildUpsertQuery(rows: FloatingPopulationRow[]): string {
-    const columns = [
+    const columns: (keyof FloatingPopulationRow)[] = [
       'YMD',
       'TT',
       'CELL_ID',
@@ -185,7 +250,7 @@ export class FloatingPopulationRepository {
     ];
 
     const values = rows
-      .map((r) => {
+      .map((r: FloatingPopulationRow) => {
         const rowValues = columns.map((col) => {
           const val = r[col];
           if (typeof val === 'string') return `'${val}'`;
@@ -197,8 +262,8 @@ export class FloatingPopulationRepository {
       .join(',');
 
     const updateActions = columns
-      .filter((col) => !['YMD', 'TT', 'CELL_ID'].includes(col))
-      .map((col) => `"${col}" = EXCLUDED."${col}"`)
+      .filter((col) => !['YMD', 'TT', 'CELL_ID'].includes(col as string))
+      .map((col) => `"${String(col)}" = EXCLUDED."${String(col)}"`)
       .join(',');
 
     return `

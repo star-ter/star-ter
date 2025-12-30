@@ -1,123 +1,125 @@
-model ApartmentCity {
-  STDR_YYQU_CD              String
-  MEGA_CD                   String
-  MEGA_CD_NM                String
-  APT_HSMP_CO               Int
-  AE_66_SQMT_BELO_HSHLD_CO  Int
-  AE_66_SQMT_HSHLD_CO       Int
-  AE_99_SQMT_HSHLD_CO       Int
-  AE_132_SQMT_HSHLD_CO      Int
-  AE_165_SQMT_HSHLD_CO      Int
-  PC_1_HDMIL_BELO_HSHLD_CO  Int
-  PC_1_HDMIL_HSHLD_CO       Int
-  PC_2_HDMIL_HSHLD_CO       Int
-  PC_3_HDMIL_HSHLD_CO       Int
-  PC_4_HDMIL_HSHLD_CO       Int
-  PC_5_HDMIL_HSHLD_CO       Int
-  PC_6_HDMIL_ABOVE_HSHLD_CO Int
-  AVRG_AE                   Int
-  AVRG_MKTC                 BigInt
+//  apartment_{city|gu|dong|backarea|commercial}
 
-  @@id([STDR_YYQU_CD, MEGA_CD])
-  @@map("apartment_city")
+model ApartmentCity {
+    STDR_YYQU_CD              String //기준_년분기_코드
+    MEGA_CD                   String //서울시_코드
+    MEGA_CD_NM                String //서울시_코드_명
+    APT_HSMP_CO               Int //아파트_단지_수
+    AE_66_SQMT_BELO_HSHLD_CO  Int //아파트_면적_66_제곱미터_미만_세대_수
+    AE_66_SQMT_HSHLD_CO       Int //아파트_면적_66_제곱미터_세대_수
+    AE_99_SQMT_HSHLD_CO       Int //아파트_면적_99_제곱미터_세대_수
+    AE_132_SQMT_HSHLD_CO      Int //아파트_면적_132_제곱미터_세대_수
+    AE_165_SQMT_HSHLD_CO      Int //아파트_면적_165_제곱미터_세대_수
+    PC_1_HDMIL_BELO_HSHLD_CO  Int //아파트_가격_1_억_미만_세대_수
+    PC_1_HDMIL_HSHLD_CO       Int //아파트_가격_1_억_세대_수
+    PC_2_HDMIL_HSHLD_CO       Int //아파트_가격_2_억_세대_수
+    PC_3_HDMIL_HSHLD_CO       Int //아파트_가격_3_억_세대_수
+    PC_4_HDMIL_HSHLD_CO       Int //아파트_가격_4_억_세대_수
+    PC_5_HDMIL_HSHLD_CO       Int //아파트_가격_5_억_세대_수
+    PC_6_HDMIL_ABOVE_HSHLD_CO Int //아파트_가격_6_억_이상_세대_수
+    AVRG_AE                   Int //아파트_평균_면적
+    AVRG_MKTC                 BigInt //아파트_평균_시가
+
+    @@id([STDR_YYQU_CD, MEGA_CD])
+    @@map("apartment_city")
 }
 
 model ApartmentGu {
-  STDR_YYQU_CD              String
-  SIGNGU_CD                 String
-  SIGNGU_CD_NM              String
-  APT_HSMP_CO               Int
-  AE_66_SQMT_BELO_HSHLD_CO  Int
-  AE_66_SQMT_HSHLD_CO       Int
-  AE_99_SQMT_HSHLD_CO       Int
-  AE_132_SQMT_HSHLD_CO      Int
-  AE_165_SQMT_HSHLD_CO      Int
-  PC_1_HDMIL_BELO_HSHLD_CO  Int
-  PC_1_HDMIL_HSHLD_CO       Int
-  PC_2_HDMIL_HSHLD_CO       Int
-  PC_3_HDMIL_HSHLD_CO       Int
-  PC_4_HDMIL_HSHLD_CO       Int
-  PC_5_HDMIL_HSHLD_CO       Int
-  PC_6_HDMIL_ABOVE_HSHLD_CO Int
-  AVRG_AE                   Int
-  AVRG_MKTC                 BigInt
+    STDR_YYQU_CD              String //기준_년분기_코드
+    SIGNGU_CD                 String //자치구_코드
+    SIGNGU_CD_NM              String //자치구_코드_명
+    APT_HSMP_CO               Int //아파트_단지_수
+    AE_66_SQMT_BELO_HSHLD_CO  Int //아파트_면적_66_제곱미터_미만_세대_수
+    AE_66_SQMT_HSHLD_CO       Int //아파트_면적_66_제곱미터_세대_수
+    AE_99_SQMT_HSHLD_CO       Int //아파트_면적_99_제곱미터_세대_수
+    AE_132_SQMT_HSHLD_CO      Int //아파트_면적_132_제곱미터_세대_수
+    AE_165_SQMT_HSHLD_CO      Int //아파트_면적_165_제곱미터_세대_수
+    PC_1_HDMIL_BELO_HSHLD_CO  Int //아파트_가격_1_억_미만_세대_수
+    PC_1_HDMIL_HSHLD_CO       Int //아파트_가격_1_억_세대_수
+    PC_2_HDMIL_HSHLD_CO       Int //아파트_가격_2_억_세대_수
+    PC_3_HDMIL_HSHLD_CO       Int //아파트_가격_3_억_세대_수
+    PC_4_HDMIL_HSHLD_CO       Int //아파트_가격_4_억_세대_수
+    PC_5_HDMIL_HSHLD_CO       Int //아파트_가격_5_억_세대_수
+    PC_6_HDMIL_ABOVE_HSHLD_CO Int //아파트_가격_6_억_이상_세대_수
+    AVRG_AE                   Int //아파트_평균_면적
+    AVRG_MKTC                 BigInt //아파트_평균_시가
 
-  @@id([STDR_YYQU_CD, SIGNGU_CD])
-  @@map("apartment_gu")
+    @@id([STDR_YYQU_CD, SIGNGU_CD])
+    @@map("apartment_gu")
 }
 
 model ApartmentDong {
-  STDR_YYQU_CD              String
-  ADSTRD_CD                 String
-  ADSTRD_CD_NM              String
-  APT_HSMP_CO               Int
-  AE_66_SQMT_BELO_HSHLD_CO  Int
-  AE_66_SQMT_HSHLD_CO       Int
-  AE_99_SQMT_HSHLD_CO       Int
-  AE_132_SQMT_HSHLD_CO      Int
-  AE_165_SQMT_HSHLD_CO      Int
-  PC_1_HDMIL_BELO_HSHLD_CO  Int
-  PC_1_HDMIL_HSHLD_CO       Int
-  PC_2_HDMIL_HSHLD_CO       Int
-  PC_3_HDMIL_HSHLD_CO       Int
-  PC_4_HDMIL_HSHLD_CO       Int
-  PC_5_HDMIL_HSHLD_CO       Int
-  PC_6_HDMIL_ABOVE_HSHLD_CO Int
-  AVRG_AE                   Int
-  AVRG_MKTC                 BigInt
+    STDR_YYQU_CD              String //기준_년분기_코드
+    ADSTRD_CD                 String //행정동_코드
+    ADSTRD_CD_NM              String //행정동_코드_명
+    APT_HSMP_CO               Int //아파트_단지_수
+    AE_66_SQMT_BELO_HSHLD_CO  Int //아파트_면적_66_제곱미터_미만_세대_수
+    AE_66_SQMT_HSHLD_CO       Int //아파트_면적_66_제곱미터_세대_수
+    AE_99_SQMT_HSHLD_CO       Int //아파트_면적_99_제곱미터_세대_수
+    AE_132_SQMT_HSHLD_CO      Int //아파트_면적_132_제곱미터_세대_수
+    AE_165_SQMT_HSHLD_CO      Int //아파트_면적_165_제곱미터_세대_수
+    PC_1_HDMIL_BELO_HSHLD_CO  Int //아파트_가격_1_억_미만_세대_수
+    PC_1_HDMIL_HSHLD_CO       Int //아파트_가격_1_억_세대_수
+    PC_2_HDMIL_HSHLD_CO       Int //아파트_가격_2_억_세대_수
+    PC_3_HDMIL_HSHLD_CO       Int //아파트_가격_3_억_세대_수
+    PC_4_HDMIL_HSHLD_CO       Int //아파트_가격_4_억_세대_수
+    PC_5_HDMIL_HSHLD_CO       Int //아파트_가격_5_억_세대_수
+    PC_6_HDMIL_ABOVE_HSHLD_CO Int //아파트_가격_6_억_이상_세대_수
+    AVRG_AE                   Int //아파트_평균_면적
+    AVRG_MKTC                 BigInt //아파트_평균_시가
 
-  @@id([STDR_YYQU_CD, ADSTRD_CD])
-  @@map("apartment_dong")
+    @@id([STDR_YYQU_CD, ADSTRD_CD])
+    @@map("apartment_dong")
 }
 
 model ApartmentBackarea {
-  STDR_YYQU_CD              String
-  TRDAR_SE_CD               String
-  TRDAR_SE_CD_NM            String
-  TRDAR_CD                  String
-  TRDAR_CD_NM               String
-  APT_HSMP_CO               Int
-  AE_66_SQMT_BELO_HSHLD_CO  Int
-  AE_66_SQMT_HSHLD_CO       Int
-  AE_99_SQMT_HSHLD_CO       Int
-  AE_132_SQMT_HSHLD_CO      Int
-  AE_165_SQMT_HSHLD_CO      Int
-  PC_1_HDMIL_BELO_HSHLD_CO  Int
-  PC_1_HDMIL_HSHLD_CO       Int
-  PC_2_HDMIL_HSHLD_CO       Int
-  PC_3_HDMIL_HSHLD_CO       Int
-  PC_4_HDMIL_HSHLD_CO       Int
-  PC_5_HDMIL_HSHLD_CO       Int
-  PC_6_HDMIL_ABOVE_HSHLD_CO Int
-  AVRG_AE                   Int
-  AVRG_MKTC                 BigInt
+    STDR_YYQU_CD              String //기준_년분기_코드
+    TRDAR_SE_CD               String //상권_구분_코드
+    TRDAR_SE_CD_NM            String //상권_구분_코드_명
+    TRDAR_CD                  String //상권배후지_코드
+    TRDAR_CD_NM               String //상권배후지_코드_명
+    APT_HSMP_CO               Int //아파트_단지_수
+    AE_66_SQMT_BELO_HSHLD_CO  Int //아파트_면적_66_제곱미터_미만_세대_수
+    AE_66_SQMT_HSHLD_CO       Int //아파트_면적_66_제곱미터_세대_수
+    AE_99_SQMT_HSHLD_CO       Int //아파트_면적_99_제곱미터_세대_수
+    AE_132_SQMT_HSHLD_CO      Int //아파트_면적_132_제곱미터_세대_수
+    AE_165_SQMT_HSHLD_CO      Int //아파트_면적_165_제곱미터_세대_수
+    PC_1_HDMIL_BELO_HSHLD_CO  Int //아파트_가격_1_억_미만_세대_수
+    PC_1_HDMIL_HSHLD_CO       Int //아파트_가격_1_억_세대_수
+    PC_2_HDMIL_HSHLD_CO       Int //아파트_가격_2_억_세대_수
+    PC_3_HDMIL_HSHLD_CO       Int //아파트_가격_3_억_세대_수
+    PC_4_HDMIL_HSHLD_CO       Int //아파트_가격_4_억_세대_수
+    PC_5_HDMIL_HSHLD_CO       Int //아파트_가격_5_억_세대_수
+    PC_6_HDMIL_ABOVE_HSHLD_CO Int //아파트_가격_6_억_이상_세대_수
+    AVRG_AE                   Int //아파트_평균_면적
+    AVRG_MKTC                 BigInt //아파트_평균_시가
 
-  @@id([STDR_YYQU_CD, TRDAR_CD])
-  @@map("apartment_backarea")
+    @@id([STDR_YYQU_CD, TRDAR_CD])
+    @@map("apartment_backarea")
 }
 
 model ApartmentCommercial {
-  STDR_YYQU_CD              String
-  TRDAR_SE_CD               String
-  TRDAR_SE_CD_NM            String
-  TRDAR_CD                  String
-  TRDAR_CD_NM               String
-  APT_HSMP_CO               Int
-  AE_66_SQMT_BELO_HSHLD_CO  Int
-  AE_66_SQMT_HSHLD_CO       Int
-  AE_99_SQMT_HSHLD_CO       Int
-  AE_132_SQMT_HSHLD_CO      Int
-  AE_165_SQMT_HSHLD_CO      Int
-  PC_1_HDMIL_BELO_HSHLD_CO  Int
-  PC_1_HDMIL_HSHLD_CO       Int
-  PC_2_HDMIL_HSHLD_CO       Int
-  PC_3_HDMIL_HSHLD_CO       Int
-  PC_4_HDMIL_HSHLD_CO       Int
-  PC_5_HDMIL_HSHLD_CO       Int
-  PC_6_HDMIL_ABOVE_HSHLD_CO Int
-  AVRG_AE                   Int
-  AVRG_MKTC                 BigInt
+    STDR_YYQU_CD              String //기준_년분기_코드
+    TRDAR_SE_CD               String //상권_구분_코드
+    TRDAR_SE_CD_NM            String //상권_구분_코드_명
+    TRDAR_CD                  String //상권_코드
+    TRDAR_CD_NM               String //상권_코드_명
+    APT_HSMP_CO               Int //아파트_단지_수
+    AE_66_SQMT_BELO_HSHLD_CO  Int //아파트_면적_66_제곱미터_미만_세대_수
+    AE_66_SQMT_HSHLD_CO       Int //아파트_면적_66_제곱미터_세대_수
+    AE_99_SQMT_HSHLD_CO       Int //아파트_면적_99_제곱미터_세대_수
+    AE_132_SQMT_HSHLD_CO      Int //아파트_면적_132_제곱미터_세대_수
+    AE_165_SQMT_HSHLD_CO      Int //아파트_면적_165_제곱미터_세대_수
+    PC_1_HDMIL_BELO_HSHLD_CO  Int //아파트_가격_1_억_미만_세대_수
+    PC_1_HDMIL_HSHLD_CO       Int //아파트_가격_1_억_세대_수
+    PC_2_HDMIL_HSHLD_CO       Int //아파트_가격_2_억_세대_수
+    PC_3_HDMIL_HSHLD_CO       Int //아파트_가격_3_억_세대_수
+    PC_4_HDMIL_HSHLD_CO       Int //아파트_가격_4_억_세대_수
+    PC_5_HDMIL_HSHLD_CO       Int //아파트_가격_5_억_세대_수
+    PC_6_HDMIL_ABOVE_HSHLD_CO Int //아파트_가격_6_억_이상_세대_수
+    AVRG_AE                   Int //아파트_평균_면적
+    AVRG_MKTC                 BigInt //아파트_평균_시가
 
-  @@id([STDR_YYQU_CD, TRDAR_CD])
-  @@map("apartment_commercial")
+    @@id([STDR_YYQU_CD, TRDAR_CD])
+    @@map("apartment_commercial")
 }

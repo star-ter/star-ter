@@ -1,4 +1,13 @@
-import { IsNotEmpty, IsNumberString } from 'class-validator';
+import { IsNotEmpty, IsNumberString, IsOptional } from 'class-validator';
+
+export class GeoAreaItemDto {
+  code: string;
+  name: string;
+}
+
+export class GeoAreaListResponseDto {
+  items: GeoAreaItemDto[];
+}
 
 export class GeoGuResponseDto {
   signguCode: string;
@@ -15,4 +24,16 @@ export class GetGeoGuQueryDto {
   @IsNumberString()
   @IsNotEmpty()
   lng: string;
+}
+
+export class GetGeoGuListQueryDto {
+  @IsNumberString()
+  @IsOptional()
+  cityCode?: string;
+}
+
+export class GetGeoDongListQueryDto {
+  @IsNumberString()
+  @IsNotEmpty()
+  guCode: string;
 }

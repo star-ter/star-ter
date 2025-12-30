@@ -1,37 +1,42 @@
 model PopulationGrid {
-  YMD        String    @db.VarChar(8)
-  TT         Int
-  CELL_ID    String    @db.VarChar
-  H_DNG_CD   String?   @db.VarChar
-  SPOP       Float?
-  M00        Float?
-  M10        Float?
-  M15        Float?
-  M20        Float?
-  M25        Float?
-  M30        Float?
-  M35        Float?
-  M40        Float?
-  M45        Float?
-  M50        Float?
-  M55        Float?
-  M60        Float?
-  M65        Float?
-  M70        Float?
-  F00        Float?
-  F10        Float?
-  F15        Float?
-  F20        Float?
-  F25        Float?
-  F30        Float?
-  F35        Float?
-  F40        Float?
-  F45        Float?
-  F50        Float?
-  F55        Float?
-  F60        Float?
-  F65        Float?
-  F70        Float?
+  YMD      String  @db.VarChar(8)
+  TT       String  @db.VarChar(2)
+  CELL_ID  String  @db.VarChar
+  H_DNG_CD String? @db.VarChar
+  SPOP     Float?  @db.DoublePrecision
+
+  // Male fields (00-70)
+  M00 Float? @db.DoublePrecision
+  M10 Float? @db.DoublePrecision
+  M15 Float? @db.DoublePrecision
+  M20 Float? @db.DoublePrecision
+  M25 Float? @db.DoublePrecision
+  M30 Float? @db.DoublePrecision
+  M35 Float? @db.DoublePrecision
+  M40 Float? @db.DoublePrecision
+  M45 Float? @db.DoublePrecision
+  M50 Float? @db.DoublePrecision
+  M55 Float? @db.DoublePrecision
+  M60 Float? @db.DoublePrecision
+  M65 Float? @db.DoublePrecision
+  M70 Float? @db.DoublePrecision
+
+  // Female fields (00-70)
+  F00 Float? @db.DoublePrecision
+  F10 Float? @db.DoublePrecision
+  F15 Float? @db.DoublePrecision
+  F20 Float? @db.DoublePrecision
+  F25 Float? @db.DoublePrecision
+  F30 Float? @db.DoublePrecision
+  F35 Float? @db.DoublePrecision
+  F40 Float? @db.DoublePrecision
+  F45 Float? @db.DoublePrecision
+  F50 Float? @db.DoublePrecision
+  F55 Float? @db.DoublePrecision
+  F60 Float? @db.DoublePrecision
+  F65 Float? @db.DoublePrecision
+  F70 Float? @db.DoublePrecision
+
   updated_at DateTime? @default(now()) @db.Timestamp(6)
 
   @@id([YMD, TT, CELL_ID])

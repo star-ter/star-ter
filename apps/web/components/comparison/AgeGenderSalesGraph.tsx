@@ -1,19 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
+import { AgeSalesItem, GenderSalesItem } from '../../types/analysis-types';
 
 interface AgeGenderSalesGraphProps {
-  ageData?: {
-    a10: string;
-    a20: string;
-    a30: string;
-    a40: string;
-    a50: string;
-    a60: string;
-  };
-  genderData?: {
-    male: string;
-    female: string;
-  };
+  ageData?: AgeSalesItem;
+  genderData?: GenderSalesItem;
 }
 
 export default function AgeGenderSalesGraph({ ageData, genderData }: AgeGenderSalesGraphProps) {
@@ -27,26 +18,27 @@ export default function AgeGenderSalesGraph({ ageData, genderData }: AgeGenderSa
   if (!ageData || !genderData) return null;
 
   // 1. Calculate Ratios
-  const m = parseInt(genderData.male, 10);
-  const f = parseInt(genderData.female, 10);
+  const m = genderData.male;
+  const f = genderData.female;
   const totalGender = m + f || 1;
   const mRatio = m / totalGender;
   const fRatio = f / totalGender;
 
   // 2. Prepare Segments
   const ages = [
-    { key: 'a10', label: '10대' },
-    { key: 'a20', label: '20대' },
-    { key: 'a30', label: '30대' },
-    { key: 'a40', label: '40대' },
-    { key: 'a50', label: '50대' },
-    { key: 'a60', label: '60대 이상' },
+    { key: '10s', label: '10대' },
+    { key: '20s', label: '20대' },
+    { key: '30s', label: '30대' },
+    { key: '40s', label: '40대' },
+    { key: '50s', label: '50대' },
+    { key: '60s', label: '60대 이상' },
   ];
 
   // Calculate estimated distributed sales
   const segments = ages.map(age => {
-    // @ts-ignore
-    const ageTotal = parseInt(ageData[age.key] || '0', 10);
+    // Try both keys: '10s' (from backend logic usually) or 'a10' (legacy mapping fallback if needed)
+    // Based on interface AgeSalesItem { [key: string]: number }
+    const ageTotal = ageData[age.key] || ageData[`a${age.key.slice(0, 2)}`] || 0;
     const mVal = ageTotal * mRatio;
     const fVal = ageTotal * fRatio;
     return {

@@ -24,11 +24,31 @@ export class RevenueService {
   private readonly logger = new Logger(RevenueService.name);
 
   private readonly modelMap: Record<RevenueLevel, ModelConfig> = {
-    city: { codeField: 'MEGA_CD', nameField: 'MEGA_CD_NM', modelName: 'salesCity' },
-    gu: { codeField: 'SIGNGU_CD', nameField: 'SIGNGU_CD_NM', modelName: 'salesGu' },
-    dong: { codeField: 'ADSTRD_CD', nameField: 'ADSTRD_CD_NM', modelName: 'salesDong' },
-    backarea: { codeField: 'TRDAR_CD', nameField: 'TRDAR_CD_NM', modelName: 'salesBackarea' },
-    commercial: { codeField: 'TRDAR_CD', nameField: 'TRDAR_CD_NM', modelName: 'salesCommercial' },
+    city: {
+      codeField: 'MEGA_CD',
+      nameField: 'MEGA_CD_NM',
+      modelName: 'salesCity',
+    },
+    gu: {
+      codeField: 'SIGNGU_CD',
+      nameField: 'SIGNGU_CD_NM',
+      modelName: 'salesGu',
+    },
+    dong: {
+      codeField: 'ADSTRD_CD',
+      nameField: 'ADSTRD_CD_NM',
+      modelName: 'salesDong',
+    },
+    backarea: {
+      codeField: 'TRDAR_CD',
+      nameField: 'TRDAR_CD_NM',
+      modelName: 'salesBackarea',
+    },
+    commercial: {
+      codeField: 'TRDAR_CD',
+      nameField: 'TRDAR_CD_NM',
+      modelName: 'salesCommercial',
+    },
   };
 
   constructor(private readonly prisma: PrismaService) {}
@@ -163,11 +183,10 @@ export class RevenueService {
         });
 
         if (!changeRows.length) {
-          const latestChange =
-            await this.prisma.commercialChangeGu.findFirst({
-              select: { STDR_YYQU_CD: true },
-              orderBy: { STDR_YYQU_CD: 'desc' },
-            });
+          const latestChange = await this.prisma.commercialChangeGu.findFirst({
+            select: { STDR_YYQU_CD: true },
+            orderBy: { STDR_YYQU_CD: 'desc' },
+          });
 
           if (latestChange?.STDR_YYQU_CD) {
             changeRows = await this.prisma.commercialChangeGu.findMany({
@@ -209,11 +228,12 @@ export class RevenueService {
         });
 
         if (!changeRows.length) {
-          const latestChange =
-            await this.prisma.commercialChangeDong.findFirst({
+          const latestChange = await this.prisma.commercialChangeDong.findFirst(
+            {
               select: { STDR_YYQU_CD: true },
               orderBy: { STDR_YYQU_CD: 'desc' },
-            });
+            },
+          );
 
           if (latestChange?.STDR_YYQU_CD) {
             changeRows = await this.prisma.commercialChangeDong.findMany({

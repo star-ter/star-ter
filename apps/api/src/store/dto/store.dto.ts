@@ -1,6 +1,12 @@
 import { IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-export const storeLevels = ['city', 'gu', 'dong', 'backarea', 'commercial'] as const;
+export const storeLevels = [
+  'city',
+  'gu',
+  'dong',
+  'backarea',
+  'commercial',
+] as const;
 export type StoreLevel = (typeof storeLevels)[number];
 
 export class StoreStatsDto {

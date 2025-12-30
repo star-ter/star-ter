@@ -39,7 +39,7 @@ export default function SearchBox() {
           { lat: result.lat, lng: result.lng },
           result.buildingName || result.address || searchValue,
           3,
-          true, // centered: 정중앙에 표시
+          true,
         );
         setSearchValue('');
         inputRef.current?.blur();

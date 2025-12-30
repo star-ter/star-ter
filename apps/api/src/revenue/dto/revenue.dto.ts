@@ -1,6 +1,12 @@
 import { IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-export const revenueLevels = ['city', 'gu', 'dong', 'backarea', 'commercial'] as const;
+export const revenueLevels = [
+  'city',
+  'gu',
+  'dong',
+  'backarea',
+  'commercial',
+] as const;
 export type RevenueLevel = (typeof revenueLevels)[number];
 
 export class RevenueItemDto {
