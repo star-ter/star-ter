@@ -36,7 +36,6 @@ export class PolygonService {
     const openingStoresMap = new Map<string, number>();
 
     if (trdarCds.length > 0) {
-      // Sales
       const sales = await this.prisma.salesCommercial.groupBy({
         by: ['TRDAR_CD'],
         where: {
@@ -51,7 +50,6 @@ export class PolygonService {
         }
       });
 
-      // Population
       const pop = await this.prisma.residentPopulationCommercial.findMany({
         where: {
           TRDAR_CD: { in: trdarCds },
@@ -61,7 +59,6 @@ export class PolygonService {
       });
       pop.forEach((p) => populationMap.set(p.TRDAR_CD, p.TOT_REPOP_CO));
 
-      // Opening Stores
       const openings = await this.prisma.storeCommercial.groupBy({
         by: ['TRDAR_CD'],
         where: {
@@ -115,10 +112,8 @@ export class PolygonService {
     let polygons: AdminPolygonResponse[] = [];
 
     if (type === 'dong') {
-      polygons =
-        (await this.prisma.adminAreaDong.findMany()) as unknown as AdminPolygonResponse[];
+      polygons = (await this.prisma.adminAreaDong.findMany()) as unknown as AdminPolygonResponse[];
 
-      // Sales
       const sales = await this.prisma.salesDong.groupBy({
         by: ['ADSTRD_CD'],
         where: { STDR_YYQU_CD: LATEST_QUARTER },
@@ -130,14 +125,12 @@ export class PolygonService {
           revenueMap.set(s.ADSTRD_CD, Number(s._sum.THSMON_SELNG_AMT || 0)),
       );
 
-      // Population
       const pop = await this.prisma.residentPopulationDong.findMany({
         where: { STDR_YYQU_CD: LATEST_QUARTER },
         select: { ADSTRD_CD: true, TOT_REPOP_CO: true },
       });
       pop.forEach((p) => populationMap.set(p.ADSTRD_CD, p.TOT_REPOP_CO));
 
-      // Openings
       const openings = await this.prisma.storeDong.groupBy({
         by: ['ADSTRD_CD'],
         where: { STDR_YYQU_CD: LATEST_QUARTER },
@@ -158,10 +151,8 @@ export class PolygonService {
         openingStores: p.adstrd_cd ? openingStoresMap.get(p.adstrd_cd) || 0 : 0,
       }));
     } else {
-      polygons =
-        (await this.prisma.adminAreaGu.findMany()) as unknown as AdminPolygonResponse[];
+      polygons = (await this.prisma.adminAreaGu.findMany()) as unknown as AdminPolygonResponse[];
 
-      // Sales
       const sales = await this.prisma.salesGu.groupBy({
         by: ['SIGNGU_CD'],
         where: { STDR_YYQU_CD: LATEST_QUARTER },
@@ -173,14 +164,12 @@ export class PolygonService {
           revenueMap.set(s.SIGNGU_CD, Number(s._sum.THSMON_SELNG_AMT || 0)),
       );
 
-      // Population
       const pop = await this.prisma.residentPopulationGu.findMany({
         where: { STDR_YYQU_CD: LATEST_QUARTER },
         select: { SIGNGU_CD: true, TOT_REPOP_CO: true },
       });
       pop.forEach((p) => populationMap.set(p.SIGNGU_CD, p.TOT_REPOP_CO));
 
-      // Openings
       const openings = await this.prisma.storeGu.groupBy({
         by: ['SIGNGU_CD'],
         where: { STDR_YYQU_CD: LATEST_QUARTER },
