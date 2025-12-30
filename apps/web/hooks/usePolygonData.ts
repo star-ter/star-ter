@@ -8,7 +8,7 @@ import {
   InfoBarData,
   CommercialApiResponse,
 } from '../types/map-types';
-import { drawPolygons } from '../utils/kakao-draw-utils';
+import { drawPolygons, drawMarkers } from '../utils/kakao-draw-utils';
 import { useMapStore } from '../stores/useMapStore';
 import { API_ENDPOINTS } from '../config/api';
 
@@ -24,6 +24,7 @@ export const usePolygonData = (
   const customOverlaysRef = useRef<KakaoCustomOverlay[]>([]);
   const onPolygonClickRef = useRef(onPolygonClick);
   const visitedCommercialRef = useRef<Set<string>>(new Set());
+  const allCommercialFeaturesRef = useRef<CommercialApiResponse[]>([]); // Store accumulated features
 
   useEffect(() => {
     onPolygonClickRef.current = onPolygonClick;
@@ -93,7 +94,11 @@ export const usePolygonData = (
   );
 
   const fetchCommercialData = useCallback(
-    async (mapInstance: KakaoMap) => {
+    async (mapInstance: KakaoMap, shouldClear: boolean) => {
+      if (shouldClear) {
+        allCommercialFeaturesRef.current = [];
+      }
+
       const bounds = mapInstance.getBounds();
       const sw = bounds.getSouthWest();
       const ne = bounds.getNorthEast();
@@ -124,6 +129,10 @@ export const usePolygonData = (
               residentPopulation: feature.residentPopulation,
               openingStores: feature.openingStores,
               closingStores: feature.closingStores,
+              rankRevenue: feature.rankRevenue,
+              rankPopulation: feature.rankPopulation,
+              rankOpening: feature.rankOpening,
+              rankClosing: feature.rankClosing,
             }),
           );
 
@@ -142,7 +151,24 @@ export const usePolygonData = (
               polygonsRef,
               customOverlaysRef,
               (clickedData) => onPolygonClickRef.current(clickedData),
+              shouldClear,
+              overlayMode,
+              'commercial',
               false,
+            );
+
+            allCommercialFeaturesRef.current = [
+              ...allCommercialFeaturesRef.current,
+              ...newCommercialAreas,
+            ] as unknown as CommercialApiResponse[];
+          }
+
+          if (commercialAreas.length > 0) {
+            drawMarkers(
+              mapInstance,
+              commercialAreas as unknown as AdminArea[],
+              customOverlaysRef,
+              (clickedData) => onPolygonClickRef.current(clickedData),
               overlayMode,
               'commercial',
             );
@@ -166,31 +192,13 @@ export const usePolygonData = (
       else currentGroup = 'BUILDING';
 
       const modeChanged = overlayMode !== lastOverlayModeRef.current;
+      const groupChanged = currentGroup !== lastLevelGroupRef.current;
+      const shouldClear = groupChanged || modeChanged;
 
-      if (currentGroup !== lastLevelGroupRef.current) {
-        polygonsRef.current.forEach((polygon) => {
-          polygon.setMap(null);
-        });
-        polygonsRef.current = [];
-        customOverlaysRef.current.forEach((overlay) => {
-          overlay.setMap(null);
-        });
-        customOverlaysRef.current = [];
+      if (shouldClear) {
         visitedCommercialRef.current.clear();
-      }
-
-      if (currentGroup !== lastLevelGroupRef.current || modeChanged) {
         lastOverlayModeRef.current = overlayMode;
       }
-
-      if (
-        currentGroup === lastLevelGroupRef.current &&
-        !modeChanged &&
-        (currentGroup === 'GU' || currentGroup === 'DONG')
-      ) {
-        return;
-      }
-
       lastLevelGroupRef.current = currentGroup;
 
       if (level >= 7) {
@@ -198,7 +206,7 @@ export const usePolygonData = (
       } else if (level >= 5) {
         fetchCombinedBoundary(mapInstance, 2);
       } else if (level >= 2) {
-        fetchCommercialData(mapInstance);
+        fetchCommercialData(mapInstance, shouldClear);
       } else {
         fetchBuildingData(mapInstance);
       }
