@@ -9,6 +9,11 @@ import {
   CommercialApiResponse,
 } from '../types/map-types';
 import { drawPolygons } from '../utils/kakao-draw-utils';
+import {
+  isAdminAreaList,
+  isBuildingAreaList,
+  isCommercialApiResponseList,
+} from '@/utils/type-guards';
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000';
@@ -35,16 +40,18 @@ export const usePolygonData = (
       const response = await fetch(url);
       const data = await response.json();
 
-      if (Array.isArray(data)) {
+      if (isAdminAreaList(data)) {
         console.log(`Drawing ${data.length} features`);
         drawPolygons(
           map,
-          data as AdminArea[],
+          data,
           'admin',
           polygonsRef,
           customOverlaysRef,
           (data) => onPolygonClickRef.current(data),
         );
+      } else {
+        console.warn('AdminArea 데이터 형식이 아니거나 비어 있음!!');
       }
     } catch (err) {
       console.error('Combined Boundary Fetch Error:', err);
@@ -70,11 +77,11 @@ export const usePolygonData = (
 
       const features = data;
 
-      if (Array.isArray(features)) {
+      if (isBuildingAreaList(features)) {
         console.log(`Received ${features.length} buildings`);
         drawPolygons(
           map,
-          features as BuildingArea[],
+          features,
           'building_store',
           polygonsRef,
           customOverlaysRef,
@@ -110,21 +117,19 @@ export const usePolygonData = (
       );
       const data = await response.json();
 
-      if (Array.isArray(data)) {
+      if (isCommercialApiResponseList(data)) {
         console.log(`Received ${data.length} commercial areas`);
 
-        const commercialAreas = (data as CommercialApiResponse[]).map(
-          (feature) => ({
-            commercialType: feature.properties.commercialType,
-            commercialName: feature.properties.commercialName,
-            commercialCode:
-              feature.code || feature.properties.commercialCode || '',
-            guCode: feature.properties.guCode,
-            dongCode: feature.properties.dongCode,
-            polygons: feature.polygons.coordinates,
-            revenue: feature.revenue,
-          }),
-        );
+        const commercialAreas = data.map((feature) => ({
+          commercialType: feature.properties.commercialType,
+          commercialName: feature.properties.commercialName,
+          commercialCode:
+            feature.code || feature.properties.commercialCode || '',
+          guCode: feature.properties.guCode,
+          dongCode: feature.properties.dongCode,
+          polygons: feature.polygons.coordinates,
+          revenue: feature.revenue,
+        }));
 
         const newCommercialAreas = commercialAreas.filter((area) => {
           if (visitedCommercialRef.current.has(area.commercialName))
