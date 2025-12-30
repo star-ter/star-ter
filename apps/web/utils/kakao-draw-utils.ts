@@ -96,6 +96,7 @@ const COMMERCIAL_STYLES: Record<
  * @param polygonsRef 폴리곤 객체들을 저장할 Ref (cleanup용)
  * @param customOverlaysRef 커스텀 오버레이 객체들을 저장할 Ref (cleanup용)
  * @param onPolygonClick 폴리곤 클릭 시 실행할 콜백
+ * @param level 현재 레벨 그룹 ('gu' | 'dong' | 'commercial') - 클릭 시 API에 전달됨
  */
 export function drawPolygons(
   map: KakaoMap,
@@ -105,6 +106,7 @@ export function drawPolygons(
   customOverlaysRef: Ref<KakaoCustomOverlay[]>,
   onPolygonClick: (data: InfoBarData) => void,
   shouldClear: boolean = true,
+  level?: 'gu' | 'dong' | 'commercial',
 ) {
   // Clear existing polygons and overlays
 
@@ -282,11 +284,13 @@ export function drawPolygons(
         else if (centerPoint) finalY = centerPoint.getLat();
 
         // TODO: InfoBar에 상권 정보(TRDAR_SE_1 등)가 포함된 props를 전달하는 부분.
+        // level 정보를 포함하여 클릭 이벤트 전달
         onPolygonClick({
           ...props,
           x: finalX,
           y: finalY,
           polygons: polygons,
+          level: level, // 줌 레벨 기반 level 정보 추가
         } as unknown as InfoBarData);
       });
     });
@@ -333,11 +337,13 @@ export function drawPolygons(
 
         console.log(`Overlay Click Sent: ${finalX}, ${finalY}`);
 
+        // level 정보를 포함하여 마커 클릭 이벤트 전달
         onPolygonClick({
           ...props,
           x: finalX,
           y: finalY,
           polygons: polygons,
+          level: level, // 줌 레벨 기반 level 정보 추가
         } as unknown as InfoBarData);
       };
 

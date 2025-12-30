@@ -107,13 +107,50 @@ export class MarketService {
       stores: stores,
     };
   }
+  /**
+   * 마커/폴리곤 클릭 시 Analytics 데이터 조회
+   *
+   * level 파라미터에 따라 적절한 레벨의 데이터를 반환:
+   * - 'gu': 행정구 매출 데이터 (줌 레벨 7 이상)
+   * - 'dong' 또는 미지정: 상권 → 행정동 순서로 조회 (기존 로직)
+   */
   async getAnalytics(
     query: GetMarketAnalysisQueryDto,
   ): Promise<MarketAnalyticsDto> {
-    const { latitude, longitude } = query;
+    const { latitude, longitude, level } = query;
     const lat = parseFloat(latitude);
     const lng = parseFloat(longitude);
 
+    this.logger.log(
+      `[Analytics 요청] lat: ${lat}, lng: ${lng}, level: ${level || 'default'}`,
+    );
+
+    // ========================================
+    // (1) level이 'gu'인 경우: 행정구 데이터 조회
+    // ========================================
+    if (level === 'gu') {
+      const guArea = await this.marketRepository.findAdministrativeGu(lat, lng);
+
+      if (guArea) {
+        this.logger.log(
+          `[행정구 찾음] ${guArea.SIGNGU_NM} (${guArea.SIGNGU_CD})`,
+        );
+        const salesData = await this.marketRepository.getAdminGuRevenueTrend(
+          guArea.SIGNGU_CD,
+        );
+        return MarketMapper.mapToAnalyticsDto(
+          salesData,
+          guArea.SIGNGU_NM,
+          false, // isCommercialZone = false (행정구역)
+        );
+      }
+
+      return MarketMapper.getEmptySalesData('행정구 정보를 찾을 수 없습니다.');
+    }
+
+    // ========================================
+    // (2) 기본 동작: 상권 → 행정동 순서로 조회
+    // ========================================
     const commercialArea = await this.marketRepository.findCommercialArea(
       lat,
       lng,

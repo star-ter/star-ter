@@ -29,8 +29,16 @@ export const usePolygonData = (
     onPolygonClickRef.current = onPolygonClick;
   }, [onPolygonClick]);
 
+  /**
+   * 행정 구역(구/동) 폴리곤 데이터 가져오기
+   * @param map Kakao 지도 객체
+   * @param lowSearch 1: 구(레벨 7+), 2: 동(레벨 5-6)
+   */
   async function fetchCombinedBoundary(map: KakaoMap, lowSearch: number) {
     console.log(`Fetching Combined Boundary...`);
+    // lowSearch값에 따라 level 결정 (1: 구, 2: 동)
+    const level = lowSearch === 1 ? 'gu' : 'dong';
+
     try {
       const url = `${API_BASE_URL}/polygon/admin?low_search=${lowSearch}`;
 
@@ -38,7 +46,7 @@ export const usePolygonData = (
       const data = await response.json();
 
       if (isAdminAreaList(data)) {
-        console.log(`Drawing ${data.length} features`);
+        console.log(`Drawing ${data.length} features with level: ${level}`);
         drawPolygons(
           map,
           data,
@@ -46,6 +54,8 @@ export const usePolygonData = (
           polygonsRef,
           customOverlaysRef,
           (data) => onPolygonClickRef.current(data),
+          true, // shouldClear
+          level, // level 파라미터 추가
         );
       } else {
         console.warn('AdminArea 데이터 형식이 아니거나 비어 있음!!');
@@ -143,7 +153,8 @@ export const usePolygonData = (
             polygonsRef,
             customOverlaysRef,
             (data) => onPolygonClickRef.current(data),
-            false,
+            false, // shouldClear
+            'commercial', // level 파라미터 추가
           );
         }
         console.timeEnd('상권 데이터 로딩 시간');
