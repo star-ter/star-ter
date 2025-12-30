@@ -12,7 +12,6 @@ import {
 } from '../types/population-types';
 import { fetchPopulationLayer } from '../services/population/population-service';
 
-// 히트맵 컬러 팔레트 (기존 유지)
 const colorPalette = (function () {
   const palette = new Uint8ClampedArray(256 * 3);
   const gradient = [

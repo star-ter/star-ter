@@ -86,4 +86,6 @@ export interface AnalysisCardProps {
   scrollRef?: React.RefObject<HTMLDivElement | null>;
   onScroll?: (e: React.UIEvent<HTMLDivElement>) => void;
   regionCode?: string;
+  isStoreExpanded?: boolean;
+  onStoreExpand?: (expanded: boolean) => void;
 }
