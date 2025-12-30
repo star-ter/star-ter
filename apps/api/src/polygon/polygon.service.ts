@@ -155,4 +155,17 @@ export class PolygonService {
       );
     }
   }
+
+  // 서울특별시 시도 경계 데이터 조회
+  async getSeoulSidoPolygon(): Promise<AdminPolygonResponse | null> {
+    const result = await this.prisma.adminAreaSido.findFirst({
+      where: {
+        adm_nm: '서울특별시',
+      },
+    });
+
+    if (!result) return null;
+
+    return result as unknown as AdminPolygonResponse;
+  }
 }
