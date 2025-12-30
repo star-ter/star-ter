@@ -9,4 +9,6 @@ export class AdminPolygonResponse {
   signgu_cd?: string;
   adstrd_cd?: string;
   revenue?: number; // Estimated Revenue
+  residentPopulation?: number; // Resident Population
+  openingStores?: number; // Opening Stores Count
 }

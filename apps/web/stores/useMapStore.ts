@@ -1,51 +1,19 @@
 import { create } from 'zustand';
-
-interface MapCoordinates {
-  lat: number;
-  lng: number;
-}
-
-interface MapMarker {
-  id: string;
-  coords: MapCoordinates;
-  name: string;
-  style?: 'default' | 'pulse';
-}
-
-interface MapStore {
-  center: MapCoordinates | null;
-  zoom: number;
-  searchedLocation: string | null;
-  isMoving: boolean;
-  markers: MapMarker[];
-
-  setCenter: (coords: MapCoordinates) => void;
-  setZoom: (level: number) => void;
-  setSearchedLocation: (location: string | null) => void;
-  setIsMoving: (moving: boolean) => void;
-
-  moveToLocation: (
-    coords: MapCoordinates,
-    location: string,
-    zoom?: number,
-    centered?: boolean,
-  ) => void;
-  moveToLocations: (locations: MapMarker[]) => void;
-  clearMarkers: () => void;
-  reset: () => void;
-}
+import { MapStore } from '../types/map-store-types';
 
 export const useMapStore = create<MapStore>((set) => ({
   center: null,
   zoom: 3,
   searchedLocation: null,
   isMoving: false,
+  overlayMode: 'revenue',
   markers: [],
 
   setCenter: (coords) => set({ center: coords }),
   setZoom: (level) => set({ zoom: level }),
   setSearchedLocation: (location) => set({ searchedLocation: location }),
   setIsMoving: (moving) => set({ isMoving: moving }),
+  setOverlayMode: (mode) => set({ overlayMode: mode }),
 
   moveToLocation: (coords, location, zoom = 3, centered = false) => {
     set({

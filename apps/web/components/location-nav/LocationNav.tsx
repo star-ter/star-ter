@@ -1,4 +1,5 @@
 import { useLocationSync } from '@/hooks/useLocationSync';
+import { useMapStore } from '@/stores/useMapStore';
 
 const Separator = () => (
   <svg
@@ -29,6 +30,8 @@ export default function LocationNav() {
     changeDong,
   } = useLocationSync();
 
+  const { overlayMode, setOverlayMode } = useMapStore();
+
   const labelClass =
     'block px-1 text-[13px] font-medium text-gray-700 transition-all group-hover:text-gray-900 group-hover:font-bold cursor-pointer whitespace-nowrap';
 
@@ -42,71 +45,103 @@ export default function LocationNav() {
     dongList.find((d) => d.code === selectedDong)?.name ||
     (isLoadingDong ? '로딩 중...' : '동 선택');
 
+  const getButtonClass = (mode: 'revenue' | 'population' | 'opening') =>
+    `px-3 py-1.5 text-xs font-bold rounded-full transition-all ${
+      overlayMode === mode
+        ? 'bg-blue-600 text-white shadow-md'
+        : 'bg-transparent text-gray-600 hover:bg-gray-100'
+    }`;
+
   return (
-    <div className="flex items-center rounded-full bg-white/90 px-5 py-1.5">
-      <div className="relative flex min-w-fit items-center group">
-        <span className={labelClass}>서울특별시</span>
-        <select
-          name="city"
-          defaultValue="11"
-          className={selectOverlayClass}
-        >
-          <option value="11">서울특별시</option>
-        </select>
+    <div className="flex items-center gap-3">
+      {/* Location Selectors */}
+      <div className="flex items-center rounded-full bg-white/90 px-5 py-1.5 shadow-sm">
+        <div className="relative flex min-w-fit items-center group">
+          <span className={labelClass}>서울특별시</span>
+          <select
+            name="city"
+            defaultValue="11"
+            className={selectOverlayClass}
+          >
+            <option value="11">서울특별시</option>
+          </select>
+        </div>
+
+        <Separator />
+
+        <div className="relative flex min-w-fit items-center group">
+          <span
+            className={`${labelClass} ${!selectedGu ? 'text-gray-400' : ''}`}
+          >
+            {currentGuName}
+          </span>
+          <select
+            name="gu"
+            value={selectedGu}
+            onChange={(e) => changeGu(e.target.value)}
+            disabled={!guList.length || isLoadingGu || isSyncing}
+            className={selectOverlayClass}
+          >
+            <option value="">
+              {isLoadingGu ? '로딩 중...' : '구 선택'}
+            </option>
+            {guList.map((gu) => (
+              <option key={gu.code} value={gu.code}>
+                {gu.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <Separator />
+
+        <div className="relative flex min-w-fit items-center group">
+          <span
+            className={`${labelClass} ${!selectedDong ? 'text-gray-400' : ''}`}
+          >
+            {currentDongName}
+          </span>
+          <select
+            name="dong"
+            value={selectedDong}
+            onChange={(e) => changeDong(e.target.value)}
+            disabled={
+              !selectedGu || !dongList.length || isLoadingDong || isSyncing
+            }
+            className={selectOverlayClass}
+          >
+            <option value="">
+              {isLoadingDong ? '로딩 중...' : '동 선택'}
+            </option>
+            {dongList.map((dong) => (
+              <option key={dong.code} value={dong.code}>
+                {dong.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      <Separator />
-
-      <div className="relative flex min-w-fit items-center group">
-        <span
-          className={`${labelClass} ${!selectedGu ? 'text-gray-400' : ''}`}
+      {/* Mode Buttons */}
+      <div className="flex items-center justify-center bg-white/90 rounded-full p-1 shadow-sm gap-1">
+        <button
+          onClick={() => setOverlayMode('revenue')}
+          className={getButtonClass('revenue')}
         >
-          {currentGuName}
-        </span>
-        <select
-          name="gu"
-          value={selectedGu}
-          onChange={(e) => changeGu(e.target.value)}
-          disabled={!guList.length || isLoadingGu || isSyncing}
-          className={selectOverlayClass}
+          매출
+        </button>
+        <button
+          onClick={() => setOverlayMode('population')}
+          className={getButtonClass('population')}
         >
-          <option value="">
-            {isLoadingGu ? '로딩 중...' : '구 선택'}
-          </option>
-          {guList.map((gu) => (
-            <option key={gu.code} value={gu.code}>
-              {gu.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <Separator />
-
-      <div className="relative flex min-w-fit items-center group">
-        <span
-          className={`${labelClass} ${!selectedDong ? 'text-gray-400' : ''}`}
+          인구
+        </button>
+        <button
+          onClick={() => setOverlayMode('opening')}
+          className={getButtonClass('opening')}
         >
-          {currentDongName}
-        </span>
-        <select
-          name="dong"
-          value={selectedDong}
-          onChange={(e) => changeDong(e.target.value)}
-          disabled={
-            !selectedGu || !dongList.length || isLoadingDong || isSyncing
-          }
-          className={selectOverlayClass}
-        >
-          <option value="">
-            {isLoadingDong ? '로딩 중...' : '동 선택'}
-          </option>
-          {dongList.map((dong) => (
-            <option key={dong.code} value={dong.code}>
-              {dong.name}
-            </option>
-          ))}
-        </select>
+          개업
+        </button>
       </div>
     </div>
   );
