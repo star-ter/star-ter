@@ -1,6 +1,6 @@
 model PopulationGrid {
   YMD        String    @db.VarChar(8)
-  TT         String    @db.VarChar(2)
+  TT         Int
   CELL_ID    String    @db.VarChar
   H_DNG_CD   String?   @db.VarChar
   SPOP       Float?

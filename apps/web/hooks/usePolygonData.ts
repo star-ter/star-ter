@@ -10,7 +10,8 @@ import {
 } from '../types/map-types';
 import { drawPolygons } from '../utils/kakao-draw-utils';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000';
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000';
 
 export const usePolygonData = (
   map: KakaoMap | null,
@@ -122,10 +123,12 @@ export const usePolygonData = (
           (feature) => ({
             commercialType: feature.properties.commercialType,
             commercialName: feature.properties.commercialName,
-            commercialCode: feature.properties.commercialCode,
+            commercialCode:
+              feature.code || feature.properties.commercialCode || '',
             guCode: feature.properties.guCode,
             dongCode: feature.properties.dongCode,
             polygons: feature.polygons.coordinates,
+            revenue: feature.revenue,
           }),
         );
 

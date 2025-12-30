@@ -295,6 +295,16 @@ export function drawPolygons(
       else if ('commercialName' in props && props.commercialName)
         shortName = props.commercialName;
 
+      // Add Revenue Display if available
+      if (
+        'revenue' in props &&
+        typeof props.revenue === 'number' &&
+        props.revenue > 0
+      ) {
+        const revenueInBillions = Math.round(props.revenue / 100000000);
+        shortName += ` <span style="color: #2563eb;">${revenueInBillions.toLocaleString()}억</span>`;
+      }
+
       const contentEl = document.createElement('div');
       contentEl.innerHTML = `<div style="text-align: center; white-space: nowrap; padding: 4px 8px; background: white; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-size: 12px; font-weight: bold; color: #333; cursor: pointer;">${shortName}</div>`;
 

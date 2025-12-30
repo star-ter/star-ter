@@ -50,7 +50,22 @@ export interface InfoBarData {
   // [key: string]: any;
 }
 
-// ...
+// 행정구역
+export interface AdminArea {
+  adm_cd: number;
+  adm_nm: string;
+  x: number;
+  y: number;
+  polygons: number[][][][] | number[][][] | number[][];
+  revenue?: number; // 매출 (Optional)
+}
+
+// 건물
+export interface BuildingArea {
+  buld_nm: string;
+  adm_nm: string;
+  polygons: number[][][][] | number[][][] | number[][];
+}
 
 // 상권
 export interface CommercialArea {
@@ -60,18 +75,20 @@ export interface CommercialArea {
   guCode: string; // 구 정보
   dongCode: string; // 동 정보
   polygons: number[][][][] | number[][][] | number[][];
+  revenue?: number; // 매출 (Optional)
 }
 
 export interface CommercialApiResponse {
   properties: {
     commercialType: string;
     commercialName: string;
-    commercialCode: string;
+    commercialCode?: string; // Legacy field, might be empty or redundant
     guCode: string;
     dongCode: string;
   };
-//...
+  code?: string; // New code field from flattened DTO part
   polygons: {
     coordinates: number[][][][] | number[][][] | number[][];
   };
+  revenue?: number;
 }

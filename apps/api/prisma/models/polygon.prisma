@@ -9,21 +9,23 @@ model AdminAreaSido {
 }
 
 model AdminAreaGu {
-  adm_cd   Int    @id
-  adm_nm   String
-  x        Float
-  y        Float
-  polygons Json
+  adm_cd    Int     @id
+  adm_nm    String
+  x         Float
+  y         Float
+  polygons  Json
+  signgu_cd String?
 
   @@map("admin_area_gu")
 }
 
 model AdminAreaDong {
-  adm_cd   Int    @id
-  adm_nm   String
-  x        Float
-  y        Float
-  polygons Json
+  adm_cd    Int     @id
+  adm_nm    String
+  x         Float
+  y         Float
+  polygons  Json
+  adstrd_cd String?
 
   @@map("admin_area_dong")
 }
