@@ -1,95 +1,93 @@
-//  store_{city|gu|dong|backarea|commercial}
-
 model StoreCity {
-    STDR_YYQU_CD          String //기준_년분기_코드
-    MEGA_CD               String //서울시_코드
-    MEGA_CD_NM            String //서울시_코드_명
-    SVC_INDUTY_CD         String //서비스_업종_코드
-    SVC_INDUTY_CD_NM      String //서비스_업종_코드_명
-    STOR_CO               Int //점포_수
-    SIMILR_INDUTY_STOR_CO Int //유사_업종_점포_수
-    OPBIZ_RT              Float //개업_율
-    OPBIZ_STOR_CO         Int //개업_점포_수
-    CLSBIZ_RT             Float //폐업_률
-    CLSBIZ_STOR_CO        Int //폐업_점포_수
-    FRC_STOR_CO           Int //프랜차이즈_점포_수
+  STDR_YYQU_CD          String
+  MEGA_CD               String
+  MEGA_CD_NM            String
+  SVC_INDUTY_CD         String
+  SVC_INDUTY_CD_NM      String
+  STOR_CO               Int
+  SIMILR_INDUTY_STOR_CO Int
+  OPBIZ_RT              Float
+  OPBIZ_STOR_CO         Int
+  CLSBIZ_RT             Float
+  CLSBIZ_STOR_CO        Int
+  FRC_STOR_CO           Int
 
-    @@id([STDR_YYQU_CD, MEGA_CD, SVC_INDUTY_CD])
-    @@map("store_city")
+  @@id([STDR_YYQU_CD, MEGA_CD, SVC_INDUTY_CD])
+  @@map("store_city")
 }
 
 model StoreGu {
-    STDR_YYQU_CD          String //기준_년분기_코드
-    SIGNGU_CD             String //자치구_코드
-    SIGNGU_CD_NM          String //자치구_코드_명
-    SVC_INDUTY_CD         String //서비스_업종_코드
-    SVC_INDUTY_CD_NM      String //서비스_업종_코드_명
-    STOR_CO               Int //점포_수
-    SIMILR_INDUTY_STOR_CO Int //유사_업종_점포_수
-    OPBIZ_RT              Float //개업_율
-    OPBIZ_STOR_CO         Int //개업_점포_수
-    CLSBIZ_RT             Float //폐업_률
-    CLSBIZ_STOR_CO        Int //폐업_점포_수
-    FRC_STOR_CO           Int //프랜차이즈_점포_수
+  STDR_YYQU_CD          String
+  SIGNGU_CD             String
+  SIGNGU_CD_NM          String
+  SVC_INDUTY_CD         String
+  SVC_INDUTY_CD_NM      String
+  STOR_CO               Int
+  SIMILR_INDUTY_STOR_CO Int
+  OPBIZ_RT              Float
+  OPBIZ_STOR_CO         Int
+  CLSBIZ_RT             Float
+  CLSBIZ_STOR_CO        Int
+  FRC_STOR_CO           Int
 
-    @@id([STDR_YYQU_CD, SIGNGU_CD, SVC_INDUTY_CD])
-    @@map("store_gu")
+  @@id([STDR_YYQU_CD, SIGNGU_CD, SVC_INDUTY_CD])
+  @@map("store_gu")
 }
 
 model StoreDong {
-    STDR_YYQU_CD          String //기준_년분기_코드
-    ADSTRD_CD             String //행정동_코드
-    ADSTRD_CD_NM          String //행정동_코드_명
-    SVC_INDUTY_CD         String //서비스_업종_코드
-    SVC_INDUTY_CD_NM      String //서비스_업종_코드_명
-    STOR_CO               Int //점포_수
-    SIMILR_INDUTY_STOR_CO Int //유사_업종_점포_수
-    OPBIZ_RT              Float //개업_율
-    OPBIZ_STOR_CO         Int //개업_점포_수
-    CLSBIZ_RT             Float //폐업_률
-    CLSBIZ_STOR_CO        Int //폐업_점포_수
-    FRC_STOR_CO           Int //프랜차이즈_점포_수
+  STDR_YYQU_CD          String
+  ADSTRD_CD             String
+  ADSTRD_CD_NM          String
+  SVC_INDUTY_CD         String
+  SVC_INDUTY_CD_NM      String
+  STOR_CO               Int
+  SIMILR_INDUTY_STOR_CO Int
+  OPBIZ_RT              Float
+  OPBIZ_STOR_CO         Int
+  CLSBIZ_RT             Float
+  CLSBIZ_STOR_CO        Int
+  FRC_STOR_CO           Int
 
-    @@id([STDR_YYQU_CD, ADSTRD_CD, SVC_INDUTY_CD])
-    @@map("store_dong")
+  @@id([STDR_YYQU_CD, ADSTRD_CD, SVC_INDUTY_CD])
+  @@map("store_dong")
 }
 
 model StoreBackarea {
-    STDR_YYQU_CD          String //기준_년분기_코드
-    TRDAR_SE_CD           String //상권_구분_코드
-    TRDAR_SE_CD_NM        String //상권_구분_코드_명
-    TRDAR_CD              String //상권_코드
-    TRDAR_CD_NM           String //상권_코드_명
-    SVC_INDUTY_CD         String //서비스_업종_코드
-    SVC_INDUTY_CD_NM      String //서비스_업종_코드_명
-    STOR_CO               Int //점포_수
-    SIMILR_INDUTY_STOR_CO Int //유사_업종_점포_수
-    OPBIZ_RT              Float //개업_율
-    OPBIZ_STOR_CO         Int //개업_점포_수
-    CLSBIZ_RT             Float //폐업_률
-    CLSBIZ_STOR_CO        Int //폐업_점포_수
-    FRC_STOR_CO           Int //프랜차이즈_점포_수
+  STDR_YYQU_CD          String
+  TRDAR_SE_CD           String
+  TRDAR_SE_CD_NM        String
+  TRDAR_CD              String
+  TRDAR_CD_NM           String
+  SVC_INDUTY_CD         String
+  SVC_INDUTY_CD_NM      String
+  STOR_CO               Int
+  SIMILR_INDUTY_STOR_CO Int
+  OPBIZ_RT              Float
+  OPBIZ_STOR_CO         Int
+  CLSBIZ_RT             Float
+  CLSBIZ_STOR_CO        Int
+  FRC_STOR_CO           Int
 
-    @@id([STDR_YYQU_CD, TRDAR_CD, SVC_INDUTY_CD])
-    @@map("store_backarea")
+  @@id([STDR_YYQU_CD, TRDAR_CD, SVC_INDUTY_CD])
+  @@map("store_backarea")
 }
 
 model StoreCommercial {
-    STDR_YYQU_CD          String //기준_년분기_코드
-    TRDAR_SE_CD           String //상권_구분_코드
-    TRDAR_SE_CD_NM        String //상권_구분_코드_명
-    TRDAR_CD              String //상권_코드
-    TRDAR_CD_NM           String //상권_코드_명
-    SVC_INDUTY_CD         String //서비스_업종_코드
-    SVC_INDUTY_CD_NM      String //서비스_업종_코드_명
-    STOR_CO               Int //점포_수
-    SIMILR_INDUTY_STOR_CO Int //유사_업종_점포_수
-    OPBIZ_RT              Float //개업_율
-    OPBIZ_STOR_CO         Int //개업_점포_수
-    CLSBIZ_RT             Float //폐업_률
-    CLSBIZ_STOR_CO        Int //폐업_점포_수
-    FRC_STOR_CO           Int //프랜차이즈_점포_수
+  STDR_YYQU_CD          String
+  TRDAR_SE_CD           String
+  TRDAR_SE_CD_NM        String
+  TRDAR_CD              String
+  TRDAR_CD_NM           String
+  SVC_INDUTY_CD         String
+  SVC_INDUTY_CD_NM      String
+  STOR_CO               Int
+  SIMILR_INDUTY_STOR_CO Int
+  OPBIZ_RT              Float
+  OPBIZ_STOR_CO         Int
+  CLSBIZ_RT             Float
+  CLSBIZ_STOR_CO        Int
+  FRC_STOR_CO           Int
 
-    @@id([STDR_YYQU_CD, TRDAR_CD, SVC_INDUTY_CD])
-    @@map("store_commercial")
+  @@id([STDR_YYQU_CD, TRDAR_CD, SVC_INDUTY_CD])
+  @@map("store_commercial")
 }
