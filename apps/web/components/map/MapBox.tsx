@@ -58,7 +58,7 @@ export default function MapBox({
 
   return (
     <section className="h-full pointer-events-none">
-      <div className="absolute left-4 top-4 flex flex-col items-start gap-3 pointer-events-auto">
+      <div className="absolute left-4 flex flex-col items-start gap-3 pointer-events-auto">
         <div className="flex items-center">
           <SearchBox />
           <LocationNav />
