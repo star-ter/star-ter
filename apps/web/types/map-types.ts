@@ -88,6 +88,10 @@ export interface CommercialArea {
   residentPopulation?: number; // 주거인구 (Optional)
   openingStores?: number; // 개업 점포 수 (Optional)
   closingStores?: number; // 폐업 점포 수 (Optional)
+  rankRevenue?: number;
+  rankPopulation?: number;
+  rankOpening?: number;
+  rankClosing?: number;
 }
 
 export interface CommercialApiResponse {
@@ -106,6 +110,10 @@ export interface CommercialApiResponse {
   residentPopulation?: number;
   openingStores?: number;
   closingStores?: number;
+  rankRevenue?: number;
+  rankPopulation?: number;
+  rankOpening?: number;
+  rankClosing?: number;
 }
 
 export interface KakaoMarker {

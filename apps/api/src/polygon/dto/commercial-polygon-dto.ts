@@ -14,4 +14,8 @@ export class CommercialPolygonResponse {
   residentPopulation?: number; // Resident Population
   openingStores?: number; // Opening Stores Count
   closingStores?: number; // Closing Stores Count
+  rankRevenue?: number;
+  rankPopulation?: number;
+  rankOpening?: number;
+  rankClosing?: number;
 }

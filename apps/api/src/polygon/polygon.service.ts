@@ -12,12 +12,85 @@ const LATEST_QUARTER = '20253';
 export class PolygonService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private globalRankCache: {
+    revenue: Map<string, number>;
+    population: Map<string, number>;
+    opening: Map<string, number>;
+    closing: Map<string, number>;
+  } | null = null;
+
+  private async ensureGlobalRanks() {
+    if (this.globalRankCache) return;
+
+    const quarter = LATEST_QUARTER;
+
+    const revenueTop = await this.prisma.salesCommercial.groupBy({
+      by: ['TRDAR_CD'],
+      where: { STDR_YYQU_CD: quarter },
+      _sum: { THSMON_SELNG_AMT: true },
+      orderBy: {
+        _sum: {
+          THSMON_SELNG_AMT: 'desc',
+        },
+      },
+      take: 3,
+    });
+
+    const popTop = await this.prisma.residentPopulationCommercial.findMany({
+      where: { STDR_YYQU_CD: quarter },
+      orderBy: { TOT_REPOP_CO: 'desc' },
+      take: 3,
+      select: { TRDAR_CD: true },
+    });
+
+    const openTop = await this.prisma.storeCommercial.groupBy({
+      by: ['TRDAR_CD'],
+      where: { STDR_YYQU_CD: quarter },
+      _sum: { OPBIZ_STOR_CO: true },
+      orderBy: {
+        _sum: {
+          OPBIZ_STOR_CO: 'desc',
+        },
+      },
+      take: 3,
+    });
+
+    const closeTop = await this.prisma.storeCommercial.groupBy({
+      by: ['TRDAR_CD'],
+      where: { STDR_YYQU_CD: quarter },
+      _sum: { CLSBIZ_STOR_CO: true },
+      orderBy: {
+        _sum: {
+          CLSBIZ_STOR_CO: 'asc',
+        },
+      },
+      take: 3,
+    });
+
+    const buildMap = (rows: { TRDAR_CD: string | null }[]) => {
+      const map = new Map<string, number>();
+      rows.forEach((r, i) => {
+        if (r.TRDAR_CD) map.set(r.TRDAR_CD, i + 1);
+      });
+      return map;
+    };
+
+    this.globalRankCache = {
+      revenue: buildMap(revenueTop),
+      population: buildMap(popTop),
+      opening: buildMap(openTop),
+      closing: buildMap(closeTop),
+    };
+  }
+
   async getCommercialPolygon(
     minx: string,
     miny: string,
     maxx: string,
     maxy: string,
   ): Promise<CommercialPolygonResponse[]> {
+    await this.ensureGlobalRanks();
+
     const results = await this.prisma.$queryRaw<RawCommercialArea[]>`
       SELECT 
         trdar_cd,
@@ -76,23 +149,32 @@ export class PolygonService {
       });
     }
 
-    return results.map((row) => ({
-      properties: {
-        commercialType: row.trdar_se_1,
-        commercialName: row.trdar_cd_n,
-        guCode: row.signgu_cd_,
-        dongCode: row.adstrd_cd_,
-      },
-      code: row.trdar_cd,
-      revenue: revenueMap.get(row.trdar_cd) || 0,
-      residentPopulation: populationMap.get(row.trdar_cd) || 0,
-      openingStores: openingStoresMap.get(row.trdar_cd) || 0,
-      closingStores: closingStoresMap.get(row.trdar_cd) || 0,
-      polygons: JSON.parse(row.geom) as {
-        type: string;
-        coordinates: number[][][][] | number[][][] | number[][];
-      },
-    }));
+    const { revenue, population, opening, closing } = this.globalRankCache!;
+
+    return results.map(
+      (row) =>
+        ({
+          properties: {
+            commercialType: row.trdar_se_1,
+            commercialName: row.trdar_cd_n,
+            guCode: row.signgu_cd_,
+            dongCode: row.adstrd_cd_,
+          },
+          code: row.trdar_cd,
+          revenue: revenueMap.get(row.trdar_cd) || 0,
+          residentPopulation: populationMap.get(row.trdar_cd) || 0,
+          openingStores: openingStoresMap.get(row.trdar_cd) || 0,
+          closingStores: closingStoresMap.get(row.trdar_cd) || 0,
+          rankRevenue: revenue.get(row.trdar_cd),
+          rankPopulation: population.get(row.trdar_cd),
+          rankOpening: opening.get(row.trdar_cd),
+          rankClosing: closing.get(row.trdar_cd),
+          polygons: JSON.parse(row.geom) as {
+            type: string;
+            coordinates: number[][][][] | number[][][] | number[][];
+          },
+        }) as CommercialPolygonResponse,
+    );
   }
 
   async getAdminPolygonByLowSearch(

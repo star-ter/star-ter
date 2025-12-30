@@ -15,6 +15,8 @@ import {
 import { convertCoord } from './map-utils';
 import polylabel from '@mapbox/polylabel';
 
+const centerCache = new WeakMap<object, KakaoLatLng>();
+
 const COMMERCIAL_STYLES: Record<
   string,
   { normal: PolygonStyle; hover: PolygonStyle }
@@ -98,6 +100,31 @@ function getTop3Features(
   features: MapFeature[],
   mode: OverlayMode,
 ): Map<MapFeature, number> {
+  const hasServerRanking = features.some(
+    (f) =>
+      'rankRevenue' in f ||
+      'rankPopulation' in f ||
+      'rankOpening' in f ||
+      'rankClosing' in f,
+  );
+
+  if (hasServerRanking) {
+    const top3Map = new Map<MapFeature, number>();
+    features.forEach((f) => {
+      let rank: number | undefined;
+      if (mode === 'revenue' && 'rankRevenue' in f) rank = f.rankRevenue;
+      if (mode === 'population' && 'rankPopulation' in f)
+        rank = f.rankPopulation;
+      if (mode === 'opening' && 'rankOpening' in f) rank = f.rankOpening;
+      if (mode === 'shutting' && 'rankClosing' in f) rank = f.rankClosing;
+
+      if (rank !== undefined && rank <= 3) {
+        top3Map.set(f, rank);
+      }
+    });
+    return top3Map;
+  }
+
   const validFeatures = features.filter(
     (f): f is AdminArea | CommercialArea => {
       if (!isRankableFeature(f)) return false;
@@ -112,7 +139,7 @@ function getTop3Features(
         return (f.openingStores || 0) > 0;
       }
       if (mode === 'shutting') {
-        return (f.closingStores || 0) >= 0; // 0 is valid for 'shutting' (least closures)
+        return (f.closingStores || 0) >= 0;
       }
       return false;
     },
@@ -227,21 +254,21 @@ export function drawPolygons(
   onPolygonClick: (data: InfoBarData) => void,
   shouldClear: boolean = true,
   mode: OverlayMode = 'revenue',
-  level?: 'gu' | 'dong' | 'commercial',
+  level?: 'gu' | 'dong' | 'commercial' | 'sido',
+  shouldDrawMarkers: boolean = true,
 ) {
   if (shouldClear) {
     polygonsRef.current.forEach((poly) => poly.setMap(null));
     polygonsRef.current = [];
-    customOverlaysRef.current.forEach((overlay) => overlay.setMap(null));
-    customOverlaysRef.current = [];
+    if (shouldDrawMarkers) {
+      customOverlaysRef.current.forEach((overlay) => overlay.setMap(null));
+      customOverlaysRef.current = [];
+    }
   }
 
-  const top3Map = getTop3Features(features, mode);
 
   features.forEach((feature) => {
     const { polygons, ...props } = feature;
-    const ranking = top3Map.get(feature);
-    const isTop3 = !!ranking;
 
     const paths: KakaoLatLng[][] = [];
     let centerPoint: KakaoLatLng | null = null;
@@ -299,6 +326,10 @@ export function drawPolygons(
     }
     if (!position && centerPoint) {
       position = centerPoint;
+    }
+
+    if (position) {
+      centerCache.set(feature, position);
     }
 
     paths.forEach((path) => {
@@ -361,7 +392,7 @@ export function drawPolygons(
         hoverStyle = { ...normalStyle }; // 호버 시에도 유지
       }
 
-      const polygon = new window.kakao.maps.Polygon({
+    const polygon = new window.kakao.maps.Polygon({
         path: path,
         ...normalStyle,
       });
@@ -377,8 +408,9 @@ export function drawPolygons(
       });
 
       window.kakao.maps.event.addListener(polygon, 'click', () => {
-        const finalX = centerPoint ? centerPoint.getLng() : 0;
-        const finalY = centerPoint ? centerPoint.getLat() : 0;
+        const center = getCenterOfFeature(feature);
+        const finalX = center ? center.getLng() : 0;
+        const finalY = center ? center.getLat() : 0;
 
         onPolygonClick({
           ...props,
@@ -390,37 +422,134 @@ export function drawPolygons(
       });
     });
 
-    if (position && type !== 'building_store') {
-      const isHotSpot =
-        'openingStores' in feature &&
-        'closingStores' in feature &&
-        (feature.openingStores || 0) > (feature.closingStores || 0);
-
-      const contentEl = createMarkerContent(
-        feature,
-        isTop3,
-        ranking,
-        mode,
-        isHotSpot,
-      );
-
-      contentEl.onclick = () => {
-        onPolygonClick({
-          ...props,
-          x: position ? position.getLng() : 0,
-          y: position ? position.getLat() : 0,
-          level: level,
-        } as unknown as InfoBarData);
-      };
-
-      const customOverlay = new window.kakao.maps.CustomOverlay({
-        position: position,
-        content: contentEl,
-        yAnchor: 1,
-        zIndex: isTop3 ? 100 : 1,
-      });
-      customOverlay.setMap(map);
-      customOverlaysRef.current.push(customOverlay);
+    // Cache center point if calculated during polygon processing
+    if (position) {
+      centerCache.set(feature, position);
     }
+  });
+
+  if (shouldDrawMarkers) {
+    drawMarkers(
+      map,
+      features,
+      customOverlaysRef,
+      onPolygonClick,
+      mode,
+      level,
+    );
+  }
+}
+
+function getCenterOfFeature(feature: MapFeature): KakaoLatLng | null {
+  if (centerCache.has(feature)) {
+    return centerCache.get(feature)!;
+  }
+
+  const { polygons, ...props } = feature;
+  if ('x' in props && 'y' in props && props.x && props.y) {
+    const pos = convertCoord(Number(props.x), Number(props.y));
+    centerCache.set(feature, pos);
+    return pos;
+  }
+
+  if (polygons && Array.isArray(polygons) && polygons.length > 0) {
+      let rings: number[][][] = [];
+      const first = polygons[0];
+
+      let isLevel4 = false;
+      let isLevel2 = false;
+
+      if (Array.isArray(first)) {
+        const second = first[0];
+        if (Array.isArray(second)) {
+          const third = second[0];
+          if (Array.isArray(third)) {
+            isLevel4 = true;
+          }
+        } else if (typeof second === 'number') {
+          isLevel2 = true;
+        }
+      }
+
+      if (isLevel4) {
+        (polygons as number[][][][]).forEach((poly) => {
+          if (Array.isArray(poly)) {
+            poly.forEach((ring) => rings.push(ring));
+          }
+        });
+      } else if (isLevel2) {
+        rings.push(polygons as unknown as number[][]);
+      } else {
+        rings = polygons as number[][][];
+      }
+      if (rings.length > 0) {
+        try {
+          const [lng, lat] = polylabel([rings[0]], 1.0);
+          const pos = convertCoord(lng, lat);
+          centerCache.set(feature, pos);
+          return pos;
+        } catch {
+          // console.error('Polylabel failed', err);
+        }
+      }
+  }
+  return null;
+}
+
+export function drawMarkers(
+  map: KakaoMap,
+  features: MapFeature[],
+  customOverlaysRef: Ref<KakaoCustomOverlay[]>,
+  onPolygonClick: (data: InfoBarData) => void,
+  mode: OverlayMode,
+  level?: 'gu' | 'dong' | 'commercial' | 'sido',
+) {
+  customOverlaysRef.current.forEach((overlay) => overlay.setMap(null));
+  customOverlaysRef.current = [];
+
+  const top3Map = getTop3Features(features, mode);
+
+  features.forEach((feature) => {
+    const position = getCenterOfFeature(feature);
+
+    if (!position) return;
+
+    const ranking = top3Map.get(feature);
+    const isTop3 = !!ranking;
+
+    const isHotSpot =
+      'openingStores' in feature &&
+      'closingStores' in feature &&
+      (feature.openingStores || 0) > (feature.closingStores || 0);
+
+    const contentEl = createMarkerContent(
+      feature,
+      isTop3,
+      ranking,
+      mode,
+      isHotSpot,
+    );
+
+ 
+    const { polygons, ...props } = feature;
+
+    contentEl.onclick = () => {
+      onPolygonClick({
+        ...props,
+        x: position.getLng(),
+        y: position.getLat(),
+        level: level,
+        polygons: polygons,
+      } as unknown as InfoBarData);
+    };
+
+    const customOverlay = new window.kakao.maps.CustomOverlay({
+      position: position,
+      content: contentEl,
+      yAnchor: 1,
+      zIndex: isTop3 ? 100 : 1,
+    });
+    customOverlay.setMap(map);
+    customOverlaysRef.current.push(customOverlay);
   });
 }
