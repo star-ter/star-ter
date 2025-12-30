@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   GeoAreaListResponseDto,
@@ -19,7 +19,9 @@ type GeoRow = {
 export class GeoService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getGuByPoint(query: GetGeoGuQueryDto): Promise<GeoGuResponseDto> {
+  async getGuByPoint(
+    query: GetGeoGuQueryDto,
+  ): Promise<GeoGuResponseDto | null> {
     const lat = Number(query.lat);
     const lng = Number(query.lng);
 
@@ -34,9 +36,7 @@ export class GeoService {
     `;
 
     if (!rows.length) {
-      throw new NotFoundException(
-        '해당 좌표에 대한 구/동 정보를 찾을 수 없습니다.',
-      );
+      return null;
     }
 
     const row = rows[0];

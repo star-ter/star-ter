@@ -96,6 +96,7 @@ const COMMERCIAL_STYLES: Record<
  * @param polygonsRef 폴리곤 객체들을 저장할 Ref (cleanup용)
  * @param customOverlaysRef 커스텀 오버레이 객체들을 저장할 Ref (cleanup용)
  * @param onPolygonClick 폴리곤 클릭 시 실행할 콜백
+ * @param level 현재 레벨 그룹 ('gu' | 'dong' | 'commercial') - 클릭 시 API에 전달됨
  */
 export function drawPolygons(
   map: KakaoMap,
@@ -105,6 +106,7 @@ export function drawPolygons(
   customOverlaysRef: Ref<KakaoCustomOverlay[]>,
   onPolygonClick: (data: InfoBarData) => void,
   shouldClear: boolean = true,
+  level?: 'gu' | 'dong' | 'commercial',
 ) {
   // Clear existing polygons and overlays
 
@@ -281,15 +283,24 @@ export function drawPolygons(
       window.kakao.maps.event.addListener(polygon, 'click', () => {
         console.log(`Clicked: ${label}`);
 
-        const x = centerPoint ? centerPoint.getLng() : 0;
-        const y = centerPoint ? centerPoint.getLat() : 0;
+        let finalX = 0;
+        let finalY = 0;
+
+        // Prefer explicit coordinates if available (AdminArea/BuildingArea)
+        if ('x' in props && props.x) finalX = Number(props.x);
+        else if (centerPoint) finalX = centerPoint.getLng();
+
+        if ('y' in props && props.y) finalY = Number(props.y);
+        else if (centerPoint) finalY = centerPoint.getLat();
 
         // TODO: InfoBar에 상권 정보(TRDAR_SE_1 등)가 포함된 props를 전달하는 부분.
+        // level 정보를 포함하여 클릭 이벤트 전달
         onPolygonClick({
           ...props,
-          x: x,
-          y: y,
+          x: finalX,
+          y: finalY,
           polygons: polygons,
+          level: level, // 줌 레벨 기반 level 정보 추가
         } as unknown as InfoBarData);
       });
     });
@@ -320,8 +331,30 @@ export function drawPolygons(
 
       contentEl.onclick = () => {
         console.log('Clicked Overlay:', props);
-        // TODO: Overlay 클릭 시에도 InfoBar에 상권 정보 전달
-        onPolygonClick(props as unknown as InfoBarData);
+
+        let finalX = 0;
+        let finalY = 0;
+
+        // Robust check: Ensure x/y are valid numbers and non-zero
+        const propX = 'x' in props ? Number(props.x) : NaN;
+        const propY = 'y' in props ? Number(props.y) : NaN;
+
+        if (!isNaN(propX) && propX !== 0) finalX = propX;
+        else if (position) finalX = position.getLng();
+
+        if (!isNaN(propY) && propY !== 0) finalY = propY;
+        else if (position) finalY = position.getLat();
+
+        console.log(`Overlay Click Sent: ${finalX}, ${finalY}`);
+
+        // level 정보를 포함하여 마커 클릭 이벤트 전달
+        onPolygonClick({
+          ...props,
+          x: finalX,
+          y: finalY,
+          polygons: polygons,
+          level: level, // 줌 레벨 기반 level 정보 추가
+        } as unknown as InfoBarData);
       };
 
       const customOverlay = new window.kakao.maps.CustomOverlay({

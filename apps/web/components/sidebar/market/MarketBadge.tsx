@@ -22,11 +22,11 @@ export default function MarketBadge({ isCommercialZone, areaName }: Props) {
           </div>
         </div>
       </div>
-      {!isCommercialZone && (
+      {/* {!isCommercialZone && (
         <span className="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
           데이터 부족
         </span>
-      )}
+      )} */}
     </div>
   );
 }
