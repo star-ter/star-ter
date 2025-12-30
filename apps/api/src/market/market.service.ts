@@ -15,8 +15,17 @@ import { OpenApiResponse, OpenApiStoreItem } from './dto/open-api.dto';
 import { MarketAnalyticsDto } from './dto/market-analytics.dto';
 import { KSIC_TO_CATEGORY } from './constants/ksic-category-map';
 
-import { SalesCommercial, SalesDong } from 'generated/prisma/client';
 import { MarketRepository } from './market.repository';
+import { MarketMapper } from './market.mapper';
+
+const PAGE_SIZE = 1000;
+const MAX_PAGES_TO_FETCH = 10;
+
+interface FetchPageResult {
+  items: OpenApiStoreItem[];
+  totalCount: number;
+  header?: OpenApiResponse['header'];
+}
 
 @Injectable()
 export class MarketService {
@@ -27,15 +36,34 @@ export class MarketService {
   private isValidOpenApiResponse(data: unknown): data is OpenApiResponse {
     if (typeof data !== 'object' || data === null) return false;
     const response = data as OpenApiResponse;
-    return (
-      'header' in response &&
-      'body' in response &&
-      Array.isArray(response.body?.items)
-    );
+    return 'header' in response && 'body' in response;
   }
 
   private getCategoryByCode(code: string): string {
     return KSIC_TO_CATEGORY[String(code)] || '기타';
+  }
+
+  private normalizeCategories(categories?: string | string[]): string[] {
+    if (!categories) return [];
+    return Array.isArray(categories) ? categories : [categories];
+  }
+
+  private shouldIncludeStore(
+    item: OpenApiStoreItem,
+    targetCategories: string[],
+  ): boolean {
+    if (targetCategories.length === 0) return true;
+
+    // 1. 코드로 매핑된 카테고리 확인
+    const categoryByCode = this.getCategoryByCode(item.indsLclsCd);
+    // 2. API가 주는 대분류명(indsLclsNm) 직접 확인
+    const categoryByName = item.indsLclsNm;
+
+    // 둘 중 하나라도 타겟 카테고리에 포함되면 통과
+    return (
+      (!!categoryByCode && targetCategories.includes(categoryByCode)) ||
+      (!!categoryByName && targetCategories.includes(categoryByName))
+    );
   }
 
   async getStoreList(
@@ -94,7 +122,7 @@ export class MarketService {
       const salesData = await this.marketRepository.getCommercialSales(
         commercialArea.TRDAR_CD,
       );
-      return this.mapToAnalyticsDto(
+      return MarketMapper.mapToAnalyticsDto(
         salesData,
         commercialArea.TRDAR_CD_NM,
         true,
@@ -109,115 +137,14 @@ export class MarketService {
       const salesData = await this.marketRepository.getAdministrativeSales(
         adminArea.ADSTRD_CD,
       );
-      return this.mapToAnalyticsDto(salesData, adminArea.ADSTRD_NM, false);
+      return MarketMapper.mapToAnalyticsDto(
+        salesData,
+        adminArea.ADSTRD_NM,
+        false,
+      );
     }
 
-    return this.getEmptySalesData('분석할 수 없는 지역입니다.');
-  }
-
-  private mapToAnalyticsDto(
-    rows: (SalesCommercial | SalesDong)[],
-    areaName: string,
-    isCommercial: boolean,
-  ): MarketAnalyticsDto {
-    if (!rows || rows.length === 0) {
-      return this.getEmptySalesData(`${areaName} (데이터 없음)`);
-    }
-    const latest = rows[0];
-    return {
-      areaName,
-      isCommercialArea: isCommercial,
-      totalRevenue: Number(latest.THSMON_SELNG_AMT),
-      sales: {
-        trend: rows
-          .slice(0, 4)
-          .reverse()
-          .map((row) => ({
-            year: row.STDR_YYQU_CD.substring(0, 4),
-            quarter: row.STDR_YYQU_CD.substring(4, 5),
-            revenue: Number(row.THSMON_SELNG_AMT),
-          })),
-        timeSlot: {
-          time0006: Number(latest.TMZON_00_06_SELNG_AMT),
-          time0611: Number(latest.TMZON_06_11_SELNG_AMT),
-          time1114: Number(latest.TMZON_11_14_SELNG_AMT),
-          time1417: Number(latest.TMZON_14_17_SELNG_AMT),
-          time1721: Number(latest.TMZON_17_21_SELNG_AMT),
-          time2124: Number(latest.TMZON_21_24_SELNG_AMT),
-          peakTimeSummaryComment: '시간대별 매출 분포입니다.',
-        },
-        dayOfWeek: {
-          mon: Number(latest.MON_SELNG_AMT),
-          tue: Number(latest.TUES_SELNG_AMT),
-          wed: Number(latest.WED_SELNG_AMT),
-          thu: Number(latest.THUR_SELNG_AMT),
-          fri: Number(latest.FRI_SELNG_AMT),
-          sat: Number(latest.SAT_SELNG_AMT),
-          sun: Number(latest.SUN_SELNG_AMT),
-          peakDaySummaryComment: '요일별 매출 분포입니다.',
-        },
-        demographics: {
-          male: Number(latest.ML_SELNG_AMT),
-          female: Number(latest.FML_SELNG_AMT),
-          age10: Number(latest.AGRDE_10_SELNG_AMT),
-          age20: Number(latest.AGRDE_20_SELNG_AMT),
-          age30: Number(latest.AGRDE_30_SELNG_AMT),
-          age40: Number(latest.AGRDE_40_SELNG_AMT),
-          age50: Number(latest.AGRDE_50_SELNG_AMT),
-          age60: Number(latest.AGRDE_60_ABOVE_SELNG_AMT),
-          primaryGroupSummaryComment: '성별/연령별 매출 분포입니다.',
-        },
-        topIndustries: [],
-      },
-      vitality: { openingRate: 0, closureRate: 0 },
-      openingRate: 0,
-      closureRate: 0,
-    };
-  }
-
-  private getEmptySalesData(message: string): MarketAnalyticsDto {
-    return {
-      areaName: message,
-      isCommercialArea: false,
-      totalRevenue: 0,
-      sales: {
-        trend: [],
-        timeSlot: {
-          time0006: 0,
-          time0611: 0,
-          time1114: 0,
-          time1417: 0,
-          time1721: 0,
-          time2124: 0,
-          peakTimeSummaryComment: '데이터 없음',
-        },
-        dayOfWeek: {
-          mon: 0,
-          tue: 0,
-          wed: 0,
-          thu: 0,
-          fri: 0,
-          sat: 0,
-          sun: 0,
-          peakDaySummaryComment: '데이터 없음',
-        },
-        demographics: {
-          male: 0,
-          female: 0,
-          age10: 0,
-          age20: 0,
-          age30: 0,
-          age40: 0,
-          age50: 0,
-          age60: 0,
-          primaryGroupSummaryComment: '데이터 없음',
-        },
-        topIndustries: [],
-      },
-      vitality: { openingRate: 0, closureRate: 0 },
-      openingRate: 0,
-      closureRate: 0,
-    };
+    return MarketMapper.getEmptySalesData('분석할 수 없는 지역입니다.');
   }
 
   async getBuildingStoreCounts(
@@ -226,36 +153,18 @@ export class MarketService {
     const storesData = await this.fetchStoresInRectangle(query);
     const items = storesData.body?.items || [];
 
-    // 필터링할 카테고리 목록 (Array 보장)
-    let targetCategories: string[] = [];
-    if (query.categories) {
-      if (Array.isArray(query.categories)) {
-        targetCategories = query.categories;
-      } else {
-        targetCategories = [query.categories];
-      }
-    }
+    const targetCategories = this.normalizeCategories(query.categories);
 
     const grouped = new Map<string, OpenApiStoreItem[]>();
 
     items.forEach((item) => {
+      // 1. 건물 번호 없으면 제외
       if (!item.bldMngNo) return;
 
-      // 카테고리 필터링 (indsLclsCd 사용 + indsLclsNm 이름 보완)
-      if (targetCategories.length > 0) {
-        // 1. 코드로 매핑된 카테고리 확인
-        const categoryByCode = this.getCategoryByCode(item.indsLclsCd);
-        // 2. API가 주는 대분류명(indsLclsNm) 직접 확인
-        const categoryByName = item.indsLclsNm;
+      // 2. 카테고리 필터링
+      if (!this.shouldIncludeStore(item, targetCategories)) return;
 
-        // 둘 중 하나라도 타겟 카테고리에 포함되면 통과
-        const isMatch =
-          (categoryByCode && targetCategories.includes(categoryByCode)) ||
-          (categoryByName && targetCategories.includes(categoryByName));
-
-        if (!isMatch) return;
-      }
-
+      // 3. 그룹화
       if (!grouped.has(item.bldMngNo)) {
         grouped.set(item.bldMngNo, []);
       }
@@ -283,99 +192,85 @@ export class MarketService {
   private async fetchStoresInRectangle(
     query: GetBuildingStoreQueryDto,
   ): Promise<OpenApiResponse> {
-    const BASE_URL =
-      'https://apis.data.go.kr/B553077/api/open/sdsc2/storeListInRectangle';
     const SERVICE_KEY = process.env.SBIZ_API_KEY;
-
     if (!SERVICE_KEY) {
       throw new InternalServerErrorException('SBIZ_API_KEY is not defined');
     }
 
-    const numOfRows = 1000; // Maximize page size (limit usually 1000)
-    const pageNo = 1;
+    try {
+      const firstPageResult = await this.fetchStorePage(1, query, SERVICE_KEY);
 
-    const buildUrl = (page: number) => {
-      const params = new URLSearchParams({
-        serviceKey: SERVICE_KEY,
-        pageNo: String(page),
-        numOfRows: String(numOfRows),
-        minx: query.minx,
-        miny: query.miny,
-        maxx: query.maxx,
-        maxy: query.maxy,
-        type: 'json',
-      });
-      return `${BASE_URL}?${params.toString()}`;
-    };
+      const allItems = [...firstPageResult.items];
+      const totalCount = firstPageResult.totalCount;
+
+      if (totalCount > allItems.length) {
+        const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+        const pagesToFetch: number[] = [];
+        for (let p = 2; p <= totalPages && p <= MAX_PAGES_TO_FETCH; p++) {
+          pagesToFetch.push(p);
+        }
+        // 3. Parallel Fetch using Helper
+        const results = await Promise.all(
+          pagesToFetch.map((p) => this.fetchStorePage(p, query, SERVICE_KEY)),
+        );
+        // 4. Merge
+        results.forEach((res) => allItems.push(...res.items));
+      }
+      return {
+        header: firstPageResult.header || {
+          resultCode: '00',
+          resultMsg: 'NORMAL SERVICE.',
+        },
+        body: { items: allItems, totalCount },
+      };
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      this.logger.error(`Fetch Rectangle Failed: ${msg}`);
+      return {
+        header: { resultCode: 'Err', resultMsg: msg },
+        body: { items: [], totalCount: 0 },
+      };
+    }
+  }
+  private async fetchStorePage(
+    page: number,
+    query: GetBuildingStoreQueryDto,
+    serviceKey: string,
+  ): Promise<FetchPageResult> {
+    const params = new URLSearchParams({
+      serviceKey: serviceKey,
+      pageNo: String(page),
+      numOfRows: String(PAGE_SIZE),
+      minx: query.minx,
+      miny: query.miny,
+      maxx: query.maxx,
+      maxy: query.maxy,
+      type: 'json',
+    });
+
+    const url = `https://apis.data.go.kr/B553077/api/open/sdsc2/storeListInRectangle?${params.toString()}`;
 
     try {
-      // 1. Fetch First Page
-      const firstRes = await fetch(buildUrl(pageNo), {
+      const response = await fetch(url, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });
-
-      if (!firstRes.ok) {
-        throw new Error(`First Page Fail: ${firstRes.status}`);
+      if (!response.ok) {
+        this.logger.warn(`Page ${page} fetch failed: ${response.status}`);
+        return { items: [], totalCount: 0 };
       }
-
-      const firstData = (await firstRes.json()) as unknown;
-      if (!this.isValidOpenApiResponse(firstData)) {
-        throw new Error('Invalid First Page Format');
+      const data = (await response.json()) as unknown;
+      if (this.isValidOpenApiResponse(data)) {
+        return {
+          items: data.body.items || [],
+          totalCount: data.body.totalCount || 0,
+          header: data.header,
+        };
       }
-
-      const totalCount = firstData.body.totalCount;
-      const allItems = [...firstData.body.items];
-
-      // 2. Fetch Remaining Pages if needed
-      if (totalCount > allItems.length) {
-        const totalPages = Math.ceil(totalCount / numOfRows);
-        const maxPages = 10; // Safety Limit (Max 10,000 items)
-        const fetchPages: Promise<OpenApiStoreItem[]>[] = [];
-
-        for (let p = 2; p <= totalPages && p <= maxPages; p++) {
-          fetchPages.push(
-            fetch(buildUrl(p), {
-              method: 'GET',
-              headers: { 'Content-Type': 'application/json' },
-            })
-              .then((res) => res.json())
-              .then((data) => {
-                if (this.isValidOpenApiResponse(data)) {
-                  return data.body.items;
-                }
-                return [];
-              })
-              .catch((err) => {
-                this.logger.error(`Page ${p} fetch error`, err);
-                return [];
-              }),
-          );
-        }
-
-        const results = await Promise.all(fetchPages);
-        results.forEach((pageItems) => {
-          if (Array.isArray(pageItems)) {
-            allItems.push(...pageItems);
-          }
-        });
-      }
-
-      // Return combined result pretending to be a single large page
-      return {
-        header: firstData.header,
-        body: {
-          items: allItems,
-          totalCount: totalCount, // Keep original total count
-        },
-      };
-    } catch (e: unknown) {
-      const errorMessage = e instanceof Error ? e.message : String(e);
-      this.logger.error('Fetch Rectangle Failed', errorMessage);
-      return {
-        header: { resultCode: 'Err', resultMsg: errorMessage },
-        body: { items: [], totalCount: 0 },
-      };
+      return { items: [], totalCount: 0 };
+    } catch (error) {
+      this.logger.error(`Page ${page} error: ${error}`);
+      return { items: [], totalCount: 0 };
     }
   }
 
@@ -397,7 +292,7 @@ export class MarketService {
       key: wkt,
       type: 'json',
     });
-    this.logger.log(`${BASE_URL}?${queryParams.toString()}`);
+    //this.logger.log(`${BASE_URL}?${queryParams.toString()}`);
 
     const response = await fetch(`${BASE_URL}?${queryParams.toString()}`, {
       method: 'GET',
@@ -414,16 +309,22 @@ export class MarketService {
     }
     const data = (await response.json()) as unknown;
     if (!this.isValidOpenApiResponse(data)) {
+      this.logger.error(`${BASE_URL}?${queryParams.toString()}`);
       throw new InternalServerErrorException('Invalid API Response format');
     }
+
+    if (!data.body.items) {
+      data.body.items = [];
+    }
+
     return data;
   }
 
   private mapToMarketStores(items: OpenApiStoreItem[]): MarketStore[] {
     return items.map((item) => ({
-      name: item.bizesNm, // 상호명
-      category: item.indsLclsNm, // 상권업종대분류명
-      subcategory: item.ksicNm, // 표준산업분류명 (User Request)
+      name: item.bizesNm,
+      category: item.indsLclsNm,
+      subcategory: item.ksicNm,
     }));
   }
 }
