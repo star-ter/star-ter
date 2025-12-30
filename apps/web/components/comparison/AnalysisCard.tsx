@@ -21,6 +21,8 @@ export default function AnalysisCard({
   scrollRef,
   onScroll,
   regionCode, 
+  isStoreExpanded,
+  onStoreExpand,
 }: AnalysisCardProps) {
   const [data, setData] = useState<AnalysisData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -161,7 +163,12 @@ export default function AnalysisCard({
         )}
 
         {activeTab === 'store' && (
-          <StoreTabContent data={data} initialStoreCount={initialStoreCount} />
+          <StoreTabContent 
+            data={data} 
+            initialStoreCount={initialStoreCount} 
+            isExpanded={isStoreExpanded}
+            onExpand={onStoreExpand}
+          />
         )}
 
         {activeTab === 'population' && (
