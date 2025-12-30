@@ -208,4 +208,16 @@ export class MarketRepository {
       _max: { STDR_YYQU_CD: true },
     });
   }
+
+  /**
+   * 행정구 상점 통계 조회 (개업/폐업 건수)
+   * @param code 시군구 코드 (SIGNGU_CD)
+   */
+  async getGuStoreStats(code: string) {
+    return this.prisma.storeGu.aggregate({
+      where: { SIGNGU_CD: code },
+      _sum: { STOR_CO: true, OPBIZ_STOR_CO: true, CLSBIZ_STOR_CO: true },
+      _max: { STDR_YYQU_CD: true },
+    });
+  }
 }

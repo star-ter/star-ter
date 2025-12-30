@@ -130,13 +130,30 @@ export class MarketService {
         this.logger.log(
           `[행정구 찾음] ${guArea.SIGNGU_NM} (${guArea.SIGNGU_CD})`,
         );
-        const salesData = await this.marketRepository.getAdminGuRevenueTrend(
-          guArea.SIGNGU_CD,
-        );
+
+        // 매출 데이터와 상점 통계를 병렬로 조회
+        const [salesData, storeStats] = await Promise.all([
+          this.marketRepository.getAdminGuRevenueTrend(guArea.SIGNGU_CD),
+          this.marketRepository.getGuStoreStats(guArea.SIGNGU_CD),
+        ]);
+
+        // 개업률/폐업률 계산
+        const totalStores = storeStats._sum.STOR_CO || 0;
+        const openingRate =
+          totalStores > 0
+            ? ((storeStats._sum.OPBIZ_STOR_CO || 0) / totalStores) * 100
+            : 0;
+        const closureRate =
+          totalStores > 0
+            ? ((storeStats._sum.CLSBIZ_STOR_CO || 0) / totalStores) * 100
+            : 0;
+
         return MarketMapper.mapToAnalyticsDto(
           salesData,
           guArea.SIGNGU_NM,
           false, // isCommercialZone = false (행정구역)
+          openingRate,
+          closureRate,
         );
       }
 
@@ -151,9 +168,25 @@ export class MarketService {
       lng,
     );
     if (commercialArea) {
-      const salesData = await this.marketRepository.getCommercialRevenueTrend(
-        commercialArea.TRDAR_CD,
-      );
+      // 매출 데이터와 상점 통계를 병렬로 조회
+      const [salesData, storeStats] = await Promise.all([
+        this.marketRepository.getCommercialRevenueTrend(
+          commercialArea.TRDAR_CD,
+        ),
+        this.marketRepository.getCommercialStoreStats(commercialArea.TRDAR_CD),
+      ]);
+
+      // 개업률/폐업률 계산
+      const totalStores = storeStats._sum.STOR_CO || 0;
+      const openingRate =
+        totalStores > 0
+          ? ((storeStats._sum.OPBIZ_STOR_CO || 0) / totalStores) * 100
+          : 0;
+      const closureRate =
+        totalStores > 0
+          ? ((storeStats._sum.CLSBIZ_STOR_CO || 0) / totalStores) * 100
+          : 0;
+
       return MarketMapper.mapToAnalyticsDto(
         salesData,
         commercialArea.TRDAR_CD_NM,
@@ -169,9 +202,23 @@ export class MarketService {
     );
 
     if (adminArea) {
-      const salesData = await this.marketRepository.getAdminDongRevenueTrend(
-        adminArea.ADSTRD_CD,
-      );
+      // 매출 데이터와 상점 통계를 병렬로 조회
+      const [salesData, storeStats] = await Promise.all([
+        this.marketRepository.getAdminDongRevenueTrend(adminArea.ADSTRD_CD),
+        this.marketRepository.getAdministrativeStoreStats(adminArea.ADSTRD_CD),
+      ]);
+
+      // 개업률/폐업률 계산
+      const totalStores = storeStats._sum.STOR_CO || 0;
+      const openingRate =
+        totalStores > 0
+          ? ((storeStats._sum.OPBIZ_STOR_CO || 0) / totalStores) * 100
+          : 0;
+      const closureRate =
+        totalStores > 0
+          ? ((storeStats._sum.CLSBIZ_STOR_CO || 0) / totalStores) * 100
+          : 0;
+
       return MarketMapper.mapToAnalyticsDto(
         salesData,
         adminArea.ADSTRD_NM,
