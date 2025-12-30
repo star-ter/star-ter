@@ -74,8 +74,7 @@ export const useMarketAnalysis = (data: InfoBarData) => {
           // AnalyticsDto (매출 분석)
           isCommercialZone: analyticsData.isCommercialArea,
           estimatedRevenue: analyticsData.totalRevenue,
-          salesDescription:
-            analyticsData.sales?.peakTimeSummaryComment || '데이터 분석 중...',
+          salesDescription: '분기 매출 평균입니다.',
 
           openingRate: analyticsData.vitality?.openingRate || 0,
           closureRate: analyticsData.vitality?.closureRate || 0,
