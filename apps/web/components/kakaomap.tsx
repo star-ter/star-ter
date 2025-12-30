@@ -12,6 +12,7 @@ import { IndustryCategory } from '../types/bottom-menu-types';
 import { useMapStore } from '../stores/useMapStore';
 import { useSidebarStore } from '../stores/useSidebarStore';
 import { useBuildingMarkers } from '../hooks/useBuildingMarkers';
+import { PopulationBar } from './population/PopulationBar';
 
 initProj4();
 
@@ -198,6 +199,13 @@ export default function Kakaomap({
         className="w-full h-100 bg-gray-100"
         style={{ width: '100vw', height: '100vh' }}
       />
+
+      {/* 유동인구 인포바 (나만 볼 수 있게 지도 위에 플로팅) */}
+      {population.showLayer && (
+        <div className="absolute right-6 bottom-32 z-50">
+          <PopulationBar />
+        </div>
+      )}
     </div>
   );
 }

@@ -26,7 +26,9 @@ export default function PopulationContents({ onClose, onView, population }: Prop
         <h3 className="text-base font-semibold text-gray-900">유동인구 분석</h3>
         <PillButton label="닫기" onClick={onClose} />
       </div>
-
+      <div className="flex items-center"> 
+        <h4 className='text-xs font-semibold text-gray-600'>※ 이 데이터는 기준일 5일전 데이터입니다.</h4>
+      </div>
       {/* 시간대 선택 */}
       <div>
         <label className="text-xs font-bold text-gray-400 uppercase">시간대</label>

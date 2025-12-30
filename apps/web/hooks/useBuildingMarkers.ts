@@ -41,7 +41,7 @@ export const useBuildingMarkers = (
   const customOverlaysRef = useRef<KakaoCustomOverlay[]>([]);
 
   // Thresholds separation
-  const TOTAL_VIEW_THRESHOLD = 2; // Default view (High threshold to reduce clutter)
+  const TOTAL_VIEW_THRESHOLD = 20; // Default view (High threshold to reduce clutter)
   const CATEGORY_VIEW_THRESHOLD = 1; // Filtered view (Show all matches)
   const DEFAULT_MARKET_COLOR = '#3B82F6';
 
