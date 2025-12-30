@@ -238,4 +238,59 @@ export class MarketRepository {
     if (!result) return null;
     return { ADSTRD_CD: result.ADSTRD_CD, ADSTRD_NM: result.ADSTRD_NM };
   }
+
+  /**
+   * 상권 업종별 매출 Top 5 조회
+   * @param code 상권 코드 (TRDAR_CD)
+   * @returns 업종별 매출 합계 (내림차순 정렬)
+   */
+  async getCommercialTopIndustries(code: string) {
+    return this.prisma.salesCommercial.groupBy({
+      by: ['SVC_INDUTY_CD_NM'],
+      where: { TRDAR_CD: code },
+      _sum: {
+        THSMON_SELNG_AMT: true,
+      },
+      orderBy: {
+        _sum: { THSMON_SELNG_AMT: 'desc' },
+      },
+      take: 5,
+    });
+  }
+
+  /**
+   * 행정동 업종별 매출 Top 5 조회
+   * @param code 행정동 코드 (ADSTRD_CD)
+   */
+  async getDongTopIndustries(code: string) {
+    return this.prisma.salesDong.groupBy({
+      by: ['SVC_INDUTY_CD_NM'],
+      where: { ADSTRD_CD: code },
+      _sum: {
+        THSMON_SELNG_AMT: true,
+      },
+      orderBy: {
+        _sum: { THSMON_SELNG_AMT: 'desc' },
+      },
+      take: 5,
+    });
+  }
+
+  /**
+   * 행정구 업종별 매출 Top 5 조회
+   * @param code 시군구 코드 (SIGNGU_CD)
+   */
+  async getGuTopIndustries(code: string) {
+    return this.prisma.salesGu.groupBy({
+      by: ['SVC_INDUTY_CD_NM'],
+      where: { SIGNGU_CD: code },
+      _sum: {
+        THSMON_SELNG_AMT: true,
+      },
+      orderBy: {
+        _sum: { THSMON_SELNG_AMT: 'desc' },
+      },
+      take: 5,
+    });
+  }
 }

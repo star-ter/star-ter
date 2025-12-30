@@ -128,9 +128,10 @@ export class MarketService {
       if (signgu_cd) {
         this.logger.log(`[행정구 코드 기반 조회] ${signgu_cd}`);
 
-        const [salesData, storeStats] = await Promise.all([
+        const [salesData, storeStats, topIndustries] = await Promise.all([
           this.marketRepository.getAdminGuRevenueTrend(signgu_cd),
           this.marketRepository.getGuStoreStats(signgu_cd),
+          this.marketRepository.getGuTopIndustries(signgu_cd),
         ]);
 
         const totalStores = storeStats._sum.STOR_CO || 0;
@@ -153,6 +154,7 @@ export class MarketService {
           false,
           openingRate,
           closureRate,
+          topIndustries,
         );
       }
 
@@ -164,9 +166,10 @@ export class MarketService {
           `[행정구 찾음] ${guArea.SIGNGU_NM} (${guArea.SIGNGU_CD})`,
         );
 
-        const [salesData, storeStats] = await Promise.all([
+        const [salesData, storeStats, topIndustries] = await Promise.all([
           this.marketRepository.getAdminGuRevenueTrend(guArea.SIGNGU_CD),
           this.marketRepository.getGuStoreStats(guArea.SIGNGU_CD),
+          this.marketRepository.getGuTopIndustries(guArea.SIGNGU_CD),
         ]);
 
         const totalStores = storeStats._sum.STOR_CO || 0;
@@ -185,6 +188,7 @@ export class MarketService {
           false,
           openingRate,
           closureRate,
+          topIndustries,
         );
       }
 
@@ -199,9 +203,10 @@ export class MarketService {
       if (adstrd_cd) {
         this.logger.log(`[행정동 코드 기반 조회] ${adstrd_cd}`);
 
-        const [salesData, storeStats] = await Promise.all([
+        const [salesData, storeStats, topIndustries] = await Promise.all([
           this.marketRepository.getAdminDongRevenueTrend(adstrd_cd),
           this.marketRepository.getAdministrativeStoreStats(adstrd_cd),
+          this.marketRepository.getDongTopIndustries(adstrd_cd),
         ]);
 
         const totalStores = storeStats._sum.STOR_CO || 0;
@@ -224,6 +229,7 @@ export class MarketService {
           false,
           openingRate,
           closureRate,
+          topIndustries,
         );
       }
 
@@ -238,11 +244,12 @@ export class MarketService {
           `[행정동 찾음] ${adminArea.ADSTRD_NM} (${adminArea.ADSTRD_CD})`,
         );
 
-        const [salesData, storeStats] = await Promise.all([
+        const [salesData, storeStats, topIndustries] = await Promise.all([
           this.marketRepository.getAdminDongRevenueTrend(adminArea.ADSTRD_CD),
           this.marketRepository.getAdministrativeStoreStats(
             adminArea.ADSTRD_CD,
           ),
+          this.marketRepository.getDongTopIndustries(adminArea.ADSTRD_CD),
         ]);
 
         const totalStores = storeStats._sum.STOR_CO || 0;
@@ -261,6 +268,7 @@ export class MarketService {
           false,
           openingRate,
           closureRate,
+          topIndustries,
         );
       }
 
@@ -275,11 +283,14 @@ export class MarketService {
       lng,
     );
     if (commercialArea) {
-      const [salesData, storeStats] = await Promise.all([
+      const [salesData, storeStats, topIndustries] = await Promise.all([
         this.marketRepository.getCommercialRevenueTrend(
           commercialArea.TRDAR_CD,
         ),
         this.marketRepository.getCommercialStoreStats(commercialArea.TRDAR_CD),
+        this.marketRepository.getCommercialTopIndustries(
+          commercialArea.TRDAR_CD,
+        ),
       ]);
 
       const totalStores = storeStats._sum.STOR_CO || 0;
@@ -298,6 +309,7 @@ export class MarketService {
         true,
         openingRate,
         closureRate,
+        topIndustries,
       );
     }
 
@@ -307,9 +319,10 @@ export class MarketService {
     );
 
     if (adminArea) {
-      const [salesData, storeStats] = await Promise.all([
+      const [salesData, storeStats, topIndustries] = await Promise.all([
         this.marketRepository.getAdminDongRevenueTrend(adminArea.ADSTRD_CD),
         this.marketRepository.getAdministrativeStoreStats(adminArea.ADSTRD_CD),
+        this.marketRepository.getDongTopIndustries(adminArea.ADSTRD_CD),
       ]);
 
       const totalStores = storeStats._sum.STOR_CO || 0;
@@ -328,6 +341,7 @@ export class MarketService {
         false,
         openingRate,
         closureRate,
+        topIndustries,
       );
     }
 
