@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { geocodeAddress } from '@/services/geocoding/geocoding.service';
+import { geocodeAddress, reverseGeocode } from '@/services/geocoding/geocoding.service';
 import { useMapStore } from '@/stores/useMapStore';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -21,7 +21,9 @@ export default function LocationNav() {
   const [isLoadingGu, setIsLoadingGu] = useState(!!API_BASE_URL);
   const [isLoadingDong, setIsLoadingDong] = useState(false);
   const [isMoving, setIsMoving] = useState(false);
-  const { moveToLocation } = useMapStore();
+  const { moveToLocation, center, isMoving: isMapMoving } = useMapStore();
+  const [pendingDong, setPendingDong] = useState('');
+  const [pendingDongName, setPendingDongName] = useState('');
 
 
   useEffect(() => {
@@ -79,6 +81,93 @@ export default function LocationNav() {
 
     return () => controller.abort();
   }, [selectedGu]);
+
+  // 3. 지도 이동(드래그) 감지하여 현재 위치 주소 동기화
+  useEffect(() => {
+    if (!center || isMapMoving || isMoving) return; // 지도 이동 중에는 업데이트 안 함 (멈추면 함)
+    // 딜레이를 최소화하여 빠르게 반응 (30ms)
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/geo/gu?lat=${center.lat}&lng=${center.lng}`,
+        );
+        if (res.ok) {
+          const data = await res.json();
+          // data: { signguCode, signguName, adstrdCode, adstrdName }
+          if (data.signguCode && data.signguCode !== selectedGu) {
+            setSelectedGu(data.signguCode); // 구 변경 -> useEffect 2번 트리거 -> 동 목록 로드
+            if (data.adstrdCode) {
+              setPendingDong(data.adstrdCode); // 동 코드는 대기열에 저장
+            }
+          } else if (
+            data.signguCode === selectedGu &&
+            data.adstrdCode &&
+            data.adstrdCode !== selectedDong
+          ) {
+            // 구는 같은데 동만 다른 경우 (= 같은 구 내에서 이동)
+            // 동 목록은 이미 로드되어 있으므로 바로 변경 가능 (단, 리스트에 있는지 확인)
+            const exists = dongList.find((d) => d.code === data.adstrdCode);
+            if (exists) {
+              setSelectedDong(data.adstrdCode);
+            } else {
+              setPendingDong(data.adstrdCode);
+            }
+          }
+        } else {
+          throw new Error('Backend API Error');
+        }
+      } catch (error) {
+        // Fallback: 카카오맵 역지오코딩 사용
+        const geoResult = await reverseGeocode(center.lat, center.lng);
+        if (geoResult && geoResult.guName) {
+          // 구 이름으로 매칭
+          const foundGu = guList.find((g) => g.name === geoResult.guName);
+          if (foundGu) {
+            if (foundGu.code !== selectedGu) {
+              setSelectedGu(foundGu.code);
+              // 동 이름 저장해두었다가 목록 로드 후 매칭
+              if (geoResult.dongName) {
+                setPendingDongName(geoResult.dongName);
+              }
+            } else if (geoResult.dongName) {
+              // 구는 같은데 동이 다른 경우 (동 이름으로 찾아서 변경해야 함)
+              // 동 목록이 로드되어 있다고 가정하고 매칭 시도, 없으면 pending으로
+              const exists = dongList.find((d) => d.name === geoResult.dongName);
+              if (exists) {
+                setSelectedDong(exists.code);
+              } else {
+                setPendingDongName(geoResult.dongName);
+              }
+            }
+          }
+        }
+      }
+    }, 30);
+
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [center, isMapMoving, isMoving]);
+
+  // 4. 동 목록 로드 완료 후 Pending된 동 적용 (코드 or 이름)
+  useEffect(() => {
+    if (dongList.length === 0) return;
+
+    if (pendingDong) {
+      const exists = dongList.find((d) => d.code === pendingDong);
+      if (exists) {
+        setSelectedDong(pendingDong);
+        setPendingDong('');
+      }
+    }
+
+    if (pendingDongName) {
+      const exists = dongList.find((d) => d.name === pendingDongName);
+      if (exists) {
+        setSelectedDong(exists.code);
+        setPendingDongName('');
+      }
+    }
+  }, [dongList, pendingDong, pendingDongName]);
 
   const handleMoveToGu = async (guName: string) => {
     if (!guName || isMoving) return;

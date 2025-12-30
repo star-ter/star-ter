@@ -130,3 +130,49 @@ export async function geocodeAddresses(
 
   return results.filter((r): r is GeocodeResult & { query: string } => r !== null);
 }
+
+export interface ReverseGeocodeResult {
+  address: string;
+  roadAddress?: string;
+  guName?: string;
+  dongName?: string;
+}
+
+/**
+ * 좌표를 주소로 변환 (역지오코딩)
+ */
+export async function reverseGeocode(
+  lat: number,
+  lng: number
+): Promise<ReverseGeocodeResult | null> {
+  if (typeof window === 'undefined' || !window.kakao?.maps) {
+    return null;
+  }
+
+  return new Promise((resolve) => {
+    window.kakao.maps.load(() => {
+      try {
+        const geocoder = new window.kakao.maps.services.Geocoder() as any;
+        geocoder.coord2Address(lng, lat, (result: any, status: any) => {
+          if (status === window.kakao.maps.services.Status.OK && result.length > 0) {
+            const data = result[0];
+            const address = data.address;
+            
+            // 행정동 정보가 있으면 사용 (region_3depth_name), 없으면 법정동 등
+            resolve({
+              address: address?.address_name || '',
+              roadAddress: data.road_address?.address_name,
+              guName: address?.region_2depth_name, // 구 이름
+              dongName: address?.region_3depth_name, // 동 이름
+            });
+          } else {
+            resolve(null);
+          }
+        });
+      } catch (error) {
+        console.error('Reverse geocode error:', error);
+        resolve(null);
+      }
+    });
+  });
+}
