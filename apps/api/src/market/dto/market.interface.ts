@@ -8,3 +8,8 @@ export interface AdministrativeAreaResult {
   ADSTRD_CD: string;
   ADSTRD_NM: string;
 }
+
+export interface GuAreaResult {
+  SIGNGU_CD: string;
+  SIGNGU_NM: string;
+}

@@ -87,6 +87,7 @@ const COMMERCIAL_STYLES: Record<
   },
 };
 
+<<<<<<< HEAD
 function isRankableFeature(f: MapFeature): f is AdminArea | CommercialArea {
   return 'revenue' in f || 'residentPopulation' in f || 'openingStores' in f;
 }
@@ -202,6 +203,17 @@ function createMarkerContent(
 }
 
 // 통합된 폴리곤 그리기 함수
+=======
+// 통합된 폴리곤 그리기 함수 (GeoJSON/CustomArea  모두 처리)
+/* @param map Kakao 지도 객체
+ * @param features 데이터 배열 (AdminArea[] 또는 BuildingArea[])
+ * @param type 'admin' (행정구역) 또는 'building_store' (건물) - 스타일 결정용
+ * @param polygonsRef 폴리곤 객체들을 저장할 Ref (cleanup용)
+ * @param customOverlaysRef 커스텀 오버레이 객체들을 저장할 Ref (cleanup용)
+ * @param onPolygonClick 폴리곤 클릭 시 실행할 콜백
+ * @param level 현재 레벨 그룹 ('gu' | 'dong' | 'commercial') - 클릭 시 API에 전달됨
+ */
+>>>>>>> eb75fb9f39a4f7d23ab5d8d7383afc63dec9d97a
 export function drawPolygons(
   map: KakaoMap,
   features: MapFeature[],
@@ -210,7 +222,11 @@ export function drawPolygons(
   customOverlaysRef: Ref<KakaoCustomOverlay[]>,
   onPolygonClick: (data: InfoBarData) => void,
   shouldClear: boolean = true,
+<<<<<<< HEAD
   mode: OverlayMode = 'revenue',
+=======
+  level?: 'gu' | 'dong' | 'commercial',
+>>>>>>> eb75fb9f39a4f7d23ab5d8d7383afc63dec9d97a
 ) {
   // Clear existing
   if (shouldClear) {
@@ -352,14 +368,32 @@ export function drawPolygons(
       });
 
       window.kakao.maps.event.addListener(polygon, 'click', () => {
+<<<<<<< HEAD
         const x = centerPoint ? centerPoint.getLng() : 0;
         const y = centerPoint ? centerPoint.getLat() : 0;
 
+=======
+        console.log(`Clicked: ${label}`);
+
+        let finalX = 0;
+        let finalY = 0;
+
+        // Prefer explicit coordinates if available (AdminArea/BuildingArea)
+        if ('x' in props && props.x) finalX = Number(props.x);
+        else if (centerPoint) finalX = centerPoint.getLng();
+
+        if ('y' in props && props.y) finalY = Number(props.y);
+        else if (centerPoint) finalY = centerPoint.getLat();
+
+        // TODO: InfoBar에 상권 정보(TRDAR_SE_1 등)가 포함된 props를 전달하는 부분.
+        // level 정보를 포함하여 클릭 이벤트 전달
+>>>>>>> eb75fb9f39a4f7d23ab5d8d7383afc63dec9d97a
         onPolygonClick({
           ...props,
-          x: x,
-          y: y,
+          x: finalX,
+          y: finalY,
           polygons: polygons,
+          level: level, // 줌 레벨 기반 level 정보 추가
         } as unknown as InfoBarData);
       });
     });
@@ -368,7 +402,35 @@ export function drawPolygons(
       const contentEl = createMarkerContent(feature, isTop3, ranking, mode);
 
       contentEl.onclick = () => {
+<<<<<<< HEAD
         onPolygonClick(props as unknown as InfoBarData);
+=======
+        console.log('Clicked Overlay:', props);
+
+        let finalX = 0;
+        let finalY = 0;
+
+        // Robust check: Ensure x/y are valid numbers and non-zero
+        const propX = 'x' in props ? Number(props.x) : NaN;
+        const propY = 'y' in props ? Number(props.y) : NaN;
+
+        if (!isNaN(propX) && propX !== 0) finalX = propX;
+        else if (position) finalX = position.getLng();
+
+        if (!isNaN(propY) && propY !== 0) finalY = propY;
+        else if (position) finalY = position.getLat();
+
+        console.log(`Overlay Click Sent: ${finalX}, ${finalY}`);
+
+        // level 정보를 포함하여 마커 클릭 이벤트 전달
+        onPolygonClick({
+          ...props,
+          x: finalX,
+          y: finalY,
+          polygons: polygons,
+          level: level, // 줌 레벨 기반 level 정보 추가
+        } as unknown as InfoBarData);
+>>>>>>> eb75fb9f39a4f7d23ab5d8d7383afc63dec9d97a
       };
 
       const customOverlay = new window.kakao.maps.CustomOverlay({

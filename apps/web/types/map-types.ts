@@ -88,17 +88,7 @@ export interface CommercialArea {
   openingStores?: number; // 개업 점포 수 (Optional)
 }
 
-export interface InfoBarData {
-  adm_nm?: string;
-  adm_cd?: string;
-  buld_nm?: string;
-  commercialName?: string;
-  commercialType?: string;
-  commercialCode?: string;
-  x: string | number;
-  y: string | number;
-  polygons?: number[][][][] | number[][][] | number[][];
-}
+
 
 export interface CommercialApiResponse {
   properties: {
@@ -141,9 +131,34 @@ export interface ReverseGeocodeResult {
   dongName?: string;
 }
 
+
 // Utility Types (Moved from kakao-draw-utils.ts)
 export interface Ref<T> {
   current: T;
+}
+
+/**
+ * InfoBar에 전달되는 데이터 타입
+ * - 마커/폴리곤 클릭 시 전달됨
+ */
+export interface InfoBarData {
+  adm_nm?: string;
+  adm_cd?: string;
+  buld_nm?: string;
+  commercialName?: string;
+  commercialType?: string;
+  commercialCode?: string;
+  x: string | number;
+  y: string | number;
+  polygons?: number[][][][] | number[][][] | number[][];
+  /**
+   * 클릭한 마커/폴리곤의 레벨 (줌 레벨에 따라 결정)
+   * - 'gu': 행정구 (줌 레벨 >= 7)
+   * - 'dong': 행정동 (줌 레벨 5-6)
+   * - 'commercial': 상권 (줌 레벨 2-4)
+   */
+  level?: 'gu' | 'dong' | 'commercial';
+
 }
 
 export type MapFeature = AdminArea | BuildingArea | CommercialArea;
