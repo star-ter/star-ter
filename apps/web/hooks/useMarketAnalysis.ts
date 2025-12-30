@@ -32,6 +32,14 @@ export const useMarketAnalysis = (data: InfoBarData) => {
         console.log(`[useMarketAnalysis] 클릭 레벨: ${data.level}`);
       }
 
+      // gu/dong 레벨에서 코드 기반 조회를 위해 코드 전달
+      if (data.signgu_cd) {
+        baseParams.set('signgu_cd', data.signgu_cd);
+      }
+      if (data.adstrd_cd) {
+        baseParams.set('adstrd_cd', data.adstrd_cd);
+      }
+
       try {
         // ===============================================
         // 구/동 레벨: stores API 스킵 (폴리곤이 너무 커서 URL 길이 초과)

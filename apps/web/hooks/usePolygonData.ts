@@ -84,6 +84,8 @@ export const usePolygonData = (
             (clickedData) => onPolygonClickRef.current(clickedData),
             true,
             overlayMode,
+            undefined,
+            false, // 건물 마커 그리지 않음
           );
         }
       } catch (err) {

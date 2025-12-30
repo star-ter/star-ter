@@ -112,18 +112,51 @@ export class MarketService {
   async getAnalytics(
     query: GetMarketAnalysisQueryDto,
   ): Promise<MarketAnalyticsDto> {
-    const { latitude, longitude, level } = query;
+    const { latitude, longitude, level, signgu_cd, adstrd_cd } = query;
     const lat = parseFloat(latitude);
     const lng = parseFloat(longitude);
 
     this.logger.log(
-      `[Analytics 요청] lat: ${lat}, lng: ${lng}, level: ${level || 'default'}`,
+      `[Analytics 요청] lat: ${lat}, lng: ${lng}, level: ${level || 'default'}, signgu_cd: ${signgu_cd || 'none'}, adstrd_cd: ${adstrd_cd || 'none'}`,
     );
 
     // ========================================
     // (1) level이 'gu'인 경우: 행정구 데이터 조회
     // ========================================
     if (level === 'gu') {
+      // 코드가 직접 전달된 경우 코드 기반 조회
+      if (signgu_cd) {
+        this.logger.log(`[행정구 코드 기반 조회] ${signgu_cd}`);
+
+        const [salesData, storeStats] = await Promise.all([
+          this.marketRepository.getAdminGuRevenueTrend(signgu_cd),
+          this.marketRepository.getGuStoreStats(signgu_cd),
+        ]);
+
+        const totalStores = storeStats._sum.STOR_CO || 0;
+        const openingRate =
+          totalStores > 0
+            ? ((storeStats._sum.OPBIZ_STOR_CO || 0) / totalStores) * 100
+            : 0;
+        const closureRate =
+          totalStores > 0
+            ? ((storeStats._sum.CLSBIZ_STOR_CO || 0) / totalStores) * 100
+            : 0;
+
+        // areaName을 signgu_cd에서 조회 (간단히 코드만 사용, 추후 개선 가능)
+        const guArea = await this.marketRepository.findGuByCode(signgu_cd);
+        const areaName = guArea?.SIGNGU_NM || signgu_cd;
+
+        return MarketMapper.mapToAnalyticsDto(
+          salesData,
+          areaName,
+          false,
+          openingRate,
+          closureRate,
+        );
+      }
+
+      // 코드가 없으면 좌표 기반 조회 (폴백)
       const guArea = await this.marketRepository.findAdministrativeGu(lat, lng);
 
       if (guArea) {
@@ -131,13 +164,11 @@ export class MarketService {
           `[행정구 찾음] ${guArea.SIGNGU_NM} (${guArea.SIGNGU_CD})`,
         );
 
-        // 매출 데이터와 상점 통계를 병렬로 조회
         const [salesData, storeStats] = await Promise.all([
           this.marketRepository.getAdminGuRevenueTrend(guArea.SIGNGU_CD),
           this.marketRepository.getGuStoreStats(guArea.SIGNGU_CD),
         ]);
 
-        // 개업률/폐업률 계산
         const totalStores = storeStats._sum.STOR_CO || 0;
         const openingRate =
           totalStores > 0
@@ -151,7 +182,7 @@ export class MarketService {
         return MarketMapper.mapToAnalyticsDto(
           salesData,
           guArea.SIGNGU_NM,
-          false, // isCommercialZone = false (행정구역)
+          false,
           openingRate,
           closureRate,
         );
@@ -161,14 +192,89 @@ export class MarketService {
     }
 
     // ========================================
-    // (2) 기본 동작: 상권 → 행정동 순서로 조회
+    // (2) level이 'dong'인 경우: 행정동 데이터 직접 조회
+    // ========================================
+    if (level === 'dong') {
+      // 코드가 직접 전달된 경우 코드 기반 조회
+      if (adstrd_cd) {
+        this.logger.log(`[행정동 코드 기반 조회] ${adstrd_cd}`);
+
+        const [salesData, storeStats] = await Promise.all([
+          this.marketRepository.getAdminDongRevenueTrend(adstrd_cd),
+          this.marketRepository.getAdministrativeStoreStats(adstrd_cd),
+        ]);
+
+        const totalStores = storeStats._sum.STOR_CO || 0;
+        const openingRate =
+          totalStores > 0
+            ? ((storeStats._sum.OPBIZ_STOR_CO || 0) / totalStores) * 100
+            : 0;
+        const closureRate =
+          totalStores > 0
+            ? ((storeStats._sum.CLSBIZ_STOR_CO || 0) / totalStores) * 100
+            : 0;
+
+        // areaName을 adstrd_cd에서 조회
+        const dongArea = await this.marketRepository.findDongByCode(adstrd_cd);
+        const areaName = dongArea?.ADSTRD_NM || adstrd_cd;
+
+        return MarketMapper.mapToAnalyticsDto(
+          salesData,
+          areaName,
+          false,
+          openingRate,
+          closureRate,
+        );
+      }
+
+      // 코드가 없으면 좌표 기반 조회 (폴백)
+      const adminArea = await this.marketRepository.findAdministrativeDistrict(
+        lat,
+        lng,
+      );
+
+      if (adminArea) {
+        this.logger.log(
+          `[행정동 찾음] ${adminArea.ADSTRD_NM} (${adminArea.ADSTRD_CD})`,
+        );
+
+        const [salesData, storeStats] = await Promise.all([
+          this.marketRepository.getAdminDongRevenueTrend(adminArea.ADSTRD_CD),
+          this.marketRepository.getAdministrativeStoreStats(
+            adminArea.ADSTRD_CD,
+          ),
+        ]);
+
+        const totalStores = storeStats._sum.STOR_CO || 0;
+        const openingRate =
+          totalStores > 0
+            ? ((storeStats._sum.OPBIZ_STOR_CO || 0) / totalStores) * 100
+            : 0;
+        const closureRate =
+          totalStores > 0
+            ? ((storeStats._sum.CLSBIZ_STOR_CO || 0) / totalStores) * 100
+            : 0;
+
+        return MarketMapper.mapToAnalyticsDto(
+          salesData,
+          adminArea.ADSTRD_NM,
+          false,
+          openingRate,
+          closureRate,
+        );
+      }
+
+      return MarketMapper.getEmptySalesData('행정동 정보를 찾을 수 없습니다.');
+    }
+
+    // ========================================
+    // (3) 기본 동작: 상권 → 행정동 순서로 조회
     // ========================================
     const commercialArea = await this.marketRepository.findCommercialArea(
       lat,
       lng,
     );
     if (commercialArea) {
-      // 매출 데이터와 상점 통계를 병렬로 조회
       const [salesData, storeStats] = await Promise.all([
         this.marketRepository.getCommercialRevenueTrend(
           commercialArea.TRDAR_CD,
@@ -176,7 +282,6 @@ export class MarketService {
         this.marketRepository.getCommercialStoreStats(commercialArea.TRDAR_CD),
       ]);
 
-      // 개업률/폐업률 계산
       const totalStores = storeStats._sum.STOR_CO || 0;
       const openingRate =
         totalStores > 0
@@ -202,13 +307,11 @@ export class MarketService {
     );
 
     if (adminArea) {
-      // 매출 데이터와 상점 통계를 병렬로 조회
       const [salesData, storeStats] = await Promise.all([
         this.marketRepository.getAdminDongRevenueTrend(adminArea.ADSTRD_CD),
         this.marketRepository.getAdministrativeStoreStats(adminArea.ADSTRD_CD),
       ]);
 
-      // 개업률/폐업률 계산
       const totalStores = storeStats._sum.STOR_CO || 0;
       const openingRate =
         totalStores > 0
