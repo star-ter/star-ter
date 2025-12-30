@@ -1,6 +1,5 @@
-import { FaBuilding } from 'react-icons/fa'; // 부동산업
-import { MdMenuBook, MdScience } from 'react-icons/md'; // 전문/과학
-import { MdSupportAgent } from 'react-icons/md'; // 시설관리
+import { MdMenuBook } from 'react-icons/md'; // 교육
+// import { MdSupportAgent } from 'react-icons/md'; // 시설관리 (Unused)
 import { FaHospital } from 'react-icons/fa'; // 보건
 import { GiForkKnifeSpoon } from 'react-icons/gi';
 import { IoBag } from 'react-icons/io5';
@@ -21,15 +20,12 @@ interface Props {
 
 const IconMap: Record<string, IconType> = {
   I2: GiForkKnifeSpoon, // 음식
-  G2: IoBag, // 소매
-  S2: RiCustomerServiceFill, // 서비스
-  R2: IoLogoGameControllerB, // 오락
   P1: MdMenuBook, // 교육
+  Q1: FaHospital, // 의료·건강
+  R1: IoLogoGameControllerB, // 오락·스포츠
+  S2: RiCustomerServiceFill, // 생활서비스
   I1: IoIosBed, // 숙박
-  L1: FaBuilding, // 부동산
-  M1: MdScience, // 전문/과학
-  N1: MdSupportAgent, // 시설관리
-  Q1: FaHospital, // 보건
+  G2: IoBag, // 소매
 };
 
 export default function IndustryContents({
@@ -55,9 +51,8 @@ export default function IndustryContents({
       <p className="mt-3 text-sm leading-relaxed text-gray-400">
         지도에 표시할 업종을 선택하세요
       </p>
-      <div className="grid grid-cols-5 gap-[12px] mt-3 overflow-x-auto pb-2">
+      <div className="grid grid-cols-4 gap-[16px] mt-3 overflow-x-auto pb-2">
         {categories.map(({ code, name }) => {
-          // code가 'food', 'retail' 등과 일치하므로 이를 키로 사용
           const Icon = IconMap[code] ?? IoBag;
           return (
             <div

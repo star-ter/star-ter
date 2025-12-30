@@ -28,7 +28,7 @@ export interface KakaoMapProjection {
 export interface KakaoPolygon {
   setMap: (map: KakaoMap | null) => void;
   setOptions: (options: PolygonStyle | Record<string, unknown>) => void;
-  fillColor?: string; // 성능 최적화를 위한 컬러 캐싱용
+  fillColor?: string;
 }
 
 export interface PolygonStyle {
@@ -43,90 +43,42 @@ export interface KakaoCustomOverlay {
   setMap: (map: KakaoMap | null) => void;
 }
 
+export type KakaoEventHandle = any;
+export type KakaoEventHandler = (...args: any[]) => void;
+
 export interface InfoBarData {
   adm_nm?: string;
   adm_cd?: string;
   buld_nm?: string;
+  commercialName?: string;
+  commercialType?: string;
+  commercialCode?: string;
   x: string | number;
   y: string | number;
   polygons?: number[][][][] | number[][][] | number[][];
-  // [key: string]: any;
 }
 
-// 행정구역 (구, 동)
 export interface AdminArea {
   adm_nm: string;
   adm_cd: string;
-  x?: string | number;
-  y?: string | number;
+  x: string | number;
+  y: string | number;
   polygons: number[][][][] | number[][][] | number[][];
-  // [key: string]: any;
 }
 
-// 빌딩
 export interface BuildingArea {
   buld_nm: string;
-  adm_nm?: string;
-  adm_cd?: string;
-  x?: string | number;
-  y?: string | number;
+  x: string | number;
+  y: string | number;
   polygons: number[][][][] | number[][][] | number[][];
-  // [key: string]: any;
-}
-export interface KakaoMapOptions {
-  center: KakaoLatLng;
-  level: number;
 }
 
-export interface KakaoNamespace {
-  maps: {
-    LatLng: new (lat: number, lng: number) => KakaoLatLng;
-    LatLngBounds: new (sw?: KakaoLatLng, ne?: KakaoLatLng) => KakaoBounds;
-    Map: new (container: HTMLElement, options: KakaoMapOptions) => KakaoMap;
-    Polygon: new (options: Record<string, unknown>) => KakaoPolygon;
-    Marker: new (options: Record<string, unknown>) => {
-      setMap: (map: KakaoMap | null) => void;
-    };
-    CustomOverlay: new (options: {
-      position: KakaoLatLng;
-      content: HTMLElement | string;
-      yAnchor?: number;
-      xAnchor?: number;
-      zIndex?: number;
-    }) => KakaoCustomOverlay;
-    load: (callback: () => void) => void;
-    event: {
-      addListener: (
-        target: unknown,
-        event: string,
-        callback: () => void,
-      ) => unknown;
-      removeListener: (listener: unknown) => void;
-    };
-    services: {
-      Geocoder: any;
-      Places: any;
-      Status: {
-        OK: any;
-        ERROR: any;
-        ZERO_RESULT: any;
-      };
-    };
-  };
-}
-
-declare global {
-  interface Window {
-    kakao: KakaoNamespace;
-  }
-}
-
-// 상권
 export interface CommercialArea {
   commercialType: string;
   commercialName: string;
-  guCode: string; // 구 정보
-  dongCode: string; // 동 정보
+  commercialCode: string;
+  guCode: string;
+  dongCode: string;
   polygons: number[][][][] | number[][][] | number[][];
 }
 
@@ -134,6 +86,7 @@ export interface CommercialApiResponse {
   properties: {
     commercialType: string;
     commercialName: string;
+    commercialCode: string;
     guCode: string;
     dongCode: string;
   };
@@ -142,5 +95,11 @@ export interface CommercialApiResponse {
   };
 }
 
-export type KakaoEventHandle = unknown;
-export type KakaoEventHandler = unknown;
+export interface KakaoMarker {
+  setMap: (map: KakaoMap | null) => void;
+}
+
+export interface PolygonClickData {
+  name: string;
+  code?: string;
+}

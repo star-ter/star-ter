@@ -72,24 +72,3 @@ export const convertToWKT = (
 
   return `POLYGON((${coordinates}))`;
 };
-
-export const createMarketAnalysisUrl = (
-  baseUrl: string,
-  x: string | number,
-  y: string | number,
-  polygons?: number[][][][] | number[][][] | number[][], // InfoBarData의 polygons 타입
-): string => {
-  // 1. 기본 URL 생성
-  let url = `${baseUrl}/market/analysis?latitude=${y}&longitude=${x}`;
-
-  // 2. 폴리곤이 있으면 WKT 변환 후 파라미터 추가
-  if (polygons) {
-    const wktString = convertToWKT(polygons); // 같은 파일에 있는 함수 재사용
-    if (wktString) {
-      const encodedWkt = encodeURIComponent(wktString);
-      url += `&polygon=${encodedWkt}`;
-    }
-  }
-
-  return url;
-};

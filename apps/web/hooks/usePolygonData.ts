@@ -10,7 +10,7 @@ import {
 } from '../types/map-types';
 import { drawPolygons } from '../utils/kakao-draw-utils';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000';
 
 export const usePolygonData = (
   map: KakaoMap | null,
@@ -26,7 +26,6 @@ export const usePolygonData = (
     onPolygonClickRef.current = onPolygonClick;
   }, [onPolygonClick]);
 
-  // 구/동 데이터를 비동기로 호출하고 지도에 그리는 함수.
   async function fetchCombinedBoundary(map: KakaoMap, lowSearch: number) {
     console.log(`Fetching Combined Boundary...`);
     try {
@@ -51,15 +50,12 @@ export const usePolygonData = (
     }
   }
 
-  // 건물 데이터를 비동기로 호출하고 지도에 그리는 함수.
-  async function fetchBuildingVworld(map: KakaoMap) {
-    console.log(`Fetching Building Data...`);
+  async function fetchBuildingData(map: KakaoMap) {
+    console.log(`Fetching Building Data (DB Filtered)...`);
 
     const bounds = map.getBounds();
     const sw = bounds.getSouthWest();
     const ne = bounds.getNorthEast();
-
-    // V-World API에 보낼 BBOX (minx, miny, maxx, maxy)
     const minx = sw.getLng();
     const miny = sw.getLat();
     const maxx = ne.getLng();
@@ -78,7 +74,7 @@ export const usePolygonData = (
         drawPolygons(
           map,
           features as BuildingArea[],
-          'vworld_building',
+          'building_store',
           polygonsRef,
           customOverlaysRef,
           (data) => onPolygonClickRef.current(data),
@@ -91,7 +87,6 @@ export const usePolygonData = (
     }
   }
 
-  // 상권 데이터를 비동기로 호출하고 지도에 그리는 함수.
   async function fetchCommercialData(map: KakaoMap) {
     console.log(`Fetching Commercial Data...`);
 
@@ -117,11 +112,11 @@ export const usePolygonData = (
       if (Array.isArray(data)) {
         console.log(`Received ${data.length} commercial areas`);
 
-        // GeoJSON Feature -> CommercialArea 매핑
         const commercialAreas = (data as CommercialApiResponse[]).map(
           (feature) => ({
             commercialType: feature.properties.commercialType,
             commercialName: feature.properties.commercialName,
+            commercialCode: feature.properties.commercialCode,
             guCode: feature.properties.guCode,
             dongCode: feature.properties.dongCode,
             polygons: feature.polygons.coordinates,
@@ -179,7 +174,6 @@ export const usePolygonData = (
       (currentGroup === 'GU' || currentGroup === 'DONG')
     ) {
       console.log(`Skipping fetch for static layer: ${currentGroup}`);
-      // 상권 데이터는 mock이므로 한번만 가져와도 됨 (하지만 지도 이동 시 다시 가져오지 않도록 static 취급)
       return;
     }
 
@@ -192,14 +186,13 @@ export const usePolygonData = (
     } else if (level >= 2) {
       fetchCommercialData(map);
     } else {
-      fetchBuildingVworld(map);
+      fetchBuildingData(map);
     }
   }
 
   useEffect(() => {
     if (!map) return;
 
-    // Initial load
     refreshLayer(map);
 
     let timeoutId: NodeJS.Timeout | null = null;
@@ -210,22 +203,7 @@ export const usePolygonData = (
       }, 500);
     };
 
-    // 지도가 변할 때 마다 refreshLayer 함수를 호출하여 데이터를 다시 그리는 함수.
-    const kakaoEvents = window.kakao?.maps?.event;
-    let handlers: any[] = [];
-    
-    if (kakaoEvents) {
-      handlers.push(kakaoEvents.addListener(map, 'idle', debouncedRefresh));
-      handlers.push(kakaoEvents.addListener(map, 'zoom_changed', debouncedRefresh));
-    }
-
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-      if (window.kakao?.maps?.event) {
-        handlers.forEach(h => {
-          if (h) window.kakao.maps.event.removeListener(h);
-        });
-      }
-    };
+    window.kakao.maps.event.addListener(map, 'idle', debouncedRefresh);
+    window.kakao.maps.event.addListener(map, 'zoom_changed', debouncedRefresh);
   }, [map]);
 };

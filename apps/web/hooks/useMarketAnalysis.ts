@@ -1,6 +1,6 @@
 import { InfoBarData } from '@/types/map-types';
 import { MarketAnalysisData } from '@/types/market-types';
-import { convertToWKT, createMarketAnalysisUrl } from '@/utils/map-utils';
+import { convertToWKT } from '@/utils/map-utils';
 import { useEffect, useState } from 'react';
 
 export const useMarketAnalysis = (data: InfoBarData) => {
@@ -38,13 +38,13 @@ export const useMarketAnalysis = (data: InfoBarData) => {
         if (!storeRes.ok || !analyticsRes.ok) {
           throw new Error('API 응답 에러');
         }
-        //TODO: any 수정해야 함
+
         const storeData = await storeRes.json();
         const analyticsData = await analyticsRes.json();
 
         const mergedData: MarketAnalysisData = {
           // StoreListDto (상점 목록)
-          areaName: storeData.areaName,
+          areaName: analyticsData.areaName,
           reviewSummary: storeData.reviewSummary,
           stores: storeData.stores,
           // AnalyticsDto (매출 분석)

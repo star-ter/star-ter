@@ -18,19 +18,19 @@ type ActiveType = /* 'area' | */ 'population' | 'industry' | 'compare';
 
 import { usePopulationVisual } from '../../hooks/usePopulationVisual';
 interface BottomMenuProps {
-  locationA: string;
-  locationB: string;
-  setLocationA: (area: string) => void;
-  setLocationB: (area: string) => void;
+  locationA: { name: string; code?: string };
+  locationB: { name: string; code?: string };
+  setLocationA: (area: { name: string; code?: string }) => void;
+  setLocationB: (area: { name: string; code?: string }) => void;
   handlePickMode: (target: 'A' | 'B') => void;
   population: ReturnType<typeof usePopulationVisual>;
-  onCompare?: () => void;
+  onCompare?: (data?: CompareRequest) => void;
   onSelectCategory: (category: IndustryCategory | null) => void;
 }
 
 export default function BottomMenuBox({
-  locationA = '',
-  locationB = '',
+  locationA = { name: '' },
+  locationB = { name: '' },
   setLocationA,
   setLocationB,
   handlePickMode,
@@ -60,7 +60,7 @@ export default function BottomMenuBox({
     console.log('비교 요청:', data);
     // TODO: 비교 로직 실행
     if (onCompare) {
-      onCompare();
+      onCompare(data);
     }
     modalClose();
   }
@@ -108,10 +108,12 @@ export default function BottomMenuBox({
       <CompareContents
         onClose={modalClose}
         onCompare={handleCompare}
-        targetA={locationA}
-        targetB={locationB}
-        changeTargetA={setLocationA}
-        changeTargetB={setLocationB}
+        targetA={locationA.name}
+        targetB={locationB.name}
+        propCodeA={locationA.code}
+        propCodeB={locationB.code}
+        changeTargetA={(val) => setLocationA({ name: val })}
+        changeTargetB={(val) => setLocationB({ name: val })}
         onPickLocation={handlePickLocation}
       />
     ),
@@ -120,7 +122,7 @@ export default function BottomMenuBox({
   const Content = active === 'none' ? null : contents[active as ActiveType];
 
   return (
-    <section className="flex flex-col items-center mb-[24px]">
+    <section className="w-full flex flex-col items-center mb-[24px]">
       {Content && <ModalCard>{Content}</ModalCard>}
       <div className="flex items-center justify-center gap-4 rounded-2xl bg-white/80 px-4 py-3 shadow-md ring-1 ring-black/5">
         {items.map(({ label, value }) => (
@@ -131,8 +133,8 @@ export default function BottomMenuBox({
               // 초기화 버튼 처리 (항상 실행되어야 함)
               if (value === 'none') {
                 setActive('none');
-                setLocationA('');
-                setLocationB('');
+                setLocationA({ name: '' });
+                setLocationB({ name: '' });
                 onSelectCategory(null);
                 population.setShowLayer(false);
                 return;
@@ -146,8 +148,8 @@ export default function BottomMenuBox({
 
               setActive(value);
               // 초기화 외의 버튼을 눌러도 위치 정보는 리셋 (기타 기획 의도 유지)
-              setLocationA('');
-              setLocationB('');
+              setLocationA({ name: '' });
+              setLocationB({ name: '' });
 
               if (value === 'compare') {
                 setInfoBarOpen(false); // 비교 모드 선택 시 왼쪽 사이드바만 닫기

@@ -308,7 +308,9 @@ export const usePopulationLayer = (
       try {
         listeners.push(eventApi.addListener(map, 'idle', () => {
           if (!isVisibleRef.current) return;
-          canvasRef.current && (canvasRef.current.style.transform = 'translate(0px, 0px)');
+          if (canvasRef.current) {
+            canvasRef.current.style.transform = 'translate(0px, 0px)';
+          }
           renderLayer();
           if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
           debounceTimerRef.current = setTimeout(() => {
@@ -318,7 +320,9 @@ export const usePopulationLayer = (
 
         listeners.push(eventApi.addListener(map, 'zoom_changed', () => {
           if (!isVisibleRef.current) return;
-          canvasRef.current && (canvasRef.current.style.transform = 'translate(0px, 0px)');
+          if (canvasRef.current) {
+            canvasRef.current.style.transform = 'translate(0px, 0px)';
+          }
         }));
 
         listeners.push(eventApi.addListener(map, 'dragstart', () => {

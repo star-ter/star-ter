@@ -9,12 +9,15 @@ export default function SearchBox() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [searchValue, setSearchValue] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  
+
   const { moveToLocation } = useMapStore();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         inputRef.current?.blur();
       }
     };
@@ -27,7 +30,7 @@ export default function SearchBox() {
 
   const handleSearch = async () => {
     if (!searchValue.trim() || isSearching) return;
-    
+
     setIsSearching(true);
     try {
       const result = await geocodeAddress(searchValue);
@@ -36,7 +39,7 @@ export default function SearchBox() {
           { lat: result.lat, lng: result.lng },
           result.buildingName || result.address || searchValue,
           3,
-          true // centered: 정중앙에 표시
+          true,
         );
         setSearchValue('');
         inputRef.current?.blur();
@@ -58,13 +61,13 @@ export default function SearchBox() {
   };
 
   return (
-    <header className="flex flex-start w-screen px-4 py-4 pointer-events-none">
-      <div 
+    <header className="m-4 pointer-events-none">
+      <div
         ref={containerRef}
         onClick={() => inputRef.current?.focus()}
-        className="pointer-events-auto group flex h-12 w-12 hover:w-[320px] focus-within:w-[320px] items-center gap-3 rounded-full bg-white/50 hover:bg-white/90 focus-within:bg-white/90 shadow-lg ring-1 ring-gray-200 transition-all duration-500 ease-in-out overflow-hidden px-3 cursor-pointer"
+        className="pointer-events-auto group flex h-12 w-12 hover:w-[320px] focus-within:w-[320px] items-center gap-3 rounded-full bg-white hover:bg-white focus-within:bg-white/90 shadow-lg ring-1 ring-gray-200 transition-all duration-500 ease-in-out overflow-hidden px-3 cursor-pointer"
       >
-        <figure 
+        <figure
           className="flex shrink-0 h-6 w-6 items-center justify-center text-gray-800 ml-0.4 cursor-pointer hover:text-blue-600 transition-colors"
           onClick={(e) => {
             e.stopPropagation();
