@@ -40,9 +40,9 @@ export class MarketRepository {
               polygons
             )
           ),
-          4326
+          5179
         ),
-        ST_SetSRID(ST_Point(${lng}, ${lat}), 4326)
+        ST_Transform(ST_SetSRID(ST_Point(${lng}, ${lat}), 4326), 5179)
       )
       LIMIT 1
     `;
