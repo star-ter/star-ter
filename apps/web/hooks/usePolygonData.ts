@@ -1,14 +1,16 @@
 import { useRef, useEffect, useCallback } from 'react';
 import {
   KakaoMap,
-  AdminArea,
-  BuildingArea,
   KakaoPolygon,
   KakaoCustomOverlay,
   InfoBarData,
-  CommercialApiResponse,
 } from '../types/map-types';
 import { drawPolygons } from '../utils/kakao-draw-utils';
+import {
+  isAdminAreaList,
+  isBuildingAreaList,
+  isCommercialApiResponseList,
+} from '@/utils/type-guards';
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000';
@@ -29,22 +31,29 @@ export const usePolygonData = (
 
   const fetchCombinedBoundary = useCallback(async (map: KakaoMap, lowSearch: number) => {
     console.log(`Fetching Combined Boundary...`);
+    // lowSearch값에 따라 level 결정 (1: 구, 2: 동)
+    const level = lowSearch === 1 ? 'gu' : 'dong';
+
     try {
       const url = `${API_BASE_URL}/polygon/admin?low_search=${lowSearch}`;
 
       const response = await fetch(url);
       const data = await response.json();
 
-      if (Array.isArray(data)) {
-        console.log(`Drawing ${data.length} features`);
+      if (isAdminAreaList(data)) {
+        console.log(`Drawing ${data.length} features with level: ${level}`);
         drawPolygons(
           map,
-          data as AdminArea[],
+          data,
           'admin',
           polygonsRef,
           customOverlaysRef,
           (data) => onPolygonClickRef.current(data),
+          true, // shouldClear
+          level, // level 파라미터 추가
         );
+      } else {
+        console.warn('AdminArea 데이터 형식이 아니거나 비어 있음!!');
       }
     } catch (err) {
       console.error('Combined Boundary Fetch Error:', err);
@@ -70,11 +79,11 @@ export const usePolygonData = (
 
       const features = data;
 
-      if (Array.isArray(features)) {
+      if (isBuildingAreaList(features)) {
         console.log(`Received ${features.length} buildings`);
         drawPolygons(
           map,
-          features as BuildingArea[],
+          features,
           'building_store',
           polygonsRef,
           customOverlaysRef,
@@ -110,21 +119,19 @@ export const usePolygonData = (
       );
       const data = await response.json();
 
-      if (Array.isArray(data)) {
+      if (isCommercialApiResponseList(data)) {
         console.log(`Received ${data.length} commercial areas`);
 
-        const commercialAreas = (data as CommercialApiResponse[]).map(
-          (feature) => ({
-            commercialType: feature.properties.commercialType,
-            commercialName: feature.properties.commercialName,
-            commercialCode:
-              feature.code || feature.properties.commercialCode || '',
-            guCode: feature.properties.guCode,
-            dongCode: feature.properties.dongCode,
-            polygons: feature.polygons.coordinates,
-            revenue: feature.revenue,
-          }),
-        );
+        const commercialAreas = data.map((feature) => ({
+          commercialType: feature.properties.commercialType,
+          commercialName: feature.properties.commercialName,
+          commercialCode:
+            feature.code || feature.properties.commercialCode || '',
+          guCode: feature.properties.guCode,
+          dongCode: feature.properties.dongCode,
+          polygons: feature.polygons.coordinates,
+          revenue: feature.revenue,
+        }));
 
         const newCommercialAreas = commercialAreas.filter((area) => {
           if (visitedCommercialRef.current.has(area.commercialName))
@@ -141,7 +148,8 @@ export const usePolygonData = (
             polygonsRef,
             customOverlaysRef,
             (data) => onPolygonClickRef.current(data),
-            false,
+            false, // shouldClear
+            'commercial', // level 파라미터 추가
           );
         }
         console.timeEnd('상권 데이터 로딩 시간');

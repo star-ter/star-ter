@@ -128,6 +128,10 @@ export interface ReverseGeocodeResult {
   dongName?: string;
 }
 
+/**
+ * InfoBar에 전달되는 데이터 타입
+ * - 마커/폴리곤 클릭 시 전달됨
+ */
 export interface InfoBarData {
   adm_nm?: string;
   adm_cd?: string;
@@ -138,6 +142,13 @@ export interface InfoBarData {
   x: string | number;
   y: string | number;
   polygons?: number[][][][] | number[][][] | number[][];
+  /**
+   * 클릭한 마커/폴리곤의 레벨 (줌 레벨에 따라 결정)
+   * - 'gu': 행정구 (줌 레벨 >= 7)
+   * - 'dong': 행정동 (줌 레벨 5-6)
+   * - 'commercial': 상권 (줌 레벨 2-4)
+   */
+  level?: 'gu' | 'dong' | 'commercial';
 }
 
 // 행정구역
