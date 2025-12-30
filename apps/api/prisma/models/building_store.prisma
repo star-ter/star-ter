@@ -1,0 +1,43 @@
+model BuildingStore {
+  store_id                      String  @id
+  store_name                    String?
+  branch_name                   String?
+  business_category_large_code  String?
+  business_category_large_name  String?
+  business_category_medium_code String?
+  business_category_medium_name String?
+  business_category_small_code  String?
+  business_category_small_name  String?
+  ksic_code                     String?
+  ksic_name                     String?
+  sido_code                     String?
+  sido_name                     String?
+  sigungu_code                  String?
+  sigungu_name                  String?
+  administrative_dong_code      String?
+  administrative_dong_name      String?
+  legal_dong_code               String?
+  legal_dong_name               String?
+  lot_code                      String?
+  land_classification_code      String?
+  land_classification_name      String?
+  lot_main_no                   String?
+  lot_sub_no                    String?
+  lot_address                   String?
+  road_name_code                String?
+  road_name                     String?
+  building_main_no              String?
+  building_sub_no               String?
+  building_management_no        String?
+  building_name                 String?
+  road_name_address             String?
+  old_zip_code                  String?
+  new_zip_code                  String?
+  dong_info                     String?
+  floor_info                    String?
+  unit_info                     String?
+  longitude                     Float?
+  latitude                      Float?
+
+  @@map("seoul_commercial_store_info")
+}

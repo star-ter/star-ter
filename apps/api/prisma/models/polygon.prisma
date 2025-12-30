@@ -4,48 +4,54 @@ model AdminAreaSido {
   x        Float
   y        Float
   polygons Json   @db.JsonB
+
   @@map("admin_area_sido")
 }
 
 model AdminAreaGu {
-  adm_cd   Int    @id
-  adm_nm   String @db.Text
-  x        Float
-  y        Float
-  polygons Json   @db.JsonB
+  adm_cd    Int     @id
+  adm_nm    String  @db.Text
+  x         Float
+  y         Float
+  polygons  Json    @db.JsonB
+  signgu_cd String?
+
   @@map("admin_area_gu")
 }
 
 model AdminAreaDong {
-  adm_cd   Int    @id
-  adm_nm   String @db.Text
-  x        Float
-  y        Float
-  polygons Json   @db.JsonB
+  adm_cd    Int     @id
+  adm_nm    String  @db.Text
+  x         Float
+  y         Float
+  polygons  Json    @db.JsonB
+  adstrd_cd String?
+
   @@map("admin_area_dong")
 }
 
 model CommercialArea {
   // 상권 아이디
-  trdar_cd      String @id
+  trdar_cd   String                                      @id
   // 상권 코드 
-  trdar_se_c    String
+  trdar_se_c String
   // 상권 종류 - 골목상권, 발달상권, 전통시장, 관광특구
-  trdar_se_1    String
+  trdar_se_1 String
   // 상권 이름 
-  trdar_cd_n    String
+  trdar_cd_n String
   // x 좌표, y 좌표
-  xcnts_valu    Float
-  ydnts_valu    Float
+  xcnts_valu Float
+  ydnts_valu Float
   // 구 코드, 구 한글
-  signgu_cd     String
-  signgu_cd_    String
+  signgu_cd  String
+  signgu_cd_ String
   // 동 코드, 동 한글
-  adstrd_cd     String
-  adstrd_cd_    String
+  adstrd_cd  String
+  adstrd_cd_ String
   // 면적
-  relm_ar       Float
+  relm_ar    Float
   // 폴리곤
-  geom          Unsupported("geometry(MultiPolygon, 4326)")
+  geom       Unsupported("geometry(MultiPolygon, 4326)")
+
   @@map("seoul_commercial_area_grid")
 }

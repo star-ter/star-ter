@@ -13,19 +13,16 @@ import {
 
 import { OpenApiResponse, OpenApiStoreItem } from './dto/open-api.dto';
 import { MarketAnalyticsDto } from './dto/market-analytics.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { KSIC_TO_CATEGORY } from './constants/ksic-category-map';
-import {
-  AdministrativeAreaResult,
-  CommercialAreaResult,
-} from './dto/market.interface';
+
 import { SalesCommercial, SalesDong } from 'generated/prisma/client';
+import { MarketRepository } from './market.repository';
 
 @Injectable()
 export class MarketService {
   private readonly logger = new Logger(MarketService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly marketRepository: MarketRepository) {}
 
   private isValidOpenApiResponse(data: unknown): data is OpenApiResponse {
     if (typeof data !== 'object' || data === null) return false;
@@ -89,92 +86,33 @@ export class MarketService {
     const lat = parseFloat(latitude);
     const lng = parseFloat(longitude);
 
-    const commercialArea = await this.findCommercialArea(lat, lng);
+    const commercialArea = await this.marketRepository.findCommercialArea(
+      lat,
+      lng,
+    );
     if (commercialArea) {
-      return this.getCommercialSales(
+      const salesData = await this.marketRepository.getCommercialSales(
         commercialArea.TRDAR_CD,
+      );
+      return this.mapToAnalyticsDto(
+        salesData,
         commercialArea.TRDAR_CD_NM,
-        //commercialArea.TRDAR_SE_1,
+        true,
       );
     }
 
-    const adminArea = await this.findAdministrativeDistrict(lat, lng);
+    const adminArea = await this.marketRepository.findAdministrativeDistrict(
+      lat,
+      lng,
+    );
     if (adminArea) {
-      return this.getAdministrativeSales(
+      const salesData = await this.marketRepository.getAdministrativeSales(
         adminArea.ADSTRD_CD,
-        adminArea.ADSTRD_NM,
       );
+      return this.mapToAnalyticsDto(salesData, adminArea.ADSTRD_NM, false);
     }
 
     return this.getEmptySalesData('분석할 수 없는 지역입니다.');
-  }
-  // postgis라서 rawquery 사용
-  private async findCommercialArea(
-    lat: number,
-    lng: number,
-  ): Promise<CommercialAreaResult | null> {
-    // TODO : DB 컬럼명 대소문자 이슈 -> 추후 수정 바람
-    const result = await this.prisma.$queryRaw<CommercialAreaResult[]>`
-      SELECT TRDAR_CD as "TRDAR_CD", TRDAR_CD_N as "TRDAR_CD_NM", TRDAR_SE_1 as "TRDAR_SE_1"
-      FROM seoul_commercial_area_grid
-      WHERE ST_Intersects(geom, ST_SetSRID(ST_Point(${lng}, ${lat}), 4326))
-      LIMIT 1
-    `;
-    return result[0] || null;
-  }
-  private async findAdministrativeDistrict(
-    lat: number,
-    lng: number,
-  ): Promise<AdministrativeAreaResult | null> {
-    // 1. area_dong에는 geom/polygon이 없으므로, admin_area_dong에서 찾음
-    // 2. admin_area_dong.polygons(JSONB)를 GeoJSON으로 변환하여 ST_Intersects 수행
-    const result = await this.prisma.$queryRaw<AdministrativeAreaResult[]>`
-      SELECT adm_cd::text as "ADSTRD_CD", adm_nm as "ADSTRD_NM"
-      FROM admin_area_dong
-      WHERE ST_Intersects(
-        ST_SetSRID(
-          ST_GeomFromGeoJSON(
-            jsonb_build_object(
-              'type',
-              CASE WHEN jsonb_typeof(polygons #> '{0,0,0}') = 'number' THEN 'Polygon' ELSE 'MultiPolygon' END,
-              'coordinates',
-              polygons
-            )
-          ),
-          4326
-        ),
-        ST_SetSRID(ST_Point(${lng}, ${lat}), 4326)
-      )
-      LIMIT 1
-    `;
-    return result[0] || null;
-  }
-
-  // 상권 매출 데이터 조회
-  private async getCommercialSales(
-    code: string,
-    name: string,
-    //commercialCategory: string,
-  ): Promise<MarketAnalyticsDto> {
-    const salesData = await this.prisma.salesCommercial.findMany({
-      where: { TRDAR_CD: code },
-      orderBy: { STDR_YYQU_CD: 'desc' },
-      take: 5,
-    });
-    return this.mapToAnalyticsDto(salesData, name, true);
-  }
-
-  // 행정동 매출 데이터 조회
-  private async getAdministrativeSales(
-    code: string,
-    name: string,
-  ): Promise<MarketAnalyticsDto> {
-    const salesData = await this.prisma.salesDong.findMany({
-      where: { ADSTRD_CD: code },
-      orderBy: { STDR_YYQU_CD: 'desc' },
-      take: 5,
-    });
-    return this.mapToAnalyticsDto(salesData, name, false);
   }
 
   private mapToAnalyticsDto(

@@ -9,4 +9,6 @@ export class CommercialPolygonResponse {
     type: string;
     coordinates: number[][][][] | number[][][] | number[][];
   };
+  code?: string;
+  revenue?: number; // Estimated Revenue
 }

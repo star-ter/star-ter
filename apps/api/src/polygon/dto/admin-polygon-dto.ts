@@ -6,4 +6,7 @@ export class AdminPolygonResponse {
   x: number;
   y: number;
   polygons: JsonValue;
+  signgu_cd?: string;
+  adstrd_cd?: string;
+  revenue?: number; // Estimated Revenue
 }
