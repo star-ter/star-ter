@@ -12,8 +12,9 @@ export interface KakaoBounds {
 
 export interface KakaoMap {
   getLevel: () => number;
-  setLevel: (level: number) => void;
+  setLevel: (level: number, options?: any) => void;
   setCenter: (latlng: KakaoLatLng) => void;
+  panTo: (latlng: KakaoLatLng, options?: any) => void;
   getCenter: () => KakaoLatLng;
   getBounds: () => KakaoBounds;
   setBounds: (bounds: KakaoBounds) => void;

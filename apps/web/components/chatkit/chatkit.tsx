@@ -1,6 +1,8 @@
 'use client';
 import { useState } from 'react';
 import { ChatKit, ChatKitOptions, useChatKit } from '@openai/chatkit-react';
+import { PanelRight } from 'lucide-react';
+import { useMapStore } from '../../stores/useMapStore';
 
 const options: ChatKitOptions = {
   api: {
@@ -23,10 +25,71 @@ const options: ChatKitOptions = {
     },
   },
   onClientTool: async (toolCall) => {
-    if (toolCall.name === 'move') {
-      alert(toolCall.params.message);
-      return {};
+    console.log('🔥 [ChatKit] Tool Called:', toolCall.name, toolCall.params);
+
+    // 툴 이름이 지도 이동 관련이면 처리 (move_map or show_map_location)
+    const isMoveMap = ['move_map', 'show_map_location'].includes(
+      toolCall.name.toLowerCase(),
+    );
+
+    if (isMoveMap) {
+      const store = useMapStore.getState();
+      const params = toolCall.params as any;
+
+      // AI가 lat/lng을 직접 줬다면 그걸 우선 쓸 수도 있겠지만,
+      // "DB 기반 정확한 이동"을 위해 검색어가 있으면 백엔드에 물어보는 로직을 우선 수행
+      const query =
+        params.query || params.place_query || params.location || params.place;
+
+      if (query) {
+        try {
+          // 백엔드에 좌표 질의
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/ai/resolve-navigation`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                place_query: query,
+                current_zoom: store.zoom ?? 3, // 줌 레벨이 없으면 기본값 3
+              }),
+            },
+          );
+
+          if (res.ok) {
+            const data = await res.json();
+            if (
+              data &&
+              typeof data.lat === 'number' &&
+              typeof data.lng === 'number'
+            ) {
+              console.log('📍 Resolved Coordinates from DB:', data);
+              store.moveToLocation(
+                { lat: data.lat, lng: data.lng },
+                query,
+                data.zoom || 3,
+              );
+              return { result: 'moved to ' + query };
+            }
+          }
+        } catch (error) {
+          console.error('Failed to resolve navigation:', error);
+        }
+      }
+
+      // 백엔드 조회 실패 시, 혹은 검색어 없이 lat/lng만 왔을 경우의 Fallback
+      const { lat, lng, zoom } = params;
+      if (typeof lat === 'number' && typeof lng === 'number') {
+        console.log('📍 Moving Map to fallback coords:', lat, lng);
+        store.setCenter({ lat, lng });
+      }
+      if (typeof zoom === 'number') {
+        store.setZoom(zoom);
+      }
+
+      return { result: 'moved' };
     }
+
     return {};
   },
   theme: {
@@ -64,49 +127,28 @@ const options: ChatKitOptions = {
 };
 
 export function MyChat() {
-  console.log('API BASE URL:', process.env.NEXT_PUBLIC_API_BASE_URL);
   const { control } = useChatKit(options);
   const PANEL_WIDTH = 450;
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const panelOffset = isOpen ? 0 : PANEL_WIDTH;
+  const buttonOffset = isOpen ? -PANEL_WIDTH : 0;
 
   return (
     <>
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="fixed top-5 right-5 z-[60] flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 text-white transition-all hover:bg-gray-700 active:scale-90"
+        className="fixed top-6 right-6 z-60 flex h-14 w-14 items-center justify-center rounded-full bg-slate-900 text-white shadow-lg transition-all duration-500 cubic-bezier(0.25, 1, 0.5, 1) hover:bg-slate-800 hover:cursor-pointer"
+        style={{ transform: `translateX(${buttonOffset}px)` }}
         aria-expanded={isOpen}
         aria-controls="chatkit-panel"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="h-6 w-6"
-        >
-          <rect width="18" height="18" x="3" y="3" rx="2" />
-          <path d="M15 3v18" />
-          {isOpen && (
-            <path
-              d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4V3z"
-              fill="currentColor"
-              stroke="none"
-            />
-          )}
-        </svg>
+        <PanelRight className="h-7 w-7" />
       </button>
       <ChatKit
         control={control}
         id="chatkit-panel"
-  
-        className="fixed top0 right-0 bottom-0 w-[450px] transition-transform duration-300 ease-out"
+        className="fixed top-0 right-0 bottom-0 z-50 w-112.5 border-l border-white/20 bg-white/80 shadow-2xl backdrop-blur-xl transition-transform duration-500 cubic-bezier(0.25, 1, 0.5, 1)"
         style={{ transform: `translateX(${panelOffset}px)` }}
       />
     </>
