@@ -116,7 +116,7 @@ export const usePopulationLayer = (
       }
       canvasRef.current = canvas;
 
-      const BUFFER_RATIO = 1.0; // 화면보다 2배 큰 캔버스 사용
+      const BUFFER_RATIO = 1.5; // 화면보다 1.5배 큰 캔버스 사용
       const fullWidth = container.offsetWidth;
       const fullHeight = container.offsetHeight;
       if (fullWidth <= 0 || fullHeight <= 0) return;
