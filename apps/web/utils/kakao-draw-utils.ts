@@ -1,7 +1,6 @@
 import {
   KakaoMap,
   AdminArea,
-  BuildingArea,
   CommercialArea,
   KakaoLatLng,
   InfoBarData,
@@ -16,7 +15,6 @@ import {
 import { convertCoord } from './map-utils';
 import polylabel from '@mapbox/polylabel';
 
-// 상권 타입별 스타일 정의 (Urban Chic)
 const COMMERCIAL_STYLES: Record<
   string,
   { normal: PolygonStyle; hover: PolygonStyle }
@@ -168,13 +166,11 @@ function createMarkerContent(
   const contentEl = document.createElement('div');
 
   let iconMarker = '';
-  // Default style
   let boxStyle =
     'background: white; border: 1px solid #ccc; color: #333; padding: 4px 8px; font-weight: bold;';
   let zIndexStyle = '';
 
   if (isTop3) {
-    // Top Rank Badge (Speech Bubble)
     iconMarker = `
     <div style="position: absolute; top: -34px; left: 50%; transform: translateX(-50%); z-index: 20;">
       <div style="background: #3f78f4ff; color: white; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 900; box-shadow: 0 2px 4px rgba(0,0,0,0.3); white-space: nowrap;">
@@ -183,10 +179,9 @@ function createMarkerContent(
       <div style="position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 5px solid #3f78f4ff;"></div>
     </div>`;
 
-    // Emphasized style
     boxStyle =
       'background: white; border: 3px solid #3f78f4ff; color: #333; padding: 6px 12px; font-weight: 800; transform: scale(1.1); z-index: 10;';
-    zIndexStyle = 'z-index: 10;'; // Wrapper z-index
+    zIndexStyle = 'z-index: 10;';
   }
 
   contentEl.innerHTML = `
@@ -201,7 +196,6 @@ function createMarkerContent(
   return contentEl;
 }
 
-// 통합된 폴리곤 그리기 함수
 export function drawPolygons(
   map: KakaoMap,
   features: MapFeature[],
@@ -211,8 +205,8 @@ export function drawPolygons(
   onPolygonClick: (data: InfoBarData) => void,
   shouldClear: boolean = true,
   mode: OverlayMode = 'revenue',
+  level?: 'gu' | 'dong' | 'commercial',
 ) {
-  // Clear existing
   if (shouldClear) {
     polygonsRef.current.forEach((poly) => poly.setMap(null));
     polygonsRef.current = [];
@@ -220,7 +214,6 @@ export function drawPolygons(
     customOverlaysRef.current = [];
   }
 
-  // 0. Top 3 선정
   const top3Map = getTop3Features(features, mode);
 
   features.forEach((feature) => {
@@ -352,15 +345,15 @@ export function drawPolygons(
       });
 
       window.kakao.maps.event.addListener(polygon, 'click', () => {
-        const x = centerPoint ? centerPoint.getLng() : 0;
-        const y = centerPoint ? centerPoint.getLat() : 0;
+        const finalX = centerPoint ? centerPoint.getLng() : 0;
+        const finalY = centerPoint ? centerPoint.getLat() : 0;
 
         onPolygonClick({
           ...props,
           x: finalX,
           y: finalY,
           polygons: polygons,
-          level: level, // 줌 레벨 기반 level 정보 추가
+          level: level,
         } as unknown as InfoBarData);
       });
     });
@@ -369,7 +362,12 @@ export function drawPolygons(
       const contentEl = createMarkerContent(feature, isTop3, ranking, mode);
 
       contentEl.onclick = () => {
-        onPolygonClick(props as unknown as InfoBarData);
+        onPolygonClick({
+          ...props,
+          x: position ? position.getLng() : 0,
+          y: position ? position.getLat() : 0,
+          level: level,
+        } as unknown as InfoBarData);
       };
 
       const customOverlay = new window.kakao.maps.CustomOverlay({

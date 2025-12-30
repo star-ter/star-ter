@@ -16,10 +16,8 @@ export const usePolygonData = (
   map: KakaoMap | null,
   onPolygonClick: (data: InfoBarData) => void,
 ) => {
-  // 1. Store hooks
   const { overlayMode } = useMapStore();
 
-  // 2. Refs
   const lastLevelGroupRef = useRef<string | null>(null);
   const lastOverlayModeRef = useRef<string>('revenue');
   const polygonsRef = useRef<KakaoPolygon[]>([]);
@@ -27,12 +25,10 @@ export const usePolygonData = (
   const onPolygonClickRef = useRef(onPolygonClick);
   const visitedCommercialRef = useRef<Set<string>>(new Set());
 
-  // 3. Effects (Sync Props)
   useEffect(() => {
     onPolygonClickRef.current = onPolygonClick;
   }, [onPolygonClick]);
 
-  // 4. Callbacks
   const fetchCombinedBoundary = useCallback(
     async (mapInstance: KakaoMap, lowSearch: number) => {
       try {
@@ -50,6 +46,7 @@ export const usePolygonData = (
             (clickedData) => onPolygonClickRef.current(clickedData),
             true,
             overlayMode,
+            lowSearch === 1 ? 'gu' : 'dong',
           );
         }
       } catch (err) {
@@ -146,6 +143,7 @@ export const usePolygonData = (
               (clickedData) => onPolygonClickRef.current(clickedData),
               false,
               overlayMode,
+              'commercial',
             );
           }
         }
@@ -205,7 +203,6 @@ export const usePolygonData = (
     [fetchCombinedBoundary, fetchBuildingData, fetchCommercialData, overlayMode],
   );
 
-  // 5. Main Effect
   useEffect(() => {
     if (!map) return;
 
