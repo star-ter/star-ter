@@ -220,4 +220,22 @@ export class MarketRepository {
       _max: { STDR_YYQU_CD: true },
     });
   }
+
+  async findGuByCode(code: string): Promise<GuAreaResult | null> {
+    const result = await this.prisma.areaGu.findUnique({
+      where: { SIGNGU_CD: code },
+      select: { SIGNGU_CD: true, SIGNGU_NM: true },
+    });
+    if (!result) return null;
+    return { SIGNGU_CD: result.SIGNGU_CD, SIGNGU_NM: result.SIGNGU_NM };
+  }
+
+  async findDongByCode(code: string): Promise<AdministrativeAreaResult | null> {
+    const result = await this.prisma.areaDong.findUnique({
+      where: { ADSTRD_CD: code },
+      select: { ADSTRD_CD: true, ADSTRD_NM: true },
+    });
+    if (!result) return null;
+    return { ADSTRD_CD: result.ADSTRD_CD, ADSTRD_NM: result.ADSTRD_NM };
+  }
 }

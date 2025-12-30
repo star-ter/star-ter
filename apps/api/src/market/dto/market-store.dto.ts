@@ -34,6 +34,14 @@ export class GetMarketAnalysisQueryDto {
   @IsString()
   @IsOptional()
   level?: AnalyticsLevel;
+
+  @IsString()
+  @IsOptional()
+  signgu_cd?: string;
+
+  @IsString()
+  @IsOptional()
+  adstrd_cd?: string;
 }
 
 export class MarketStoreListDto {

@@ -31,6 +31,9 @@ export const useSeoulBoundary = (map: KakaoMap | null) => {
             customOverlaysRef,
             () => {}, // 테두리는 클릭 이벤트 불필요
             false,    // 기존 폴리곤 유지
+            'revenue',
+            'sido',
+            false,    // 마커 그리지 않음
           );
         }
       } catch (err) {

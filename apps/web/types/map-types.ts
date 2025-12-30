@@ -61,6 +61,8 @@ export interface AdminArea {
   x: number | string;
   y: number | string;
   polygons: number[][][][] | number[][][] | number[][];
+  signgu_cd?: string;
+  adstrd_cd?: string;
   revenue?: number; // 매출 (Optional)
   residentPopulation?: number; // 주거인구 (Optional)
   openingStores?: number; // 개업 점포 수 (Optional)
@@ -156,6 +158,8 @@ export interface InfoBarData {
   commercialName?: string;
   commercialType?: string;
   commercialCode?: string;
+  signgu_cd?: string;
+  adstrd_cd?: string;
   x: string | number;
   y: string | number;
   polygons?: number[][][][] | number[][][] | number[][];
@@ -169,5 +173,5 @@ export interface InfoBarData {
 }
 
 export type MapFeature = AdminArea | BuildingArea | CommercialArea;
-export type MapFeatureType = 'admin' | 'building_store' | 'commercial';
+export type MapFeatureType = 'admin' | 'building_store' | 'commercial' | 'sido';
 export type OverlayMode = 'revenue' | 'population' | 'opening' | 'shutting';
