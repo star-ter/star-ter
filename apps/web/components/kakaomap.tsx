@@ -12,6 +12,7 @@ import { IndustryCategory } from '../types/bottom-menu-types';
 import { useMapStore } from '../stores/useMapStore';
 import { useSidebarStore } from '../stores/useSidebarStore';
 import { useBuildingMarkers } from '../hooks/useBuildingMarkers';
+import { PopulationBar } from './population/PopulationBar';
 
 initProj4();
 
@@ -241,6 +242,13 @@ export default function Kakaomap({
         className="w-full h-100 bg-gray-100"
         style={{ width: '100vw', height: '100vh' }}
       />
+
+      {/* 유동인구 인포바 */}
+      {population.showLayer && (
+        <div className="absolute right-100 bottom-1 z-50">
+          <PopulationBar />
+        </div>
+      )}
     </div>
   );
 }
