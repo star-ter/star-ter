@@ -13,7 +13,9 @@ export class GeoController {
   constructor(private readonly geoService: GeoService) {}
 
   @Get('gu')
-  getGuByPoint(@Query() query: GetGeoGuQueryDto): Promise<GeoGuResponseDto> {
+  getGuByPoint(
+    @Query() query: GetGeoGuQueryDto,
+  ): Promise<GeoGuResponseDto | null> {
     return this.geoService.getGuByPoint(query);
   }
 

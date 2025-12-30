@@ -40,7 +40,9 @@ export default function MapBox({
             `${process.env.NEXT_PUBLIC_API_BASE_URL}/geo/gu?lat=${center.lat}&lng=${center.lng}`,
           );
           if (res.ok) {
-            const data = await res.json();
+            const text = await res.text();
+            if (!text) return;
+            const data = JSON.parse(text);
             if (data?.signguCode) {
               setCurrentGuCode(data.signguCode);
             }
