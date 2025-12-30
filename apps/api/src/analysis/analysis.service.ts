@@ -45,7 +45,7 @@ export class AnalysisService {
         const endsWithGu = term.endsWith('구');
         const endsWithDong = term.endsWith('동');
 
-        if (endsWithDong && processTerm.length > 2) {
+        if (endsWithDong && processTerm.length >= 2) {
           processTerm = processTerm.slice(0, -1);
         }
 

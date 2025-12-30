@@ -22,8 +22,7 @@ export default function LocationNav() {
   const [isLoadingDong, setIsLoadingDong] = useState(false);
   const [isMoving, setIsMoving] = useState(false);
   const { moveToLocation } = useMapStore();
-  const selectBaseClass =
-    'w-full min-w-[140px] appearance-none rounded-xl border border-black/10 bg-white/90 px-3 py-2 pr-8 text-sm font-semibold text-gray-900 shadow-sm transition focus:border-black/30 focus:outline-none focus:ring-2 focus:ring-amber-200 disabled:cursor-not-allowed disabled:opacity-60';
+
 
   useEffect(() => {
     if (!API_BASE_URL) return;
@@ -115,20 +114,58 @@ export default function LocationNav() {
     }
   };
 
+  const labelClass =
+    'block px-1 text-[13px] font-medium text-gray-700 transition-all group-hover:text-gray-900 group-hover:font-bold cursor-pointer whitespace-nowrap';
+
+  const selectOverlayClass =
+    'absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed';
+
+  const currentGuName =
+    guList.find((g) => g.code === selectedGu)?.name ||
+    (isLoadingGu ? '로딩 중...' : '구 선택');
+  const currentDongName =
+    dongList.find((d) => d.code === selectedDong)?.name ||
+    (isLoadingDong ? '로딩 중...' : '동 선택');
+
+  const Separator = () => (
+    <svg
+      className="mx-1 h-4 w-4 text-gray-400"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M9 5l7 7-7 7"
+      />
+    </svg>
+  );
+
   return (
-    <div className="flex items-center gap-2 rounded-2xl bg-linear-to-br from-amber-50/90 via-white/90 to-rose-50/90 p-2 shadow-lg ring-1 ring-black/5 backdrop-blur">
-      <div className="relative">
-        <select name="city" id="" defaultValue="11" className={selectBaseClass}>
+    <div className="flex items-center rounded-full bg-white/90 px-5 py-1.5">
+      <div className="relative flex min-w-fit items-center group">
+        <span className={labelClass}>서울특별시</span>
+        <select
+          name="city"
+          defaultValue="11"
+          className={selectOverlayClass}
+        >
           <option value="11">서울특별시</option>
         </select>
-        <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-500">
-          ▾
-        </span>
       </div>
-      <div className="relative">
+
+      <Separator />
+
+      <div className="relative flex min-w-fit items-center group">
+        <span
+          className={`${labelClass} ${!selectedGu ? 'text-gray-400' : ''}`}
+        >
+          {currentGuName}
+        </span>
         <select
           name="gu"
-          id=""
           value={selectedGu}
           onChange={async (event) => {
             const nextGuCode = event.target.value;
@@ -143,10 +180,10 @@ export default function LocationNav() {
             await handleMoveToGu(guName);
           }}
           disabled={!guList.length || isLoadingGu || isMoving}
-          className={selectBaseClass}
+          className={selectOverlayClass}
         >
           <option value="">
-            {isLoadingGu ? '구 불러오는 중...' : '구 선택'}
+            {isLoadingGu ? '로딩 중...' : '구 선택'}
           </option>
           {guList.map((gu) => (
             <option key={gu.code} value={gu.code}>
@@ -154,14 +191,18 @@ export default function LocationNav() {
             </option>
           ))}
         </select>
-        <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-500">
-          ▾
-        </span>
       </div>
-      <div className="relative">
+
+      <Separator />
+
+      <div className="relative flex min-w-fit items-center group">
+        <span
+          className={`${labelClass} ${!selectedDong ? 'text-gray-400' : ''}`}
+        >
+          {currentDongName}
+        </span>
         <select
           name="dong"
-          id=""
           value={selectedDong}
           onChange={async (event) => {
             const nextDongCode = event.target.value;
@@ -176,10 +217,10 @@ export default function LocationNav() {
           disabled={
             !selectedGu || !dongList.length || isLoadingDong || isMoving
           }
-          className={selectBaseClass}
+          className={selectOverlayClass}
         >
           <option value="">
-            {isLoadingDong ? '동 불러오는 중...' : '동 선택'}
+            {isLoadingDong ? '로딩 중...' : '동 선택'}
           </option>
           {dongList.map((dong) => (
             <option key={dong.code} value={dong.code}>
@@ -187,9 +228,6 @@ export default function LocationNav() {
             </option>
           ))}
         </select>
-        <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-500">
-          ▾
-        </span>
       </div>
     </div>
   );
