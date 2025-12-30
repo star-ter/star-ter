@@ -1,25 +1,25 @@
 import { useRef, useEffect, useCallback } from 'react';
 import {
   KakaoMap,
+  AdminArea,
+  BuildingArea,
   KakaoPolygon,
   KakaoCustomOverlay,
   InfoBarData,
+  CommercialApiResponse,
 } from '../types/map-types';
 import { drawPolygons } from '../utils/kakao-draw-utils';
-import {
-  isAdminAreaList,
-  isBuildingAreaList,
-  isCommercialApiResponseList,
-} from '@/utils/type-guards';
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000';
+import { useMapStore } from '../stores/useMapStore';
+import { API_ENDPOINTS } from '../config/api';
 
 export const usePolygonData = (
   map: KakaoMap | null,
   onPolygonClick: (data: InfoBarData) => void,
 ) => {
+  const { overlayMode } = useMapStore();
+
   const lastLevelGroupRef = useRef<string | null>(null);
+  const lastOverlayModeRef = useRef<string>('revenue');
   const polygonsRef = useRef<KakaoPolygon[]>([]);
   const customOverlaysRef = useRef<KakaoCustomOverlay[]>([]);
   const onPolygonClickRef = useRef(onPolygonClick);
@@ -29,177 +29,187 @@ export const usePolygonData = (
     onPolygonClickRef.current = onPolygonClick;
   }, [onPolygonClick]);
 
-  const fetchCombinedBoundary = useCallback(async (map: KakaoMap, lowSearch: number) => {
-    console.log(`Fetching Combined Boundary...`);
-    // lowSearch값에 따라 level 결정 (1: 구, 2: 동)
-    const level = lowSearch === 1 ? 'gu' : 'dong';
+  const fetchCombinedBoundary = useCallback(
+    async (mapInstance: KakaoMap, lowSearch: number) => {
+      try {
+        const url = `${API_ENDPOINTS.POLYGON_ADMIN}?low_search=${lowSearch}`;
+        const response = await fetch(url);
+        const data: unknown = await response.json();
 
-    try {
-      const url = `${API_BASE_URL}/polygon/admin?low_search=${lowSearch}`;
-
-      const response = await fetch(url);
-      const data = await response.json();
-
-      if (isAdminAreaList(data)) {
-        console.log(`Drawing ${data.length} features with level: ${level}`);
-        drawPolygons(
-          map,
-          data,
-          'admin',
-          polygonsRef,
-          customOverlaysRef,
-          (data) => onPolygonClickRef.current(data),
-          true, // shouldClear
-          level, // level 파라미터 추가
-        );
-      } else {
-        console.warn('AdminArea 데이터 형식이 아니거나 비어 있음!!');
-      }
-    } catch (err) {
-      console.error('Combined Boundary Fetch Error:', err);
-    }
-  }, []);
-
-  const fetchBuildingData = useCallback(async (map: KakaoMap) => {
-    console.log(`Fetching Building Data (DB Filtered)...`);
-
-    const bounds = map.getBounds();
-    const sw = bounds.getSouthWest();
-    const ne = bounds.getNorthEast();
-    const minx = sw.getLng();
-    const miny = sw.getLat();
-    const maxx = ne.getLng();
-    const maxy = ne.getLat();
-
-    try {
-      const res = await fetch(
-        `${API_BASE_URL}/polygon/building?minx=${minx}&miny=${miny}&maxx=${maxx}&maxy=${maxy}`,
-      );
-      const data = await res.json();
-
-      const features = data;
-
-      if (isBuildingAreaList(features)) {
-        console.log(`Received ${features.length} buildings`);
-        drawPolygons(
-          map,
-          features,
-          'building_store',
-          polygonsRef,
-          customOverlaysRef,
-          (data) => onPolygonClickRef.current(data),
-        );
-      } else {
-        console.warn('Building API No Data or Error:', JSON.stringify(data));
-      }
-    } catch (err) {
-      console.error('Building API Fetch Error:', err);
-    }
-  }, []);
-
-  const fetchCommercialData = useCallback(async (map: KakaoMap) => {
-    console.log(`Fetching Commercial Data...`);
-
-    const bounds = map.getBounds();
-    const sw = bounds.getSouthWest();
-    const ne = bounds.getNorthEast();
-
-    const query = new URLSearchParams({
-      minx: sw.getLng().toString(),
-      miny: sw.getLat().toString(),
-      maxx: ne.getLng().toString(),
-      maxy: ne.getLat().toString(),
-    });
-
-    console.time('상권 데이터 로딩 시간');
-
-    try {
-      const response = await fetch(
-        `${API_BASE_URL}/polygon/commercial?${query}`,
-      );
-      const data = await response.json();
-
-      if (isCommercialApiResponseList(data)) {
-        console.log(`Received ${data.length} commercial areas`);
-
-        const commercialAreas = data.map((feature) => ({
-          commercialType: feature.properties.commercialType,
-          commercialName: feature.properties.commercialName,
-          commercialCode:
-            feature.code || feature.properties.commercialCode || '',
-          guCode: feature.properties.guCode,
-          dongCode: feature.properties.dongCode,
-          polygons: feature.polygons.coordinates,
-          revenue: feature.revenue,
-        }));
-
-        const newCommercialAreas = commercialAreas.filter((area) => {
-          if (visitedCommercialRef.current.has(area.commercialName))
-            return false;
-          visitedCommercialRef.current.add(area.commercialName);
-          return true;
-        });
-
-        if (newCommercialAreas.length > 0) {
+        if (Array.isArray(data)) {
           drawPolygons(
-            map,
-            newCommercialAreas,
-            'commercial',
+            mapInstance,
+            data as AdminArea[],
+            'admin',
             polygonsRef,
             customOverlaysRef,
-            (data) => onPolygonClickRef.current(data),
-            false, // shouldClear
-            'commercial', // level 파라미터 추가
+            (clickedData) => onPolygonClickRef.current(clickedData),
+            true,
+            overlayMode,
+            lowSearch === 1 ? 'gu' : 'dong',
           );
         }
-        console.timeEnd('상권 데이터 로딩 시간');
+      } catch (err) {
+        console.error('Combined Boundary Fetch Error:', err);
       }
-    } catch (err) {
-      console.error('Commercial API Fetch Error:', err);
-    }
-  }, []);
+    },
+    [overlayMode],
+  );
 
-  const refreshLayer = useCallback((map: KakaoMap) => {
-    const level = map.getLevel();
-    console.log(`Current Zoom Level: ${level}`);
+  const fetchBuildingData = useCallback(
+    async (mapInstance: KakaoMap) => {
+      const bounds = mapInstance.getBounds();
+      const sw = bounds.getSouthWest();
+      const ne = bounds.getNorthEast();
 
-    let currentGroup = '';
-    if (level >= 7) currentGroup = 'GU';
-    else if (level >= 5) currentGroup = 'DONG';
-    else if (level >= 2) currentGroup = 'COMMERCIAL';
-    else currentGroup = 'BUILDING';
+      try {
+        const query = new URLSearchParams({
+          minx: sw.getLng().toString(),
+          miny: sw.getLat().toString(),
+          maxx: ne.getLng().toString(),
+          maxy: ne.getLat().toString(),
+        });
+        const url = `${API_ENDPOINTS.POLYGON_BUILDING}?${query}`;
+        const res = await fetch(url);
+        const data: unknown = await res.json();
 
-    if (currentGroup !== lastLevelGroupRef.current) {
-      polygonsRef.current.forEach((polygon) => {
-        polygon.setMap(null);
+        if (Array.isArray(data)) {
+          drawPolygons(
+            mapInstance,
+            data as BuildingArea[],
+            'building_store',
+            polygonsRef,
+            customOverlaysRef,
+            (clickedData) => onPolygonClickRef.current(clickedData),
+            true,
+            overlayMode,
+          );
+        }
+      } catch (err) {
+        console.error('Building API Fetch Error:', err);
+      }
+    },
+    [overlayMode],
+  );
+
+  const fetchCommercialData = useCallback(
+    async (mapInstance: KakaoMap) => {
+      const bounds = mapInstance.getBounds();
+      const sw = bounds.getSouthWest();
+      const ne = bounds.getNorthEast();
+
+      const query = new URLSearchParams({
+        minx: sw.getLng().toString(),
+        miny: sw.getLat().toString(),
+        maxx: ne.getLng().toString(),
+        maxy: ne.getLat().toString(),
       });
-      customOverlaysRef.current.forEach((overlay) => {
-        overlay.setMap(null);
-      });
 
-      visitedCommercialRef.current.clear();
-    }
+      try {
+        const url = `${API_ENDPOINTS.POLYGON_COMMERCIAL}?${query}`;
+        const response = await fetch(url);
+        const data: unknown = await response.json();
 
-    if (
-      currentGroup === lastLevelGroupRef.current &&
-      (currentGroup === 'GU' || currentGroup === 'DONG')
-    ) {
-      console.log(`Skipping fetch for static layer: ${currentGroup}`);
-      return;
-    }
+        if (Array.isArray(data)) {
+          const commercialAreas = (data as CommercialApiResponse[]).map(
+            (feature) => ({
+              commercialType: feature.properties.commercialType,
+              commercialName: feature.properties.commercialName,
+              commercialCode:
+                feature.code || feature.properties.commercialCode || '',
+              guCode: feature.properties.guCode,
+              dongCode: feature.properties.dongCode,
+              polygons: feature.polygons.coordinates,
+              revenue: feature.revenue,
+              residentPopulation: feature.residentPopulation,
+              openingStores: feature.openingStores,
+              closingStores: feature.closingStores,
+            }),
+          );
 
-    lastLevelGroupRef.current = currentGroup;
+          const newCommercialAreas = commercialAreas.filter((area) => {
+            if (visitedCommercialRef.current.has(area.commercialName))
+              return false;
+            visitedCommercialRef.current.add(area.commercialName);
+            return true;
+          });
 
-    if (level >= 7) {
-      fetchCombinedBoundary(map, 1);
-    } else if (level >= 5) {
-      fetchCombinedBoundary(map, 2);
-    } else if (level >= 2) {
-      fetchCommercialData(map);
-    } else {
-      fetchBuildingData(map);
-    }
-  }, [fetchCombinedBoundary, fetchBuildingData, fetchCommercialData]);
+          if (newCommercialAreas.length > 0) {
+            drawPolygons(
+              mapInstance,
+              newCommercialAreas,
+              'commercial',
+              polygonsRef,
+              customOverlaysRef,
+              (clickedData) => onPolygonClickRef.current(clickedData),
+              false,
+              overlayMode,
+              'commercial',
+            );
+          }
+        }
+      } catch (err) {
+        console.error('Commercial API Fetch Error:', err);
+      }
+    },
+    [overlayMode],
+  );
+
+  const refreshLayer = useCallback(
+    (mapInstance: KakaoMap) => {
+      const level = mapInstance.getLevel();
+
+      let currentGroup = '';
+      if (level >= 7) currentGroup = 'GU';
+      else if (level >= 5) currentGroup = 'DONG';
+      else if (level >= 2) currentGroup = 'COMMERCIAL';
+      else currentGroup = 'BUILDING';
+
+      const modeChanged = overlayMode !== lastOverlayModeRef.current;
+
+      if (currentGroup !== lastLevelGroupRef.current) {
+        polygonsRef.current.forEach((polygon) => {
+          polygon.setMap(null);
+        });
+        polygonsRef.current = [];
+        customOverlaysRef.current.forEach((overlay) => {
+          overlay.setMap(null);
+        });
+        customOverlaysRef.current = [];
+        visitedCommercialRef.current.clear();
+      }
+
+      if (currentGroup !== lastLevelGroupRef.current || modeChanged) {
+        lastOverlayModeRef.current = overlayMode;
+      }
+
+      if (
+        currentGroup === lastLevelGroupRef.current &&
+        !modeChanged &&
+        (currentGroup === 'GU' || currentGroup === 'DONG')
+      ) {
+        return;
+      }
+
+      lastLevelGroupRef.current = currentGroup;
+
+      if (level >= 7) {
+        fetchCombinedBoundary(mapInstance, 1);
+      } else if (level >= 5) {
+        fetchCombinedBoundary(mapInstance, 2);
+      } else if (level >= 2) {
+        fetchCommercialData(mapInstance);
+      } else {
+        fetchBuildingData(mapInstance);
+      }
+    },
+    [
+      fetchCombinedBoundary,
+      fetchBuildingData,
+      fetchCommercialData,
+      overlayMode,
+    ],
+  );
 
   useEffect(() => {
     if (!map) return;
@@ -219,7 +229,11 @@ export const usePolygonData = (
 
     return () => {
       window.kakao.maps.event.removeListener(map, 'idle', debouncedRefresh);
-      window.kakao.maps.event.removeListener(map, 'zoom_changed', debouncedRefresh);
+      window.kakao.maps.event.removeListener(
+        map,
+        'zoom_changed',
+        debouncedRefresh,
+      );
     };
-  }, [map, refreshLayer]);
+  }, [map, refreshLayer, overlayMode]);
 };

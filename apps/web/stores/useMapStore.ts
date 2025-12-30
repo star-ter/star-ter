@@ -1,56 +1,24 @@
 import { create } from 'zustand';
-
-interface MapCoordinates {
-  lat: number;
-  lng: number;
-}
-
-interface MapMarker {
-  id: string;
-  coords: MapCoordinates;
-  name: string;
-  style?: 'default' | 'pulse';
-}
-
-interface MapStore {
-  center: MapCoordinates | null;
-  zoom: number;
-  searchedLocation: string | null;
-  isMoving: boolean;
-  markers: MapMarker[];
-
-  setCenter: (coords: MapCoordinates) => void;
-  setZoom: (level: number) => void;
-  setSearchedLocation: (location: string | null) => void;
-  setIsMoving: (moving: boolean) => void;
-
-  moveToLocation: (
-    coords: MapCoordinates,
-    location: string,
-    zoom?: number,
-    centered?: boolean,
-  ) => void;
-  moveToLocations: (locations: MapMarker[]) => void;
-  clearMarkers: () => void;
-  reset: () => void;
-}
+import { MapStore } from '../types/map-store-types';
 
 export const useMapStore = create<MapStore>((set) => ({
   center: null,
   zoom: 3,
   searchedLocation: null,
   isMoving: false,
+  overlayMode: 'revenue',
   markers: [],
 
   setCenter: (coords) => set({ center: coords }),
   setZoom: (level) => set({ zoom: level }),
   setSearchedLocation: (location) => set({ searchedLocation: location }),
   setIsMoving: (moving) => set({ isMoving: moving }),
+  setOverlayMode: (mode) => set({ overlayMode: mode }),
 
   moveToLocation: (coords, location, zoom = 3, centered = false) => {
     set({
       center: coords,
-      zoom: centered ? -2 : zoom, // -2는 "중앙 정렬, 오프셋 없음" 신호
+      zoom: centered ? -2 : zoom,
       searchedLocation: location,
       isMoving: true,
       markers: [{ id: '1', coords, name: location, style: 'pulse' }],
@@ -62,7 +30,6 @@ export const useMapStore = create<MapStore>((set) => ({
   moveToLocations: (locations) => {
     if (locations.length === 0) return;
 
-    // 중심점 계산 (모든 좌표의 평균)
     const avgLat =
       locations.reduce((sum, loc) => sum + loc.coords.lat, 0) /
       locations.length;
@@ -72,7 +39,7 @@ export const useMapStore = create<MapStore>((set) => ({
 
     set({
       center: { lat: avgLat, lng: avgLng },
-      zoom: -1, // -1은 "자동 bounds 맞춤" 신호
+      zoom: -1,
       searchedLocation: locations.map((l) => l.name).join(', '),
       isMoving: true,
       markers: locations,

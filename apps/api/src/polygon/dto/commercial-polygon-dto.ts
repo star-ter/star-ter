@@ -11,4 +11,7 @@ export class CommercialPolygonResponse {
   };
   code?: string;
   revenue?: number; // Estimated Revenue
+  residentPopulation?: number; // Resident Population
+  openingStores?: number; // Opening Stores Count
+  closingStores?: number; // Closing Stores Count
 }

@@ -4,7 +4,7 @@ import RankNav from '../rank-nav/RankNav';
 import { usePopulationVisual } from '../../hooks/usePopulationVisual';
 import { IndustryCategory } from '../../types/bottom-menu-types';
 import SearchBox from '../search/SearchBox';
-import LocationNav from '../location-nav/LocationNav';
+import LocationNav from '../left-top/LocationNav';
 import { useMapStore } from '../../stores/useMapStore';
 
 interface MapBoxProps {
