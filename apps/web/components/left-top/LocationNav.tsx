@@ -44,7 +44,7 @@ export default function LocationNav() {
     (isLoadingDong ? '로딩 중...' : '동 선택');
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-3 w-400">
       {/* Location Selectors */}
       <div className="flex items-center rounded-full bg-white/90 px-5 py-1.5 shadow-sm">
         <div className="relative flex min-w-fit items-center group">

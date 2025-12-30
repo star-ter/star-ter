@@ -6,6 +6,7 @@ import { IndustryCategory } from '../../types/bottom-menu-types';
 import SearchBox from '../search/SearchBox';
 import LocationNav from '../left-top/LocationNav';
 import { useMapStore } from '../../stores/useMapStore';
+import ModeController from '../left-top/ModeController';
 
 interface MapBoxProps {
   locationA: { name: string; code?: string };
@@ -69,9 +70,9 @@ export default function MapBox({
   const rankLevel = zoom >= 7 ? 'gu' : 'dong';
 
   return (
-    <section className="h-full pointer-events-none">
-      <div className="absolute left-4 flex flex-col items-start gap-3 pointer-events-auto">
-        <div className="flex items-center">
+    <section className="absolute w-fit h-fit pointer-events-none">
+      <div className="flex flex-col items-start gap-3 pointer-events-none">
+        <div className="inline-flex items-center pointer-events-auto">
           <SearchBox />
           <LocationNav />
         </div>
@@ -101,7 +102,7 @@ export default function MapBox({
           </>
         )}
       </div>
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 pointer-events-auto">
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 pointer-events-auto">
         <BottomMenuBox
           locationA={locationA}
           locationB={locationB}
