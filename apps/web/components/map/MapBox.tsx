@@ -31,6 +31,7 @@ export default function MapBox({
   const { center, zoom } = useMapStore();
   const [isRankOpen, setIsRankOpen] = useState(true);
   const [currentGuCode, setCurrentGuCode] = useState<string | null>(null);
+  const [currentGuName, setCurrentGuName] = useState<string | null>(null);
 
   useEffect(() => {
     if (zoom <= 7 && zoom >= 5 && center) {
@@ -45,6 +46,7 @@ export default function MapBox({
             const data = JSON.parse(text);
             if (data?.signguCode) {
               setCurrentGuCode(data.signguCode);
+              setCurrentGuName(data.signguName);
             }
           }
         } catch (error) {
@@ -82,6 +84,9 @@ export default function MapBox({
                 level={rankLevel}
                 parentGuCode={
                   rankLevel === 'dong' ? currentGuCode || undefined : undefined
+                }
+                parentGuName={
+                  rankLevel === 'dong' ? currentGuName || undefined : undefined
                 }
               />
             )}
