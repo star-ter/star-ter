@@ -25,28 +25,28 @@ export class RevenueService {
 
   private readonly modelMap: Record<RevenueLevel, ModelConfig> = {
     city: {
-      codeField: 'MEGA_CD',
-      nameField: 'MEGA_CD_NM',
+      codeField: 'mega_cd',
+      nameField: 'mega_cd_nm',
       modelName: 'salesCity',
     },
     gu: {
-      codeField: 'SIGNGU_CD',
-      nameField: 'SIGNGU_CD_NM',
+      codeField: 'signgu_cd',
+      nameField: 'signgu_cd_nm',
       modelName: 'salesGu',
     },
     dong: {
-      codeField: 'ADSTRD_CD',
-      nameField: 'ADSTRD_CD_NM',
+      codeField: 'adstrd_cd',
+      nameField: 'adstrd_cd_nm',
       modelName: 'salesDong',
     },
     backarea: {
-      codeField: 'TRDAR_CD',
-      nameField: 'TRDAR_CD_NM',
+      codeField: 'trdar_cd',
+      nameField: 'trdar_cd_nm',
       modelName: 'salesBackarea',
     },
     commercial: {
-      codeField: 'TRDAR_CD',
-      nameField: 'TRDAR_CD_NM',
+      codeField: 'trdar_cd',
+      nameField: 'trdar_cd_nm',
       modelName: 'salesCommercial',
     },
   };
@@ -69,21 +69,21 @@ export class RevenueService {
       quarter || (await this.getLatestQuarter(client, modelConfig.modelName));
 
     const where: Record<string, string> = {
-      STDR_YYQU_CD: resolvedQuarter,
+      stdr_yyqu_cd: resolvedQuarter,
       [modelConfig.codeField]: code,
     };
     if (industryCode) {
-      where.SVC_INDUTY_CD = industryCode;
+      where.svc_induty_cd = industryCode;
     }
 
     const rows = await client.findMany({
       where,
       select: {
-        STDR_YYQU_CD: true,
-        SVC_INDUTY_CD: true,
-        SVC_INDUTY_CD_NM: true,
-        THSMON_SELNG_AMT: true,
-        THSMON_SELNG_CO: true,
+        stdr_yyqu_cd: true,
+        svc_induty_cd: true,
+        svc_induty_cd_nm: true,
+        thsmon_selng_amt: true,
+        thsmon_selng_co: true,
       },
     });
 
@@ -99,10 +99,10 @@ export class RevenueService {
     }
 
     const items = rows.map((row: any) => ({
-      industryCode: row.SVC_INDUTY_CD,
-      industryName: row.SVC_INDUTY_CD_NM,
-      amount: Number(row.THSMON_SELNG_AMT || 0),
-      count: Number(row.THSMON_SELNG_CO || 0),
+      industryCode: row.svc_induty_cd,
+      industryName: row.svc_induty_cd_nm,
+      amount: Number(row.thsmon_selng_amt || 0),
+      count: Number(row.thsmon_selng_co || 0),
     }));
 
     const totalAmount = items.reduce((acc, cur) => acc + cur.amount, 0);
@@ -136,24 +136,24 @@ export class RevenueService {
       quarter || (await this.getLatestQuarter(client, modelConfig.modelName));
 
     const where: Record<string, any> = {
-      STDR_YYQU_CD: resolvedQuarter,
+      stdr_yyqu_cd: resolvedQuarter,
     };
     if (industryCode) {
-      where.SVC_INDUTY_CD = industryCode;
+      where.svc_induty_cd = industryCode;
     }
     if (level === 'dong' && parentGuCode) {
-      where.ADSTRD_CD = { startsWith: parentGuCode };
+      where.adstrd_cd = { startsWith: parentGuCode };
     }
 
     const groupByArgs: any = {
       by: [modelConfig.codeField, modelConfig.nameField],
       where,
       _sum: {
-        THSMON_SELNG_AMT: true,
-        THSMON_SELNG_CO: true,
+        thsmon_selng_amt: true,
+        thsmon_selng_co: true,
       },
       orderBy: {
-        _sum: { THSMON_SELNG_AMT: 'desc' },
+        _sum: { thsmon_selng_amt: 'desc' },
       },
     };
 
@@ -162,41 +162,41 @@ export class RevenueService {
     const items = rows.map((row: any) => ({
       code: row[modelConfig.codeField],
       name: row[modelConfig.nameField],
-      amount: Number(row._sum.THSMON_SELNG_AMT || 0),
-      count: Number(row._sum.THSMON_SELNG_CO || 0),
+      amount: Number(row._sum.thsmon_selng_amt || 0),
+      count: Number(row._sum.thsmon_selng_co || 0),
       changeType: undefined as string | undefined,
     }));
 
     if (level === 'gu' || level === 'dong') {
       const codes = items.map((item) => item.code);
       if (level === 'gu') {
-        const baseWhere = { SIGNGU_CD: { in: codes } };
+        const baseWhere = { signgu_cd: { in: codes } };
         let changeRows = await this.prisma.commercialChangeGu.findMany({
           where: {
-            STDR_YYQU_CD: resolvedQuarter,
+            stdr_yyqu_cd: resolvedQuarter,
             ...baseWhere,
           },
           select: {
-            SIGNGU_CD: true,
-            TRDAR_CHNGE_IX: true,
+            signgu_cd: true,
+            trdar_chnge_ix: true,
           },
         });
 
         if (!changeRows.length) {
           const latestChange = await this.prisma.commercialChangeGu.findFirst({
-            select: { STDR_YYQU_CD: true },
-            orderBy: { STDR_YYQU_CD: 'desc' },
+            select: { stdr_yyqu_cd: true },
+            orderBy: { stdr_yyqu_cd: 'desc' },
           });
 
-          if (latestChange?.STDR_YYQU_CD) {
+          if (latestChange?.stdr_yyqu_cd) {
             changeRows = await this.prisma.commercialChangeGu.findMany({
               where: {
-                STDR_YYQU_CD: latestChange.STDR_YYQU_CD,
+                stdr_yyqu_cd: latestChange.stdr_yyqu_cd,
                 ...baseWhere,
               },
               select: {
-                SIGNGU_CD: true,
-                TRDAR_CHNGE_IX: true,
+                signgu_cd: true,
+                trdar_chnge_ix: true,
               },
             });
           }
@@ -204,8 +204,8 @@ export class RevenueService {
 
         const changeMap = new Map<string, string>();
         changeRows.forEach((row) => {
-          if (row.TRDAR_CHNGE_IX) {
-            changeMap.set(row.SIGNGU_CD, row.TRDAR_CHNGE_IX);
+          if (row.trdar_chnge_ix) {
+            changeMap.set(row.signgu_cd, row.trdar_chnge_ix);
           }
         });
 
@@ -215,35 +215,35 @@ export class RevenueService {
       }
 
       if (level === 'dong') {
-        const baseWhere = { ADSTRD_CD: { in: codes } };
+        const baseWhere = { adstrd_cd: { in: codes } };
         let changeRows = await this.prisma.commercialChangeDong.findMany({
           where: {
-            STDR_YYQU_CD: resolvedQuarter,
+            stdr_yyqu_cd: resolvedQuarter,
             ...baseWhere,
           },
           select: {
-            ADSTRD_CD: true,
-            TRDAR_CHNGE_IX: true,
+            adstrd_cd: true,
+            trdar_chnge_ix: true,
           },
         });
 
         if (!changeRows.length) {
           const latestChange = await this.prisma.commercialChangeDong.findFirst(
             {
-              select: { STDR_YYQU_CD: true },
-              orderBy: { STDR_YYQU_CD: 'desc' },
+              select: { stdr_yyqu_cd: true },
+              orderBy: { stdr_yyqu_cd: 'desc' },
             },
           );
 
-          if (latestChange?.STDR_YYQU_CD) {
+          if (latestChange?.stdr_yyqu_cd) {
             changeRows = await this.prisma.commercialChangeDong.findMany({
               where: {
-                STDR_YYQU_CD: latestChange.STDR_YYQU_CD,
+                stdr_yyqu_cd: latestChange.stdr_yyqu_cd,
                 ...baseWhere,
               },
               select: {
-                ADSTRD_CD: true,
-                TRDAR_CHNGE_IX: true,
+                adstrd_cd: true,
+                trdar_chnge_ix: true,
               },
             });
           }
@@ -251,8 +251,8 @@ export class RevenueService {
 
         const changeMap = new Map<string, string>();
         changeRows.forEach((row) => {
-          if (row.TRDAR_CHNGE_IX) {
-            changeMap.set(row.ADSTRD_CD, row.TRDAR_CHNGE_IX);
+          if (row.trdar_chnge_ix) {
+            changeMap.set(row.adstrd_cd, row.trdar_chnge_ix);
           }
         });
 
@@ -275,15 +275,15 @@ export class RevenueService {
     modelName: string,
   ): Promise<string> {
     const latest = await client.findFirst({
-      select: { STDR_YYQU_CD: true },
-      orderBy: { STDR_YYQU_CD: 'desc' },
+      select: { stdr_yyqu_cd: true },
+      orderBy: { stdr_yyqu_cd: 'desc' },
     });
 
-    if (!latest?.STDR_YYQU_CD) {
+    if (!latest?.stdr_yyqu_cd) {
       this.logger.warn(`[${modelName}] 기준 분기 데이터가 없습니다.`);
       throw new BadRequestException('매출 데이터가 없습니다.');
     }
 
-    return latest.STDR_YYQU_CD as string;
+    return latest.stdr_yyqu_cd as string;
   }
 }

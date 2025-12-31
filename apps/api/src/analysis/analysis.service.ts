@@ -78,7 +78,7 @@ export class AnalysisService {
 
     const allGus = await this.repository.getAllGus();
     const guMap = new Map<string, string>();
-    allGus.forEach((g) => guMap.set(g.SIGNGU_CD, g.SIGNGU_NM));
+    allGus.forEach((g) => guMap.set(g.signgu_cd, g.signgu_nm));
 
     if (this.isGuQuery(trimmed)) {
       return this.searchGu(trimmed, results);
@@ -167,12 +167,12 @@ export class AnalysisService {
       guList = await this.repository.findGuByName(term, false);
     }
     if (guList.length > 0) {
-      return { type: 'GU', codes: [guList[0].SIGNGU_CD] };
+      return { type: 'GU', codes: [guList[0].signgu_cd] };
     }
 
     const commList = await this.repository.findCommercialByName(term, false);
     if (commList.length > 0) {
-      return { type: 'COMMERCIAL', codes: [commList[0].TRDAR_CD] };
+      return { type: 'COMMERCIAL', codes: [commList[0].trdar_cd] };
     }
 
     return null;
@@ -184,7 +184,7 @@ export class AnalysisService {
       dongList = await this.repository.findDongByName(term, false);
     }
     if (dongList.length > 0) {
-      return { type: 'DONG', codes: [dongList[0].ADSTRD_CD] };
+      return { type: 'DONG', codes: [dongList[0].adstrd_cd] };
     }
     return null;
   }
@@ -195,7 +195,7 @@ export class AnalysisService {
       guList = await this.repository.findGuByName(term, false);
     }
     if (guList.length > 0) {
-      return { type: 'GU', codes: [guList[0].SIGNGU_CD] };
+      return { type: 'GU', codes: [guList[0].signgu_cd] };
     }
 
     let dongList = await this.repository.findDongByName(term, true);
@@ -203,7 +203,7 @@ export class AnalysisService {
       dongList = await this.repository.findDongByName(term, false);
     }
     if (dongList.length > 0) {
-      return { type: 'DONG', codes: [dongList[0].ADSTRD_CD] };
+      return { type: 'DONG', codes: [dongList[0].adstrd_cd] };
     }
 
     let commList = await this.repository.findCommercialByName(term, true);
@@ -211,7 +211,7 @@ export class AnalysisService {
       commList = await this.repository.findCommercialByName(term, false);
     }
     if (commList.length > 0) {
-      return { type: 'COMMERCIAL', codes: [commList[0].TRDAR_CD] };
+      return { type: 'COMMERCIAL', codes: [commList[0].trdar_cd] };
     }
 
     return null;
@@ -231,12 +231,12 @@ export class AnalysisService {
   ): Promise<RegionSearchResult[]> {
     const guMatches = await this.repository.findGuByName(trimmed, false);
     guMatches.forEach((g) => {
-      const cityName = this.getCityName(g.SIGNGU_CD);
+      const cityName = this.getCityName(g.signgu_cd);
       results.push({
         type: 'GU',
-        code: g.SIGNGU_CD,
-        name: g.SIGNGU_NM,
-        fullName: `${cityName} ${g.SIGNGU_NM}`.trim(),
+        code: g.signgu_cd,
+        name: g.signgu_nm,
+        fullName: `${cityName} ${g.signgu_nm}`.trim(),
       });
     });
 
@@ -248,9 +248,9 @@ export class AnalysisService {
       commMatches.forEach((c) => {
         results.push({
           type: 'COMMERCIAL',
-          code: c.TRDAR_CD,
-          name: c.TRDAR_CD_NM,
-          fullName: `${c.SIGNGU_CD_NM || ''} ${c.TRDAR_CD_NM}`.trim(),
+          code: c.trdar_cd,
+          name: c.trdar_cd_nm,
+          fullName: `${c.signgu_cd_nm || ''} ${c.trdar_cd_nm}`.trim(),
         });
       });
     }
@@ -264,14 +264,14 @@ export class AnalysisService {
   ): Promise<RegionSearchResult[]> {
     const dongMatches = await this.repository.findDongByName(trimmed, false);
     return dongMatches.map((d) => {
-      const guCode = d.ADSTRD_CD.slice(0, 5);
+      const guCode = d.adstrd_cd.slice(0, 5);
       const guName = guMap.get(guCode) || '';
-      const cityName = this.getCityName(d.ADSTRD_CD);
+      const cityName = this.getCityName(d.adstrd_cd);
       return {
         type: 'DONG',
-        code: d.ADSTRD_CD,
-        name: d.ADSTRD_NM,
-        fullName: `${cityName} ${guName} ${d.ADSTRD_NM}`.trim(),
+        code: d.adstrd_cd,
+        name: d.adstrd_nm,
+        fullName: `${cityName} ${guName} ${d.adstrd_nm}`.trim(),
       };
     });
   }
@@ -289,17 +289,17 @@ export class AnalysisService {
 
     const dongSet = new Set<string>();
     [...dongMatches, ...dongByLast].forEach((d) => {
-      if (dongSet.has(d.ADSTRD_CD)) return;
-      dongSet.add(d.ADSTRD_CD);
+      if (dongSet.has(d.adstrd_cd)) return;
+      dongSet.add(d.adstrd_cd);
 
-      const guCode = d.ADSTRD_CD.slice(0, 5);
+      const guCode = d.adstrd_cd.slice(0, 5);
       const guName = guMap.get(guCode) || '';
-      const cityName = this.getCityName(d.ADSTRD_CD);
+      const cityName = this.getCityName(d.adstrd_cd);
       results.push({
         type: 'DONG',
-        code: d.ADSTRD_CD,
-        name: d.ADSTRD_NM,
-        fullName: `${cityName} ${guName} ${d.ADSTRD_NM}`.trim(),
+        code: d.adstrd_cd,
+        name: d.adstrd_nm,
+        fullName: `${cityName} ${guName} ${d.adstrd_nm}`.trim(),
       });
     });
 
@@ -314,8 +314,8 @@ export class AnalysisService {
 
     const allComm = [...commMatches, ...commByLast];
     allComm.sort((a, b) => {
-      const aFull = a.TRDAR_CD_NM.includes(trimmed);
-      const bFull = b.TRDAR_CD_NM.includes(trimmed);
+      const aFull = a.trdar_cd_nm.includes(trimmed);
+      const bFull = b.trdar_cd_nm.includes(trimmed);
       if (aFull && !bFull) return -1;
       if (!aFull && bFull) return 1;
       return 0;
@@ -323,13 +323,13 @@ export class AnalysisService {
 
     const commSet = new Set<string>();
     allComm.forEach((c) => {
-      if (commSet.has(c.TRDAR_CD)) return;
-      commSet.add(c.TRDAR_CD);
+      if (commSet.has(c.trdar_cd)) return;
+      commSet.add(c.trdar_cd);
       results.push({
         type: 'COMMERCIAL',
-        code: c.TRDAR_CD,
-        name: c.TRDAR_CD_NM,
-        fullName: `${c.SIGNGU_CD_NM || ''} ${c.TRDAR_CD_NM}`.trim(),
+        code: c.trdar_cd,
+        name: c.trdar_cd_nm,
+        fullName: `${c.signgu_cd_nm || ''} ${c.trdar_cd_nm}`.trim(),
       });
     });
 

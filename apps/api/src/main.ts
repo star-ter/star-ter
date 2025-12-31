@@ -8,6 +8,9 @@ async function bootstrap() {
     new ValidationPipe({
       transform: true,
       whitelist: true,
+      transformOptions: {
+        enableImplicitConversion: true, // 타입 자동 변환 (string → number 등)
+      },
     }),
   );
   app.enableCors({

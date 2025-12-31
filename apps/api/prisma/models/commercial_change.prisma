@@ -1,46 +1,46 @@
 model CommercialChangeGu {
-  STDR_YYQU_CD        String
-  SIGNGU_CD           String
-  SIGNGU_CD_NM        String
-  TRDAR_CHNGE_IX      String
-  TRDAR_CHNGE_IX_NM   String
-  OPR_SALE_MT_AVRG    Int
-  CLS_SALE_MT_AVRG    Int
-  SU_OPR_SALE_MT_AVRG Int
-  SU_CLS_SALE_MT_AVRG Int
+  stdr_yyqu_cd        String
+  signgu_cd           String
+  signgu_cd_nm        String
+  trdar_chnge_ix      String
+  trdar_chnge_ix_nm   String
+  opr_sale_mt_avrg    Int
+  cls_sale_mt_avrg    Int
+  su_opr_sale_mt_avrg Int
+  su_cls_sale_mt_avrg Int
 
-  @@id([STDR_YYQU_CD, SIGNGU_CD])
+  @@id([stdr_yyqu_cd, signgu_cd])
   @@map("commercial_change_gu")
 }
 
 model CommercialChangeDong {
-  STDR_YYQU_CD        String
-  ADSTRD_CD           String
-  ADSTRD_CD_NM        String
-  TRDAR_CHNGE_IX      String
-  TRDAR_CHNGE_IX_NM   String
-  OPR_SALE_MT_AVRG    Int
-  CLS_SALE_MT_AVRG    Int
-  SU_OPR_SALE_MT_AVRG Int
-  SU_CLS_SALE_MT_AVRG Int
+  stdr_yyqu_cd        String
+  adstrd_cd           String
+  adstrd_cd_nm        String
+  trdar_chnge_ix      String
+  trdar_chnge_ix_nm   String
+  opr_sale_mt_avrg    Int
+  cls_sale_mt_avrg    Int
+  su_opr_sale_mt_avrg Int
+  su_cls_sale_mt_avrg Int
 
-  @@id([STDR_YYQU_CD, ADSTRD_CD])
+  @@id([stdr_yyqu_cd, adstrd_cd])
   @@map("commercial_change_dong")
 }
 
 model CommercialChangeCommercial {
-  STDR_YYQU_CD        String
-  TRDAR_SE_CD         String
-  TRDAR_SE_CD_NM      String
-  TRDAR_CD            String
-  TRDAR_CD_NM         String
-  TRDAR_CHNGE_IX      String
-  TRDAR_CHNGE_IX_NM   String
-  OPR_SALE_MT_AVRG    Int
-  CLS_SALE_MT_AVRG    Int
-  SU_OPR_SALE_MT_AVRG Int
-  SU_CLS_SALE_MT_AVRG Int
+  stdr_yyqu_cd        String
+  trdar_se_cd         String
+  trdar_se_cd_nm      String
+  trdar_cd            String
+  trdar_cd_nm         String
+  trdar_chnge_ix      String
+  trdar_chnge_ix_nm   String
+  opr_sale_mt_avrg    Int
+  cls_sale_mt_avrg    Int
+  su_opr_sale_mt_avrg Int
+  su_cls_sale_mt_avrg Int
 
-  @@id([STDR_YYQU_CD, TRDAR_CD])
+  @@id([stdr_yyqu_cd, trdar_cd])
   @@map("commercial_change_commercial")
 }

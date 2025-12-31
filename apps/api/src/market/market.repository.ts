@@ -15,7 +15,7 @@ export class MarketRepository {
     lng: number,
   ): Promise<CommercialAreaResult | null> {
     const result = await this.prisma.$queryRaw<CommercialAreaResult[]>`
-      SELECT TRDAR_CD as "TRDAR_CD", TRDAR_CD_N as "TRDAR_CD_NM", TRDAR_SE_1 as "TRDAR_SE_1"
+      SELECT trdar_cd as "trdar_cd", TRDAR_CD_N as "trdar_cd_nm", TRDAR_SE_1 as "TRDAR_SE_1"
       FROM seoul_commercial_area_grid
       WHERE ST_Intersects(geom, ST_SetSRID(ST_Point(${lng}, ${lat}), 4326))
       LIMIT 1
@@ -28,7 +28,7 @@ export class MarketRepository {
     lng: number,
   ): Promise<AdministrativeAreaResult | null> {
     const result = await this.prisma.$queryRaw<AdministrativeAreaResult[]>`
-      SELECT adstrd_cd as "ADSTRD_CD", adm_nm as "ADSTRD_NM"
+      SELECT adstrd_cd as "adstrd_cd", adm_nm as "adstrd_nm"
       FROM admin_area_dong
       WHERE ST_Intersects(
         ST_SetSRID(
@@ -52,33 +52,33 @@ export class MarketRepository {
   // 상권 매출 추이 조회 (분기별 업종 합계)
   async getCommercialRevenueTrend(code: string) {
     return this.prisma.salesCommercial.groupBy({
-      by: ['STDR_YYQU_CD'],
-      where: { TRDAR_CD: code },
+      by: ['stdr_yyqu_cd'],
+      where: { trdar_cd: code },
       _sum: {
-        THSMON_SELNG_AMT: true,
-        TMZON_00_06_SELNG_AMT: true,
-        TMZON_06_11_SELNG_AMT: true,
-        TMZON_11_14_SELNG_AMT: true,
-        TMZON_14_17_SELNG_AMT: true,
-        TMZON_17_21_SELNG_AMT: true,
-        TMZON_21_24_SELNG_AMT: true,
-        MON_SELNG_AMT: true,
-        TUES_SELNG_AMT: true,
-        WED_SELNG_AMT: true,
-        THUR_SELNG_AMT: true,
-        FRI_SELNG_AMT: true,
-        SAT_SELNG_AMT: true,
-        SUN_SELNG_AMT: true,
-        ML_SELNG_AMT: true,
-        FML_SELNG_AMT: true,
-        AGRDE_10_SELNG_AMT: true,
-        AGRDE_20_SELNG_AMT: true,
-        AGRDE_30_SELNG_AMT: true,
-        AGRDE_40_SELNG_AMT: true,
-        AGRDE_50_SELNG_AMT: true,
-        AGRDE_60_ABOVE_SELNG_AMT: true,
+        thsmon_selng_amt: true,
+        tmzon_00_06_selng_amt: true,
+        tmzon_06_11_selng_amt: true,
+        tmzon_11_14_selng_amt: true,
+        tmzon_14_17_selng_amt: true,
+        tmzon_17_21_selng_amt: true,
+        tmzon_21_24_selng_amt: true,
+        mon_selng_amt: true,
+        tues_selng_amt: true,
+        wed_selng_amt: true,
+        thur_selng_amt: true,
+        fri_selng_amt: true,
+        sat_selng_amt: true,
+        sun_selng_amt: true,
+        ml_selng_amt: true,
+        fml_selng_amt: true,
+        agrde_10_selng_amt: true,
+        agrde_20_selng_amt: true,
+        agrde_30_selng_amt: true,
+        agrde_40_selng_amt: true,
+        agrde_50_selng_amt: true,
+        agrde_60_above_selng_amt: true,
       },
-      orderBy: { STDR_YYQU_CD: 'desc' },
+      orderBy: { stdr_yyqu_cd: 'desc' },
       take: 5,
     });
   }
@@ -86,33 +86,33 @@ export class MarketRepository {
   // 행정동 매출 추이 조회 (분기별 업종 합계)
   async getAdminDongRevenueTrend(code: string) {
     return this.prisma.salesDong.groupBy({
-      by: ['STDR_YYQU_CD'],
-      where: { ADSTRD_CD: code },
+      by: ['stdr_yyqu_cd'],
+      where: { adstrd_cd: code },
       _sum: {
-        THSMON_SELNG_AMT: true,
-        TMZON_00_06_SELNG_AMT: true,
-        TMZON_06_11_SELNG_AMT: true,
-        TMZON_11_14_SELNG_AMT: true,
-        TMZON_14_17_SELNG_AMT: true,
-        TMZON_17_21_SELNG_AMT: true,
-        TMZON_21_24_SELNG_AMT: true,
-        MON_SELNG_AMT: true,
-        TUES_SELNG_AMT: true,
-        WED_SELNG_AMT: true,
-        THUR_SELNG_AMT: true,
-        FRI_SELNG_AMT: true,
-        SAT_SELNG_AMT: true,
-        SUN_SELNG_AMT: true,
-        ML_SELNG_AMT: true,
-        FML_SELNG_AMT: true,
-        AGRDE_10_SELNG_AMT: true,
-        AGRDE_20_SELNG_AMT: true,
-        AGRDE_30_SELNG_AMT: true,
-        AGRDE_40_SELNG_AMT: true,
-        AGRDE_50_SELNG_AMT: true,
-        AGRDE_60_ABOVE_SELNG_AMT: true,
+        thsmon_selng_amt: true,
+        tmzon_00_06_selng_amt: true,
+        tmzon_06_11_selng_amt: true,
+        tmzon_11_14_selng_amt: true,
+        tmzon_14_17_selng_amt: true,
+        tmzon_17_21_selng_amt: true,
+        tmzon_21_24_selng_amt: true,
+        mon_selng_amt: true,
+        tues_selng_amt: true,
+        wed_selng_amt: true,
+        thur_selng_amt: true,
+        fri_selng_amt: true,
+        sat_selng_amt: true,
+        sun_selng_amt: true,
+        ml_selng_amt: true,
+        fml_selng_amt: true,
+        agrde_10_selng_amt: true,
+        agrde_20_selng_amt: true,
+        agrde_30_selng_amt: true,
+        agrde_40_selng_amt: true,
+        agrde_50_selng_amt: true,
+        agrde_60_above_selng_amt: true,
       },
-      orderBy: { STDR_YYQU_CD: 'desc' },
+      orderBy: { stdr_yyqu_cd: 'desc' },
       take: 5,
     });
   }
@@ -134,8 +134,8 @@ export class MarketRepository {
     // signgu_cd가 실제 행정구 코드 (text 타입)
     const result = await this.prisma.$queryRaw<GuAreaResult[]>`
       SELECT 
-        signgu_cd as "SIGNGU_CD", 
-        adm_nm as "SIGNGU_NM"
+        signgu_cd as "signgu_cd", 
+        adm_nm as "signgu_nm"
       FROM admin_area_gu
       WHERE ST_Intersects(
         ST_SetSRID(
@@ -158,101 +158,101 @@ export class MarketRepository {
 
   /**
    * 행정구 매출 추이 조회 (분기별 업종 합계)
-   * @param code 시군구 코드 (SIGNGU_CD)
+   * @param code 시군구 코드 (signgu_cd)
    */
   async getAdminGuRevenueTrend(code: string) {
     return this.prisma.salesGu.groupBy({
-      by: ['STDR_YYQU_CD'],
-      where: { SIGNGU_CD: code },
+      by: ['stdr_yyqu_cd'],
+      where: { signgu_cd: code },
       _sum: {
-        THSMON_SELNG_AMT: true,
-        TMZON_00_06_SELNG_AMT: true,
-        TMZON_06_11_SELNG_AMT: true,
-        TMZON_11_14_SELNG_AMT: true,
-        TMZON_14_17_SELNG_AMT: true,
-        TMZON_17_21_SELNG_AMT: true,
-        TMZON_21_24_SELNG_AMT: true,
-        MON_SELNG_AMT: true,
-        TUES_SELNG_AMT: true,
-        WED_SELNG_AMT: true,
-        THUR_SELNG_AMT: true,
-        FRI_SELNG_AMT: true,
-        SAT_SELNG_AMT: true,
-        SUN_SELNG_AMT: true,
-        ML_SELNG_AMT: true,
-        FML_SELNG_AMT: true,
-        AGRDE_10_SELNG_AMT: true,
-        AGRDE_20_SELNG_AMT: true,
-        AGRDE_30_SELNG_AMT: true,
-        AGRDE_40_SELNG_AMT: true,
-        AGRDE_50_SELNG_AMT: true,
-        AGRDE_60_ABOVE_SELNG_AMT: true,
+        thsmon_selng_amt: true,
+        tmzon_00_06_selng_amt: true,
+        tmzon_06_11_selng_amt: true,
+        tmzon_11_14_selng_amt: true,
+        tmzon_14_17_selng_amt: true,
+        tmzon_17_21_selng_amt: true,
+        tmzon_21_24_selng_amt: true,
+        mon_selng_amt: true,
+        tues_selng_amt: true,
+        wed_selng_amt: true,
+        thur_selng_amt: true,
+        fri_selng_amt: true,
+        sat_selng_amt: true,
+        sun_selng_amt: true,
+        ml_selng_amt: true,
+        fml_selng_amt: true,
+        agrde_10_selng_amt: true,
+        agrde_20_selng_amt: true,
+        agrde_30_selng_amt: true,
+        agrde_40_selng_amt: true,
+        agrde_50_selng_amt: true,
+        agrde_60_above_selng_amt: true,
       },
-      orderBy: { STDR_YYQU_CD: 'desc' },
+      orderBy: { stdr_yyqu_cd: 'desc' },
       take: 5,
     });
   }
 
   async getCommercialStoreStats(code: string) {
     return this.prisma.storeCommercial.aggregate({
-      where: { TRDAR_CD: code },
-      _sum: { STOR_CO: true, OPBIZ_STOR_CO: true, CLSBIZ_STOR_CO: true },
-      _max: { STDR_YYQU_CD: true },
+      where: { trdar_cd: code },
+      _sum: { stor_co: true, opbiz_stor_co: true, clsbiz_stor_co: true },
+      _max: { stdr_yyqu_cd: true },
     });
   }
 
   async getAdministrativeStoreStats(code: string) {
     return this.prisma.storeDong.aggregate({
-      where: { ADSTRD_CD: code },
-      _sum: { STOR_CO: true, OPBIZ_STOR_CO: true, CLSBIZ_STOR_CO: true },
-      _max: { STDR_YYQU_CD: true },
+      where: { adstrd_cd: code },
+      _sum: { stor_co: true, opbiz_stor_co: true, clsbiz_stor_co: true },
+      _max: { stdr_yyqu_cd: true },
     });
   }
 
   /**
    * 행정구 상점 통계 조회 (개업/폐업 건수)
-   * @param code 시군구 코드 (SIGNGU_CD)
+   * @param code 시군구 코드 (signgu_cd)
    */
   async getGuStoreStats(code: string) {
     return this.prisma.storeGu.aggregate({
-      where: { SIGNGU_CD: code },
-      _sum: { STOR_CO: true, OPBIZ_STOR_CO: true, CLSBIZ_STOR_CO: true },
-      _max: { STDR_YYQU_CD: true },
+      where: { signgu_cd: code },
+      _sum: { stor_co: true, opbiz_stor_co: true, clsbiz_stor_co: true },
+      _max: { stdr_yyqu_cd: true },
     });
   }
 
   async findGuByCode(code: string): Promise<GuAreaResult | null> {
     const result = await this.prisma.areaGu.findUnique({
-      where: { SIGNGU_CD: code },
-      select: { SIGNGU_CD: true, SIGNGU_NM: true },
+      where: { signgu_cd: code },
+      select: { signgu_cd: true, signgu_nm: true },
     });
     if (!result) return null;
-    return { SIGNGU_CD: result.SIGNGU_CD, SIGNGU_NM: result.SIGNGU_NM };
+    return { signgu_cd: result.signgu_cd, signgu_nm: result.signgu_nm };
   }
 
   async findDongByCode(code: string): Promise<AdministrativeAreaResult | null> {
     const result = await this.prisma.areaDong.findUnique({
-      where: { ADSTRD_CD: code },
-      select: { ADSTRD_CD: true, ADSTRD_NM: true },
+      where: { adstrd_cd: code },
+      select: { adstrd_cd: true, adstrd_nm: true },
     });
     if (!result) return null;
-    return { ADSTRD_CD: result.ADSTRD_CD, ADSTRD_NM: result.ADSTRD_NM };
+    return { adstrd_cd: result.adstrd_cd, adstrd_nm: result.adstrd_nm };
   }
 
   /**
    * 상권 업종별 매출 Top 5 조회
-   * @param code 상권 코드 (TRDAR_CD)
+   * @param code 상권 코드 (trdar_cd)
    * @returns 업종별 매출 합계 (내림차순 정렬)
    */
   async getCommercialTopIndustries(code: string) {
     return this.prisma.salesCommercial.groupBy({
-      by: ['SVC_INDUTY_CD_NM'],
-      where: { TRDAR_CD: code },
+      by: ['svc_induty_cd_nm'],
+      where: { trdar_cd: code },
       _sum: {
-        THSMON_SELNG_AMT: true,
+        thsmon_selng_amt: true,
       },
       orderBy: {
-        _sum: { THSMON_SELNG_AMT: 'desc' },
+        _sum: { thsmon_selng_amt: 'desc' },
       },
       take: 5,
     });
@@ -260,17 +260,17 @@ export class MarketRepository {
 
   /**
    * 행정동 업종별 매출 Top 5 조회
-   * @param code 행정동 코드 (ADSTRD_CD)
+   * @param code 행정동 코드 (adstrd_cd)
    */
   async getDongTopIndustries(code: string) {
     return this.prisma.salesDong.groupBy({
-      by: ['SVC_INDUTY_CD_NM'],
-      where: { ADSTRD_CD: code },
+      by: ['svc_induty_cd_nm'],
+      where: { adstrd_cd: code },
       _sum: {
-        THSMON_SELNG_AMT: true,
+        thsmon_selng_amt: true,
       },
       orderBy: {
-        _sum: { THSMON_SELNG_AMT: 'desc' },
+        _sum: { thsmon_selng_amt: 'desc' },
       },
       take: 5,
     });
@@ -278,17 +278,17 @@ export class MarketRepository {
 
   /**
    * 행정구 업종별 매출 Top 5 조회
-   * @param code 시군구 코드 (SIGNGU_CD)
+   * @param code 시군구 코드 (signgu_cd)
    */
   async getGuTopIndustries(code: string) {
     return this.prisma.salesGu.groupBy({
-      by: ['SVC_INDUTY_CD_NM'],
-      where: { SIGNGU_CD: code },
+      by: ['svc_induty_cd_nm'],
+      where: { signgu_cd: code },
       _sum: {
-        THSMON_SELNG_AMT: true,
+        thsmon_selng_amt: true,
       },
       orderBy: {
-        _sum: { THSMON_SELNG_AMT: 'desc' },
+        _sum: { thsmon_selng_amt: 'desc' },
       },
       take: 5,
     });

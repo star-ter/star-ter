@@ -53,15 +53,15 @@ export class GeoService {
   ): Promise<GeoAreaListResponseDto> {
     const cityCode = query.cityCode || '11';
     const rows = await this.prisma.areaGu.findMany({
-      where: cityCode ? { SIGNGU_CD: { startsWith: cityCode } } : undefined,
-      select: { SIGNGU_CD: true, SIGNGU_NM: true },
-      orderBy: { SIGNGU_NM: 'asc' },
+      where: cityCode ? { signgu_cd: { startsWith: cityCode } } : undefined,
+      select: { signgu_cd: true, signgu_nm: true },
+      orderBy: { signgu_nm: 'asc' },
     });
 
     return {
       items: rows.map((row) => ({
-        code: row.SIGNGU_CD,
-        name: row.SIGNGU_NM,
+        code: row.signgu_cd,
+        name: row.signgu_nm,
       })),
     };
   }
@@ -70,15 +70,15 @@ export class GeoService {
     query: GetGeoDongListQueryDto,
   ): Promise<GeoAreaListResponseDto> {
     const rows = await this.prisma.areaDong.findMany({
-      where: { ADSTRD_CD: { startsWith: query.guCode } },
-      select: { ADSTRD_CD: true, ADSTRD_NM: true },
-      orderBy: { ADSTRD_NM: 'asc' },
+      where: { adstrd_cd: { startsWith: query.guCode } },
+      select: { adstrd_cd: true, adstrd_nm: true },
+      orderBy: { adstrd_nm: 'asc' },
     });
 
     return {
       items: rows.map((row) => ({
-        code: row.ADSTRD_CD,
-        name: row.ADSTRD_NM,
+        code: row.adstrd_cd,
+        name: row.adstrd_nm,
       })),
     };
   }

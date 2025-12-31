@@ -102,7 +102,7 @@ export class MarketService {
       }
       const guArea = await this.marketRepository.findAdministrativeGu(lat, lng);
       if (guArea) {
-        return this.fetchGuAnalytics(guArea.SIGNGU_CD);
+        return this.fetchGuAnalytics(guArea.signgu_cd);
       }
       return MarketMapper.getEmptySalesData('행정구 정보를 찾을 수 없습니다.');
     }
@@ -117,7 +117,7 @@ export class MarketService {
         lng,
       );
       if (adminArea) {
-        return this.fetchDongAnalytics(adminArea.ADSTRD_CD);
+        return this.fetchDongAnalytics(adminArea.adstrd_cd);
       }
       return MarketMapper.getEmptySalesData('행정동 정보를 찾을 수 없습니다.');
     }
@@ -129,8 +129,8 @@ export class MarketService {
     );
     if (commercialArea) {
       return this.fetchCommercialAnalytics(
-        commercialArea.TRDAR_CD,
-        commercialArea.TRDAR_CD_NM,
+        commercialArea.trdar_cd,
+        commercialArea.trdar_cd_nm,
       );
     }
 
@@ -139,7 +139,7 @@ export class MarketService {
       lng,
     );
     if (adminArea) {
-      return this.fetchDongAnalytics(adminArea.ADSTRD_CD);
+      return this.fetchDongAnalytics(adminArea.adstrd_cd);
     }
 
     return MarketMapper.getEmptySalesData('분석할 수 없는 지역입니다.');
@@ -197,7 +197,7 @@ export class MarketService {
 
     const { openingRate, closureRate } = this.calculateRates(storeStats);
     const guArea = await this.marketRepository.findGuByCode(code);
-    const areaName = guArea?.SIGNGU_NM || code;
+    const areaName = guArea?.signgu_nm || code;
 
     return MarketMapper.mapToAnalyticsDto(
       salesData,
@@ -218,7 +218,7 @@ export class MarketService {
 
     const { openingRate, closureRate } = this.calculateRates(storeStats);
     const dongArea = await this.marketRepository.findDongByCode(code);
-    const areaName = dongArea?.ADSTRD_NM || code;
+    const areaName = dongArea?.adstrd_nm || code;
 
     return MarketMapper.mapToAnalyticsDto(
       salesData,
@@ -254,19 +254,19 @@ export class MarketService {
 
   private calculateRates(storeStats: {
     _sum: {
-      STOR_CO: number | null;
-      OPBIZ_STOR_CO: number | null;
-      CLSBIZ_STOR_CO: number | null;
+      stor_co: number | null;
+      opbiz_stor_co: number | null;
+      clsbiz_stor_co: number | null;
     };
   }) {
-    const totalStores = storeStats._sum.STOR_CO || 0;
+    const totalStores = storeStats._sum.stor_co || 0;
     const openingRate =
       totalStores > 0
-        ? ((storeStats._sum.OPBIZ_STOR_CO || 0) / totalStores) * 100
+        ? ((storeStats._sum.opbiz_stor_co || 0) / totalStores) * 100
         : 0;
     const closureRate =
       totalStores > 0
-        ? ((storeStats._sum.CLSBIZ_STOR_CO || 0) / totalStores) * 100
+        ? ((storeStats._sum.clsbiz_stor_co || 0) / totalStores) * 100
         : 0;
     return { totalStores, openingRate, closureRate };
   }

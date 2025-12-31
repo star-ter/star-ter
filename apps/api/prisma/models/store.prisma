@@ -1,93 +1,93 @@
 model StoreCity {
-  STDR_YYQU_CD          String
-  MEGA_CD               String
-  MEGA_CD_NM            String
-  SVC_INDUTY_CD         String
-  SVC_INDUTY_CD_NM      String
-  STOR_CO               Int
-  SIMILR_INDUTY_STOR_CO Int
-  OPBIZ_RT              Float
-  OPBIZ_STOR_CO         Int
-  CLSBIZ_RT             Float
-  CLSBIZ_STOR_CO        Int
-  FRC_STOR_CO           Int
+  stdr_yyqu_cd          String
+  mega_cd               String
+  mega_cd_nm            String
+  svc_induty_cd         String
+  svc_induty_cd_nm      String
+  stor_co               Int
+  similr_induty_stor_co Int
+  opbiz_rt              Float
+  opbiz_stor_co         Int
+  clsbiz_rt             Float
+  clsbiz_stor_co        Int
+  frc_stor_co           Int
 
-  @@id([STDR_YYQU_CD, MEGA_CD, SVC_INDUTY_CD])
+  @@id([stdr_yyqu_cd, mega_cd, svc_induty_cd])
   @@map("store_city")
 }
 
 model StoreGu {
-  STDR_YYQU_CD          String
-  SIGNGU_CD             String
-  SIGNGU_CD_NM          String
-  SVC_INDUTY_CD         String
-  SVC_INDUTY_CD_NM      String
-  STOR_CO               Int
-  SIMILR_INDUTY_STOR_CO Int
-  OPBIZ_RT              Float
-  OPBIZ_STOR_CO         Int
-  CLSBIZ_RT             Float
-  CLSBIZ_STOR_CO        Int
-  FRC_STOR_CO           Int
+  stdr_yyqu_cd          String
+  signgu_cd             String
+  signgu_cd_nm          String
+  svc_induty_cd         String
+  svc_induty_cd_nm      String
+  stor_co               Int
+  similr_induty_stor_co Int
+  opbiz_rt              Float
+  opbiz_stor_co         Int
+  clsbiz_rt             Float
+  clsbiz_stor_co        Int
+  frc_stor_co           Int
 
-  @@id([STDR_YYQU_CD, SIGNGU_CD, SVC_INDUTY_CD])
+  @@id([stdr_yyqu_cd, signgu_cd, svc_induty_cd])
   @@map("store_gu")
 }
 
 model StoreDong {
-  STDR_YYQU_CD          String
-  ADSTRD_CD             String
-  ADSTRD_CD_NM          String
-  SVC_INDUTY_CD         String
-  SVC_INDUTY_CD_NM      String
-  STOR_CO               Int
-  SIMILR_INDUTY_STOR_CO Int
-  OPBIZ_RT              Float
-  OPBIZ_STOR_CO         Int
-  CLSBIZ_RT             Float
-  CLSBIZ_STOR_CO        Int
-  FRC_STOR_CO           Int
+  stdr_yyqu_cd          String
+  adstrd_cd             String
+  adstrd_cd_nm          String
+  svc_induty_cd         String
+  svc_induty_cd_nm      String
+  stor_co               Int
+  similr_induty_stor_co Int
+  opbiz_rt              Float
+  opbiz_stor_co         Int
+  clsbiz_rt             Float
+  clsbiz_stor_co        Int
+  frc_stor_co           Int
 
-  @@id([STDR_YYQU_CD, ADSTRD_CD, SVC_INDUTY_CD])
+  @@id([stdr_yyqu_cd, adstrd_cd, svc_induty_cd])
   @@map("store_dong")
 }
 
 model StoreBackarea {
-  STDR_YYQU_CD          String
-  TRDAR_SE_CD           String
-  TRDAR_SE_CD_NM        String
-  TRDAR_CD              String
-  TRDAR_CD_NM           String
-  SVC_INDUTY_CD         String
-  SVC_INDUTY_CD_NM      String
-  STOR_CO               Int
-  SIMILR_INDUTY_STOR_CO Int
-  OPBIZ_RT              Float
-  OPBIZ_STOR_CO         Int
-  CLSBIZ_RT             Float
-  CLSBIZ_STOR_CO        Int
-  FRC_STOR_CO           Int
+  stdr_yyqu_cd          String
+  trdar_se_cd           String
+  trdar_se_cd_nm        String
+  trdar_cd              String
+  trdar_cd_nm           String
+  svc_induty_cd         String
+  svc_induty_cd_nm      String
+  stor_co               Int
+  similr_induty_stor_co Int
+  opbiz_rt              Float
+  opbiz_stor_co         Int
+  clsbiz_rt             Float
+  clsbiz_stor_co        Int
+  frc_stor_co           Int
 
-  @@id([STDR_YYQU_CD, TRDAR_CD, SVC_INDUTY_CD])
+  @@id([stdr_yyqu_cd, trdar_cd, svc_induty_cd])
   @@map("store_backarea")
 }
 
 model StoreCommercial {
-  STDR_YYQU_CD          String
-  TRDAR_SE_CD           String
-  TRDAR_SE_CD_NM        String
-  TRDAR_CD              String
-  TRDAR_CD_NM           String
-  SVC_INDUTY_CD         String
-  SVC_INDUTY_CD_NM      String
-  STOR_CO               Int
-  SIMILR_INDUTY_STOR_CO Int
-  OPBIZ_RT              Float
-  OPBIZ_STOR_CO         Int
-  CLSBIZ_RT             Float
-  CLSBIZ_STOR_CO        Int
-  FRC_STOR_CO           Int
+  stdr_yyqu_cd          String
+  trdar_se_cd           String
+  trdar_se_cd_nm        String
+  trdar_cd              String
+  trdar_cd_nm           String
+  svc_induty_cd         String
+  svc_induty_cd_nm      String
+  stor_co               Int
+  similr_induty_stor_co Int
+  opbiz_rt              Float
+  opbiz_stor_co         Int
+  clsbiz_rt             Float
+  clsbiz_stor_co        Int
+  frc_stor_co           Int
 
-  @@id([STDR_YYQU_CD, TRDAR_CD, SVC_INDUTY_CD])
+  @@id([stdr_yyqu_cd, trdar_cd, svc_induty_cd])
   @@map("store_commercial")
 }

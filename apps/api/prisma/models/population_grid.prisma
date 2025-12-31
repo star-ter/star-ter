@@ -1,39 +1,39 @@
 model PopulationGrid {
-  YMD        String    @db.VarChar(8)
-  TT         Int
-  CELL_ID    String    @db.VarChar
-  H_DNG_CD   String?   @db.VarChar
-  SPOP       Float?
-  M00        Float?
-  M10        Float?
-  M15        Float?
-  M20        Float?
-  M25        Float?
-  M30        Float?
-  M35        Float?
-  M40        Float?
-  M45        Float?
-  M50        Float?
-  M55        Float?
-  M60        Float?
-  M65        Float?
-  M70        Float?
-  F00        Float?
-  F10        Float?
-  F15        Float?
-  F20        Float?
-  F25        Float?
-  F30        Float?
-  F35        Float?
-  F40        Float?
-  F45        Float?
-  F50        Float?
-  F55        Float?
-  F60        Float?
-  F65        Float?
-  F70        Float?
+  ymd        String    @db.VarChar(8)
+  tt         Int
+  cell_id    String    @db.VarChar
+  h_dng_cd   String?   @db.VarChar
+  spop       Float?
+  m00        Float?
+  m10        Float?
+  m15        Float?
+  m20        Float?
+  m25        Float?
+  m30        Float?
+  m35        Float?
+  m40        Float?
+  m45        Float?
+  m50        Float?
+  m55        Float?
+  m60        Float?
+  m65        Float?
+  m70        Float?
+  f00        Float?
+  f10        Float?
+  f15        Float?
+  f20        Float?
+  f25        Float?
+  f30        Float?
+  f35        Float?
+  f40        Float?
+  f45        Float?
+  f50        Float?
+  f55        Float?
+  f60        Float?
+  f65        Float?
+  f70        Float?
   updated_at DateTime? @default(now()) @db.Timestamp(6)
 
-  @@id([YMD, TT, CELL_ID])
+  @@id([ymd, tt, cell_id])
   @@map("seoul_250_population")
 }

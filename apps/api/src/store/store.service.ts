@@ -23,28 +23,28 @@ export class StoreService {
 
   private readonly modelMap: Record<StoreLevel, ModelConfig> = {
     city: {
-      codeField: 'MEGA_CD',
-      nameField: 'MEGA_CD_NM',
+      codeField: 'mega_cd',
+      nameField: 'mega_cd_nm',
       modelName: 'storeCity',
     },
     gu: {
-      codeField: 'SIGNGU_CD',
-      nameField: 'SIGNGU_CD_NM',
+      codeField: 'signgu_cd',
+      nameField: 'signgu_cd_nm',
       modelName: 'storeGu',
     },
     dong: {
-      codeField: 'ADSTRD_CD',
-      nameField: 'ADSTRD_CD_NM',
+      codeField: 'adstrd_cd',
+      nameField: 'adstrd_cd_nm',
       modelName: 'storeDong',
     },
     backarea: {
-      codeField: 'TRDAR_CD',
-      nameField: 'TRDAR_CD_NM',
+      codeField: 'trdar_cd',
+      nameField: 'trdar_cd_nm',
       modelName: 'storeBackarea',
     },
     commercial: {
-      codeField: 'TRDAR_CD',
-      nameField: 'TRDAR_CD_NM',
+      codeField: 'trdar_cd',
+      nameField: 'trdar_cd_nm',
       modelName: 'storeCommercial',
     },
   };
@@ -67,26 +67,26 @@ export class StoreService {
       quarter || (await this.getLatestQuarter(client, modelConfig.modelName));
 
     const where: Record<string, string> = {
-      STDR_YYQU_CD: resolvedQuarter,
+      stdr_yyqu_cd: resolvedQuarter,
       [modelConfig.codeField]: code,
     };
     if (industryCode) {
-      where.SVC_INDUTY_CD = industryCode;
+      where.svc_induty_cd = industryCode;
     }
 
     const rows = await client.findMany({
       where,
       select: {
-        STDR_YYQU_CD: true,
-        SVC_INDUTY_CD: true,
-        SVC_INDUTY_CD_NM: true,
-        STOR_CO: true,
-        SIMILR_INDUTY_STOR_CO: true,
-        FRC_STOR_CO: true,
-        OPBIZ_RT: true,
-        OPBIZ_STOR_CO: true,
-        CLSBIZ_RT: true,
-        CLSBIZ_STOR_CO: true,
+        stdr_yyqu_cd: true,
+        svc_induty_cd: true,
+        svc_induty_cd_nm: true,
+        stor_co: true,
+        similr_induty_stor_co: true,
+        frc_stor_co: true,
+        opbiz_rt: true,
+        opbiz_stor_co: true,
+        clsbiz_rt: true,
+        clsbiz_stor_co: true,
       },
     });
 
@@ -95,15 +95,15 @@ export class StoreService {
       code,
       quarter: resolvedQuarter,
       items: rows.map((row: any) => ({
-        industryCode: row.SVC_INDUTY_CD,
-        industryName: row.SVC_INDUTY_CD_NM,
-        storeCount: Number(row.STOR_CO || 0),
-        similarStoreCount: Number(row.SIMILR_INDUTY_STOR_CO || 0),
-        franchiseStoreCount: Number(row.FRC_STOR_CO || 0),
-        openRate: Number(row.OPBIZ_RT || 0),
-        openStoreCount: Number(row.OPBIZ_STOR_CO || 0),
-        closeRate: Number(row.CLSBIZ_RT || 0),
-        closeStoreCount: Number(row.CLSBIZ_STOR_CO || 0),
+        industryCode: row.svc_induty_cd,
+        industryName: row.svc_induty_cd_nm,
+        storeCount: Number(row.stor_co || 0),
+        similarStoreCount: Number(row.similr_induty_stor_co || 0),
+        franchiseStoreCount: Number(row.frc_stor_co || 0),
+        openRate: Number(row.opbiz_rt || 0),
+        openStoreCount: Number(row.opbiz_stor_co || 0),
+        closeRate: Number(row.clsbiz_rt || 0),
+        closeStoreCount: Number(row.clsbiz_stor_co || 0),
       })),
     };
   }
@@ -113,15 +113,15 @@ export class StoreService {
     modelName: string,
   ): Promise<string> {
     const latest = await client.findFirst({
-      select: { STDR_YYQU_CD: true },
-      orderBy: { STDR_YYQU_CD: 'desc' },
+      select: { stdr_yyqu_cd: true },
+      orderBy: { stdr_yyqu_cd: 'desc' },
     });
 
-    if (!latest?.STDR_YYQU_CD) {
+    if (!latest?.stdr_yyqu_cd) {
       this.logger.warn(`[${modelName}] 기준 분기 데이터가 없습니다.`);
       throw new BadRequestException('점포 데이터가 없습니다.');
     }
 
-    return latest.STDR_YYQU_CD as string;
+    return latest.stdr_yyqu_cd as string;
   }
 }

@@ -74,18 +74,18 @@ export class FloatingPopulationRepository {
       ),
       population_stats AS (
         SELECT 
-          p."CELL_ID" as cid,
+          p."cell_id" as cid,
           CASE 
-            WHEN CAST(p."TT" AS INTEGER) BETWEEN 0 AND 7 THEN '0-8'
-            WHEN CAST(p."TT" AS INTEGER) BETWEEN 8 AND 15 THEN '8-16'
+            WHEN CAST(p."tt" AS INTEGER) BETWEEN 0 AND 7 THEN '0-8'
+            WHEN CAST(p."tt" AS INTEGER) BETWEEN 8 AND 15 THEN '8-16'
             ELSE '16-24'
           END as ts,
-          AVG(p."SPOP") as ap,
-          SUM(p."SPOP") as sp,
+          AVG(p."spop") as ap,
+          SUM(p."spop") as sp,
           ${granularSums}
         FROM "seoul_250_population" p
-        WHERE p."CELL_ID" IN (SELECT cell_id FROM viewport_grids)
-        GROUP BY p."CELL_ID", ts
+        WHERE p."cell_id" IN (SELECT cell_id FROM viewport_grids)
+        GROUP BY p."cell_id", ts
       )
       SELECT 
         g.cell_id as id, 
@@ -137,18 +137,18 @@ export class FloatingPopulationRepository {
           const getSum = (...fields: (keyof TimeSlotPopulation)[]): number =>
             fields.reduce((sum, f) => sum + (Number(slot[f]) || 0), 0);
 
-          slot.age_10s_total = getSum('M10', 'M15', 'F10', 'F15');
-          slot.age_20s_total = getSum('M20', 'M25', 'F20', 'F25');
-          slot.age_30s_total = getSum('M30', 'M35', 'F30', 'F35');
-          slot.age_40s_total = getSum('M40', 'M45', 'F40', 'F45');
-          slot.age_50s_total = getSum('M50', 'M55', 'F50', 'F55');
+          slot.age_10s_total = getSum('m10', 'm15', 'f10', 'f15');
+          slot.age_20s_total = getSum('m20', 'm25', 'f20', 'f25');
+          slot.age_30s_total = getSum('m30', 'm35', 'f30', 'f35');
+          slot.age_40s_total = getSum('m40', 'm45', 'f40', 'f45');
+          slot.age_50s_total = getSum('m50', 'm55', 'f50', 'f55');
           slot.age_60s_plus_total = getSum(
-            'M60',
-            'M65',
-            'M70',
-            'F60',
-            'F65',
-            'F70',
+            'm60',
+            'm65',
+            'm70',
+            'f60',
+            'f65',
+            'f70',
           );
           return slot;
         }),

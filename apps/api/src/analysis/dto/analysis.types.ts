@@ -1,48 +1,48 @@
 export interface SalesRow {
-  STDR_YYQU_CD: string;
-  THSMON_SELNG_AMT: bigint;
-  MON_SELNG_AMT: bigint;
-  TUES_SELNG_AMT: bigint;
-  WED_SELNG_AMT: bigint;
-  THUR_SELNG_AMT: bigint;
-  FRI_SELNG_AMT: bigint;
-  SAT_SELNG_AMT: bigint;
-  SUN_SELNG_AMT: bigint;
-  TMZON_00_06_SELNG_AMT: bigint;
-  TMZON_06_11_SELNG_AMT: bigint;
-  TMZON_11_14_SELNG_AMT: bigint;
-  TMZON_14_17_SELNG_AMT: bigint;
-  TMZON_17_21_SELNG_AMT: bigint;
-  TMZON_21_24_SELNG_AMT: bigint;
-  ML_SELNG_AMT: bigint;
-  FML_SELNG_AMT: bigint;
-  AGRDE_10_SELNG_AMT: bigint;
-  AGRDE_20_SELNG_AMT: bigint;
-  AGRDE_30_SELNG_AMT: bigint;
-  AGRDE_40_SELNG_AMT: bigint;
-  AGRDE_50_SELNG_AMT: bigint;
-  AGRDE_60_ABOVE_SELNG_AMT: bigint;
+  stdr_yyqu_cd: string;
+  thsmon_selng_amt: bigint;
+  mon_selng_amt: bigint;
+  tues_selng_amt: bigint;
+  wed_selng_amt: bigint;
+  thur_selng_amt: bigint;
+  fri_selng_amt: bigint;
+  sat_selng_amt: bigint;
+  sun_selng_amt: bigint;
+  tmzon_00_06_selng_amt: bigint;
+  tmzon_06_11_selng_amt: bigint;
+  tmzon_11_14_selng_amt: bigint;
+  tmzon_14_17_selng_amt: bigint;
+  tmzon_17_21_selng_amt: bigint;
+  tmzon_21_24_selng_amt: bigint;
+  ml_selng_amt: bigint;
+  fml_selng_amt: bigint;
+  agrde_10_selng_amt: bigint;
+  agrde_20_selng_amt: bigint;
+  agrde_30_selng_amt: bigint;
+  agrde_40_selng_amt: bigint;
+  agrde_50_selng_amt: bigint;
+  agrde_60_above_selng_amt: bigint;
 }
 
 export interface StoreRow {
-  STOR_CO: number;
-  OPBIZ_STOR_CO: number;
-  CLSBIZ_STOR_CO: number;
-  SVC_INDUTY_CD_NM: string;
-  STDR_YYQU_CD: string;
+  stor_co: number;
+  opbiz_stor_co: number;
+  clsbiz_stor_co: number;
+  svc_induty_cd_nm: string;
+  stdr_yyqu_cd: string;
 }
 
 export interface PopulationRow {
-  TOT_REPOP_CO: number;
-  ML_REPOP_CO: number;
-  FML_REPOP_CO: number;
-  AGRDE_10_REPOP_CO: number;
-  AGRDE_20_REPOP_CO: number;
-  AGRDE_30_REPOP_CO: number;
-  AGRDE_40_REPOP_CO: number;
-  AGRDE_50_REPOP_CO: number;
-  AGRDE_60_ABOVE_REPOP_CO: number;
-  STDR_YYQU_CD: string;
+  tot_repop_co: number;
+  ml_repop_co: number;
+  fml_repop_co: number;
+  agrde_10_repop_co: number;
+  agrde_20_repop_co: number;
+  agrde_30_repop_co: number;
+  agrde_40_repop_co: number;
+  agrde_50_repop_co: number;
+  agrde_60_above_repop_co: number;
+  stdr_yyqu_cd: string;
 }
 
 export interface SalesTrendItem {
@@ -112,7 +112,7 @@ export interface AnalysisResponse {
 }
 
 export interface SalesDelegate {
-  findFirst(args: unknown): Promise<{ STDR_YYQU_CD: string } | null>;
+  findFirst(args: unknown): Promise<{ stdr_yyqu_cd: string } | null>;
   findMany(args: unknown): Promise<SalesRow[]>;
 }
 
@@ -163,11 +163,11 @@ export interface PopulationAggregate {
 }
 
 export interface StoreCategoryGroup {
-  SVC_INDUTY_CD_NM: string;
+  svc_induty_cd_nm: string;
   _sum: Record<string, number | null>;
 }
 
 export interface SalesTrendGroup {
-  STDR_YYQU_CD: string;
+  stdr_yyqu_cd: string;
   _sum: Record<string, bigint | null>;
 }

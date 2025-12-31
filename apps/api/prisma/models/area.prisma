@@ -1,59 +1,59 @@
 model AreaCity {
-  MEGA_CD     String @id
-  MEGA_NM     String
-  XCNTS_VALUE Int
-  YDNTS_VALUE Int
-  RELM_AR     Int
+  mega_cd     String @id
+  mega_nm     String
+  xcnts_value Int
+  ydnts_value Int
+  relm_ar     Int
 
   @@map("area_city")
 }
 
 model AreaGu {
-  SIGNGU_CD   String @id
-  SIGNGU_NM   String
-  XCNTS_VALUE Int
-  YDNTS_VALUE Int
-  RELM_AR     Int
+  signgu_cd   String @id
+  signgu_nm   String
+  xcnts_value Int
+  ydnts_value Int
+  relm_ar     Int
 
   @@map("area_gu")
 }
 
 model AreaDong {
-  ADSTRD_CD   String @id
-  ADSTRD_NM   String
-  XCNTS_VALUE Int
-  YDNTS_VALUE Int
-  RELM_AR     Int
+  adstrd_cd   String @id
+  adstrd_nm   String
+  xcnts_value Int
+  ydnts_value Int
+  relm_ar     Int
 
   @@map("area_dong")
 }
 
 model AreaBackarea {
-  ALLEY_TRDAR_CD String @id
-  ALLEY_TRDAR_NM String
-  XCNTS_VALUE    Int
-  YDNTS_VALUE    Int
-  SIGNGU_CD      String
-  SIGNGU_CD_NM   String
-  ADSTRD_CD      String
-  ADSTRD_CD_NM   String
-  RELM_AR        Int
+  alley_trdar_cd String @id
+  alley_trdar_nm String
+  xcnts_value    Int
+  ydnts_value    Int
+  signgu_cd      String
+  signgu_cd_nm   String
+  adstrd_cd      String
+  adstrd_cd_nm   String
+  relm_ar        Int
 
   @@map("area_backarea")
 }
 
 model AreaCommercial {
-  TRDAR_SE_CD    String
-  TRDAR_SE_CD_NM String
-  TRDAR_CD       String @id
-  TRDAR_CD_NM    String
-  XCNTS_VALUE    Int
-  YDNTS_VALUE    Int
-  SIGNGU_CD      String
-  SIGNGU_CD_NM   String
-  ADSTRD_CD      String
-  ADSTRD_CD_NM   String
-  RELM_AR        Int
+  trdar_se_cd    String
+  trdar_se_cd_nm String
+  trdar_cd       String @id
+  trdar_cd_nm    String
+  xcnts_value    Int
+  ydnts_value    Int
+  signgu_cd      String
+  signgu_cd_nm   String
+  adstrd_cd      String
+  adstrd_cd_nm   String
+  relm_ar        Int
 
   @@map("area_commercial")
 }

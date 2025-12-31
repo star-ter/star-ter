@@ -1,40 +1,40 @@
 import { MarketAnalyticsDto } from './dto/market-analytics.dto';
 
 interface SalesSum {
-  THSMON_SELNG_AMT?: number | bigint | null;
-  TMZON_00_06_SELNG_AMT?: number | bigint | null;
-  TMZON_06_11_SELNG_AMT?: number | bigint | null;
-  TMZON_11_14_SELNG_AMT?: number | bigint | null;
-  TMZON_14_17_SELNG_AMT?: number | bigint | null;
-  TMZON_17_21_SELNG_AMT?: number | bigint | null;
-  TMZON_21_24_SELNG_AMT?: number | bigint | null;
-  MON_SELNG_AMT?: number | bigint | null;
-  TUES_SELNG_AMT?: number | bigint | null;
-  WED_SELNG_AMT?: number | bigint | null;
-  THUR_SELNG_AMT?: number | bigint | null;
-  FRI_SELNG_AMT?: number | bigint | null;
-  SAT_SELNG_AMT?: number | bigint | null;
-  SUN_SELNG_AMT?: number | bigint | null;
-  ML_SELNG_AMT?: number | bigint | null;
-  FML_SELNG_AMT?: number | bigint | null;
-  AGRDE_10_SELNG_AMT?: number | bigint | null;
-  AGRDE_20_SELNG_AMT?: number | bigint | null;
-  AGRDE_30_SELNG_AMT?: number | bigint | null;
-  AGRDE_40_SELNG_AMT?: number | bigint | null;
-  AGRDE_50_SELNG_AMT?: number | bigint | null;
-  AGRDE_60_ABOVE_SELNG_AMT?: number | bigint | null;
+  thsmon_selng_amt?: number | bigint | null;
+  tmzon_00_06_selng_amt?: number | bigint | null;
+  tmzon_06_11_selng_amt?: number | bigint | null;
+  tmzon_11_14_selng_amt?: number | bigint | null;
+  tmzon_14_17_selng_amt?: number | bigint | null;
+  tmzon_17_21_selng_amt?: number | bigint | null;
+  tmzon_21_24_selng_amt?: number | bigint | null;
+  mon_selng_amt?: number | bigint | null;
+  tues_selng_amt?: number | bigint | null;
+  wed_selng_amt?: number | bigint | null;
+  thur_selng_amt?: number | bigint | null;
+  fri_selng_amt?: number | bigint | null;
+  sat_selng_amt?: number | bigint | null;
+  sun_selng_amt?: number | bigint | null;
+  ml_selng_amt?: number | bigint | null;
+  fml_selng_amt?: number | bigint | null;
+  agrde_10_selng_amt?: number | bigint | null;
+  agrde_20_selng_amt?: number | bigint | null;
+  agrde_30_selng_amt?: number | bigint | null;
+  agrde_40_selng_amt?: number | bigint | null;
+  agrde_50_selng_amt?: number | bigint | null;
+  agrde_60_above_selng_amt?: number | bigint | null;
 }
 
 interface AggregatedSalesRow {
-  STDR_YYQU_CD: string;
+  stdr_yyqu_cd: string;
   _sum: SalesSum;
 }
 
 // 업종별 매출 데이터 타입 (repository에서 groupBy 결과)
 interface IndustryData {
-  SVC_INDUTY_CD_NM: string;
+  svc_induty_cd_nm: string;
   _sum: {
-    THSMON_SELNG_AMT: number | bigint | null;
+    thsmon_selng_amt: number | bigint | null;
   };
 }
 
@@ -68,58 +68,58 @@ export class MarketMapper {
 
     // 업종별 매출 비율 계산
     const totalIndustryRevenue = topIndustries.reduce(
-      (acc, item) => acc + val(item._sum.THSMON_SELNG_AMT),
+      (acc, item) => acc + val(item._sum.thsmon_selng_amt),
       0,
     );
     const mappedIndustries = topIndustries.map((item) => ({
-      name: item.SVC_INDUTY_CD_NM,
+      name: item.svc_induty_cd_nm,
       ratio:
         totalIndustryRevenue > 0
-          ? val(item._sum.THSMON_SELNG_AMT) / totalIndustryRevenue
+          ? val(item._sum.thsmon_selng_amt) / totalIndustryRevenue
           : 0,
     }));
 
     return {
       areaName,
       isCommercialArea: isCommercial,
-      totalRevenue: val(sum.THSMON_SELNG_AMT),
+      totalRevenue: val(sum.thsmon_selng_amt),
       sales: {
         trend: groupedRows
           .slice(0, 4)
           .reverse()
           .map((row) => ({
-            year: row.STDR_YYQU_CD.substring(0, 4),
-            quarter: row.STDR_YYQU_CD.substring(4, 5),
-            revenue: val(row._sum.THSMON_SELNG_AMT),
+            year: row.stdr_yyqu_cd.substring(0, 4),
+            quarter: row.stdr_yyqu_cd.substring(4, 5),
+            revenue: val(row._sum.thsmon_selng_amt),
           })),
         timeSlot: {
-          time0006: val(sum.TMZON_00_06_SELNG_AMT),
-          time0611: val(sum.TMZON_06_11_SELNG_AMT),
-          time1114: val(sum.TMZON_11_14_SELNG_AMT),
-          time1417: val(sum.TMZON_14_17_SELNG_AMT),
-          time1721: val(sum.TMZON_17_21_SELNG_AMT),
-          time2124: val(sum.TMZON_21_24_SELNG_AMT),
+          time0006: val(sum.tmzon_00_06_selng_amt),
+          time0611: val(sum.tmzon_06_11_selng_amt),
+          time1114: val(sum.tmzon_11_14_selng_amt),
+          time1417: val(sum.tmzon_14_17_selng_amt),
+          time1721: val(sum.tmzon_17_21_selng_amt),
+          time2124: val(sum.tmzon_21_24_selng_amt),
           peakTimeSummaryComment: '시간대별 매출 분포입니다.',
         },
         dayOfWeek: {
-          mon: val(sum.MON_SELNG_AMT),
-          tue: val(sum.TUES_SELNG_AMT),
-          wed: val(sum.WED_SELNG_AMT),
-          thu: val(sum.THUR_SELNG_AMT),
-          fri: val(sum.FRI_SELNG_AMT),
-          sat: val(sum.SAT_SELNG_AMT),
-          sun: val(sum.SUN_SELNG_AMT),
+          mon: val(sum.mon_selng_amt),
+          tue: val(sum.tues_selng_amt),
+          wed: val(sum.wed_selng_amt),
+          thu: val(sum.thur_selng_amt),
+          fri: val(sum.fri_selng_amt),
+          sat: val(sum.sat_selng_amt),
+          sun: val(sum.sun_selng_amt),
           peakDaySummaryComment: '요일별 매출 분포입니다.',
         },
         demographics: {
-          male: val(sum.ML_SELNG_AMT),
-          female: val(sum.FML_SELNG_AMT),
-          age10: val(sum.AGRDE_10_SELNG_AMT),
-          age20: val(sum.AGRDE_20_SELNG_AMT),
-          age30: val(sum.AGRDE_30_SELNG_AMT),
-          age40: val(sum.AGRDE_40_SELNG_AMT),
-          age50: val(sum.AGRDE_50_SELNG_AMT),
-          age60: val(sum.AGRDE_60_ABOVE_SELNG_AMT),
+          male: val(sum.ml_selng_amt),
+          female: val(sum.fml_selng_amt),
+          age10: val(sum.agrde_10_selng_amt),
+          age20: val(sum.agrde_20_selng_amt),
+          age30: val(sum.agrde_30_selng_amt),
+          age40: val(sum.agrde_40_selng_amt),
+          age50: val(sum.agrde_50_selng_amt),
+          age60: val(sum.agrde_60_above_selng_amt),
           primaryGroupSummaryComment: '성별/연령별 매출 분포입니다.',
         },
         topIndustries: mappedIndustries,

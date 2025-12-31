@@ -11,22 +11,22 @@ import {
 } from './dto/analysis.types';
 
 const DAY_KEY_MAP: Record<string, string> = {
-  mon: 'MON',
-  tue: 'TUES',
-  wed: 'WED',
-  thu: 'THUR',
-  fri: 'FRI',
-  sat: 'SAT',
-  sun: 'SUN',
+  mon: 'mon',
+  tue: 'tues',
+  wed: 'wed',
+  thu: 'thur',
+  fri: 'fri',
+  sat: 'sat',
+  sun: 'sun',
 };
 
 const TIME_SLOTS = [
-  { key: 'TMZON_00_06', label: '00~06' },
-  { key: 'TMZON_06_11', label: '06~11' },
-  { key: 'TMZON_11_14', label: '11~14' },
-  { key: 'TMZON_14_17', label: '14~17' },
-  { key: 'TMZON_17_21', label: '17~21' },
-  { key: 'TMZON_21_24', label: '21~24' },
+  { key: 'tmzon_00_06', label: '00~06' },
+  { key: 'tmzon_06_11', label: '06~11' },
+  { key: 'tmzon_11_14', label: '11~14' },
+  { key: 'tmzon_14_17', label: '14~17' },
+  { key: 'tmzon_17_21', label: '17~21' },
+  { key: 'tmzon_21_24', label: '21~24' },
 ];
 
 export class AnalysisMapper {
@@ -48,7 +48,7 @@ export class AnalysisMapper {
     const st = storeAgg._sum;
     const p = popAgg._sum;
 
-    const totalSales = BigInt(s.THSMON_SELNG_AMT || 0);
+    const totalSales = BigInt(s.thsmon_selng_amt || 0);
 
     const trendData = this.mapSalesTrend(trendGroups, meta.quartersToFetch);
     const storeCategories = this.mapStoreCategories(storeGroups);
@@ -66,42 +66,42 @@ export class AnalysisMapper {
         dayOfWeek: this.mapDayOfWeekSales(s, totalSales),
         timeOfDay: this.mapTimeOfDaySales(s, totalSales),
         gender: {
-          male: Number(s.ML_SELNG_AMT || 0),
-          female: Number(s.FML_SELNG_AMT || 0),
+          male: Number(s.ml_selng_amt || 0),
+          female: Number(s.fml_selng_amt || 0),
         },
         age: {
-          a10: Number(s.AGRDE_10_SELNG_AMT || 0),
-          a20: Number(s.AGRDE_20_SELNG_AMT || 0),
-          a30: Number(s.AGRDE_30_SELNG_AMT || 0),
-          a40: Number(s.AGRDE_40_SELNG_AMT || 0),
-          a50: Number(s.AGRDE_50_SELNG_AMT || 0),
-          a60: Number(s.AGRDE_60_ABOVE_SELNG_AMT || 0),
+          a10: Number(s.agrde_10_selng_amt || 0),
+          a20: Number(s.agrde_20_selng_amt || 0),
+          a30: Number(s.agrde_30_selng_amt || 0),
+          a40: Number(s.agrde_40_selng_amt || 0),
+          a50: Number(s.agrde_50_selng_amt || 0),
+          a60: Number(s.agrde_60_above_selng_amt || 0),
         },
       },
       store: {
-        total: (st.STOR_CO as number) || 0,
+        total: (st.stor_co as number) || 0,
         categories: storeCategories.slice(0, 30),
         openingRate: this.calculateRate(
-          st.OPBIZ_STOR_CO as number,
-          st.STOR_CO as number,
+          st.opbiz_stor_co as number,
+          st.stor_co as number,
         ),
         closingRate: this.calculateRate(
-          st.CLSBIZ_STOR_CO as number,
-          st.STOR_CO as number,
+          st.clsbiz_stor_co as number,
+          st.stor_co as number,
         ),
       },
-      population: p.TOT_REPOP_CO
+      population: p.tot_repop_co
         ? {
-            total: p.TOT_REPOP_CO || 0,
-            male: (p.ML_REPOP_CO as number) || 0,
-            female: (p.FML_REPOP_CO as number) || 0,
+            total: p.tot_repop_co || 0,
+            male: (p.ml_repop_co as number) || 0,
+            female: (p.fml_repop_co as number) || 0,
             age: {
-              a10: (p.AGRDE_10_REPOP_CO as number) || 0,
-              a20: (p.AGRDE_20_REPOP_CO as number) || 0,
-              a30: (p.AGRDE_30_REPOP_CO as number) || 0,
-              a40: (p.AGRDE_40_REPOP_CO as number) || 0,
-              a50: (p.AGRDE_50_REPOP_CO as number) || 0,
-              a60: (p.AGRDE_60_ABOVE_REPOP_CO as number) || 0,
+              a10: (p.agrde_10_repop_co as number) || 0,
+              a20: (p.agrde_20_repop_co as number) || 0,
+              a30: (p.agrde_30_repop_co as number) || 0,
+              a40: (p.agrde_40_repop_co as number) || 0,
+              a50: (p.agrde_50_repop_co as number) || 0,
+              a60: (p.agrde_60_above_repop_co as number) || 0,
             },
           }
         : null,
@@ -114,7 +114,7 @@ export class AnalysisMapper {
   ) {
     const trendMap = new Map<string, number>();
     trendGroups.forEach((g) => {
-      trendMap.set(g.STDR_YYQU_CD, Number(g._sum.THSMON_SELNG_AMT || 0));
+      trendMap.set(g.stdr_yyqu_cd, Number(g._sum.thsmon_selng_amt || 0));
     });
     return quartersToFetch.map((q) => ({
       period: q,
@@ -127,7 +127,7 @@ export class AnalysisMapper {
     total: bigint,
   ): DayOfWeekSalesItem[] {
     return ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map((day) => {
-      const val = Number(salesSum[`${DAY_KEY_MAP[day]}_SELNG_AMT`] || 0);
+      const val = Number(salesSum[`${DAY_KEY_MAP[day]}_selng_amt`] || 0);
       return {
         day,
         sales: val,
@@ -141,7 +141,7 @@ export class AnalysisMapper {
     total: bigint,
   ): TimeOfDaySalesItem[] {
     return TIME_SLOTS.map((t) => {
-      const val = Number(salesSum[`${t.key}_SELNG_AMT`] || 0);
+      const val = Number(salesSum[`${t.key}_selng_amt`] || 0);
       return {
         time: t.label,
         sales: val,
@@ -155,10 +155,10 @@ export class AnalysisMapper {
   ): StoreCategoryItem[] {
     return groups
       .map((g) => ({
-        name: g.SVC_INDUTY_CD_NM,
-        count: (g._sum.STOR_CO as number) || 0,
-        open: (g._sum.OPBIZ_STOR_CO as number) || 0,
-        close: (g._sum.CLSBIZ_STOR_CO as number) || 0,
+        name: g.svc_induty_cd_nm,
+        count: (g._sum.stor_co as number) || 0,
+        open: (g._sum.opbiz_stor_co as number) || 0,
+        close: (g._sum.clsbiz_stor_co as number) || 0,
       }))
       .sort((a, b) => b.count - a.count);
   }

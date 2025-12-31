@@ -10,46 +10,46 @@ import {
 } from './dto/analysis.types';
 
 const SALES_SUM_FIELDS = {
-  THSMON_SELNG_AMT: true,
-  MON_SELNG_AMT: true,
-  TUES_SELNG_AMT: true,
-  WED_SELNG_AMT: true,
-  THUR_SELNG_AMT: true,
-  FRI_SELNG_AMT: true,
-  SAT_SELNG_AMT: true,
-  SUN_SELNG_AMT: true,
-  TMZON_00_06_SELNG_AMT: true,
-  TMZON_06_11_SELNG_AMT: true,
-  TMZON_11_14_SELNG_AMT: true,
-  TMZON_14_17_SELNG_AMT: true,
-  TMZON_17_21_SELNG_AMT: true,
-  TMZON_21_24_SELNG_AMT: true,
-  ML_SELNG_AMT: true,
-  FML_SELNG_AMT: true,
-  AGRDE_10_SELNG_AMT: true,
-  AGRDE_20_SELNG_AMT: true,
-  AGRDE_30_SELNG_AMT: true,
-  AGRDE_40_SELNG_AMT: true,
-  AGRDE_50_SELNG_AMT: true,
-  AGRDE_60_ABOVE_SELNG_AMT: true,
+  thsmon_selng_amt: true,
+  mon_selng_amt: true,
+  tues_selng_amt: true,
+  wed_selng_amt: true,
+  thur_selng_amt: true,
+  fri_selng_amt: true,
+  sat_selng_amt: true,
+  sun_selng_amt: true,
+  tmzon_00_06_selng_amt: true,
+  tmzon_06_11_selng_amt: true,
+  tmzon_11_14_selng_amt: true,
+  tmzon_14_17_selng_amt: true,
+  tmzon_17_21_selng_amt: true,
+  tmzon_21_24_selng_amt: true,
+  ml_selng_amt: true,
+  fml_selng_amt: true,
+  agrde_10_selng_amt: true,
+  agrde_20_selng_amt: true,
+  agrde_30_selng_amt: true,
+  agrde_40_selng_amt: true,
+  agrde_50_selng_amt: true,
+  agrde_60_above_selng_amt: true,
 } as const;
 
 const STORE_SUM_FIELDS = {
-  STOR_CO: true,
-  OPBIZ_STOR_CO: true,
-  CLSBIZ_STOR_CO: true,
+  stor_co: true,
+  opbiz_stor_co: true,
+  clsbiz_stor_co: true,
 } as const;
 
 const POPULATION_SUM_FIELDS = {
-  TOT_REPOP_CO: true,
-  ML_REPOP_CO: true,
-  FML_REPOP_CO: true,
-  AGRDE_10_REPOP_CO: true,
-  AGRDE_20_REPOP_CO: true,
-  AGRDE_30_REPOP_CO: true,
-  AGRDE_40_REPOP_CO: true,
-  AGRDE_50_REPOP_CO: true,
-  AGRDE_60_ABOVE_REPOP_CO: true,
+  tot_repop_co: true,
+  ml_repop_co: true,
+  fml_repop_co: true,
+  agrde_10_repop_co: true,
+  agrde_20_repop_co: true,
+  agrde_30_repop_co: true,
+  agrde_40_repop_co: true,
+  agrde_50_repop_co: true,
+  agrde_60_above_repop_co: true,
 } as const;
 
 @Injectable()
@@ -57,43 +57,43 @@ export class AnalysisRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async findGuByCode(code: string) {
-    return this.prisma.areaGu.findFirst({ where: { SIGNGU_CD: code } });
+    return this.prisma.areaGu.findFirst({ where: { signgu_cd: code } });
   }
 
   async findGuByName(name: string, exact = false) {
     if (exact) {
-      return this.prisma.areaGu.findMany({ where: { SIGNGU_NM: name } });
+      return this.prisma.areaGu.findMany({ where: { signgu_nm: name } });
     }
     return this.prisma.areaGu.findMany({
-      where: { SIGNGU_NM: { contains: name } },
+      where: { signgu_nm: { contains: name } },
     });
   }
 
   async findDongByCode(code: string) {
-    return this.prisma.areaDong.findFirst({ where: { ADSTRD_CD: code } });
+    return this.prisma.areaDong.findFirst({ where: { adstrd_cd: code } });
   }
 
   async findDongByName(name: string, exact = false) {
     if (exact) {
-      return this.prisma.areaDong.findMany({ where: { ADSTRD_NM: name } });
+      return this.prisma.areaDong.findMany({ where: { adstrd_nm: name } });
     }
     return this.prisma.areaDong.findMany({
-      where: { ADSTRD_NM: { contains: name } },
+      where: { adstrd_nm: { contains: name } },
     });
   }
 
   async findCommercialByCode(code: string) {
-    return this.prisma.areaCommercial.findFirst({ where: { TRDAR_CD: code } });
+    return this.prisma.areaCommercial.findFirst({ where: { trdar_cd: code } });
   }
 
   async findCommercialByName(name: string, exact = false) {
     if (exact) {
       return this.prisma.areaCommercial.findMany({
-        where: { TRDAR_CD_NM: name },
+        where: { trdar_cd_nm: name },
       });
     }
     return this.prisma.areaCommercial.findMany({
-      where: { TRDAR_CD_NM: { contains: name } },
+      where: { trdar_cd_nm: { contains: name } },
     });
   }
 
@@ -109,33 +109,33 @@ export class AnalysisRepository {
     switch (type) {
       case 'GU': {
         const results = await this.prisma.salesGu.findMany({
-          where: { SIGNGU_CD: { in: codes } },
-          distinct: ['STDR_YYQU_CD'],
-          orderBy: { STDR_YYQU_CD: 'desc' },
+          where: { signgu_cd: { in: codes } },
+          distinct: ['stdr_yyqu_cd'],
+          orderBy: { stdr_yyqu_cd: 'desc' },
           take: limit,
-          select: { STDR_YYQU_CD: true },
+          select: { stdr_yyqu_cd: true },
         });
-        return results.map((q) => q.STDR_YYQU_CD).sort();
+        return results.map((q) => q.stdr_yyqu_cd).sort();
       }
       case 'DONG': {
         const results = await this.prisma.salesDong.findMany({
-          where: { ADSTRD_CD: { in: codes } },
-          distinct: ['STDR_YYQU_CD'],
-          orderBy: { STDR_YYQU_CD: 'desc' },
+          where: { adstrd_cd: { in: codes } },
+          distinct: ['stdr_yyqu_cd'],
+          orderBy: { stdr_yyqu_cd: 'desc' },
           take: limit,
-          select: { STDR_YYQU_CD: true },
+          select: { stdr_yyqu_cd: true },
         });
-        return results.map((q) => q.STDR_YYQU_CD).sort();
+        return results.map((q) => q.stdr_yyqu_cd).sort();
       }
       case 'COMMERCIAL': {
         const results = await this.prisma.salesCommercial.findMany({
-          where: { TRDAR_CD: { in: codes } },
-          distinct: ['STDR_YYQU_CD'],
-          orderBy: { STDR_YYQU_CD: 'desc' },
+          where: { trdar_cd: { in: codes } },
+          distinct: ['stdr_yyqu_cd'],
+          orderBy: { stdr_yyqu_cd: 'desc' },
           take: limit,
-          select: { STDR_YYQU_CD: true },
+          select: { stdr_yyqu_cd: true },
         });
-        return results.map((q) => q.STDR_YYQU_CD).sort();
+        return results.map((q) => q.stdr_yyqu_cd).sort();
       }
     }
   }
@@ -148,17 +148,17 @@ export class AnalysisRepository {
     switch (type) {
       case 'GU':
         return (await this.prisma.salesGu.aggregate({
-          where: { SIGNGU_CD: { in: codes }, STDR_YYQU_CD: quarter },
+          where: { signgu_cd: { in: codes }, stdr_yyqu_cd: quarter },
           _sum: SALES_SUM_FIELDS,
         })) as unknown as SalesAggregate;
       case 'DONG':
         return (await this.prisma.salesDong.aggregate({
-          where: { ADSTRD_CD: { in: codes }, STDR_YYQU_CD: quarter },
+          where: { adstrd_cd: { in: codes }, stdr_yyqu_cd: quarter },
           _sum: SALES_SUM_FIELDS,
         })) as unknown as SalesAggregate;
       case 'COMMERCIAL':
         return (await this.prisma.salesCommercial.aggregate({
-          where: { TRDAR_CD: { in: codes }, STDR_YYQU_CD: quarter },
+          where: { trdar_cd: { in: codes }, stdr_yyqu_cd: quarter },
           _sum: SALES_SUM_FIELDS,
         })) as unknown as SalesAggregate;
     }
@@ -172,17 +172,17 @@ export class AnalysisRepository {
     switch (type) {
       case 'GU':
         return (await this.prisma.storeGu.aggregate({
-          where: { SIGNGU_CD: { in: codes }, STDR_YYQU_CD: quarter },
+          where: { signgu_cd: { in: codes }, stdr_yyqu_cd: quarter },
           _sum: STORE_SUM_FIELDS,
         })) as unknown as StoreAggregate;
       case 'DONG':
         return (await this.prisma.storeDong.aggregate({
-          where: { ADSTRD_CD: { in: codes }, STDR_YYQU_CD: quarter },
+          where: { adstrd_cd: { in: codes }, stdr_yyqu_cd: quarter },
           _sum: STORE_SUM_FIELDS,
         })) as unknown as StoreAggregate;
       case 'COMMERCIAL':
         return (await this.prisma.storeCommercial.aggregate({
-          where: { TRDAR_CD: { in: codes }, STDR_YYQU_CD: quarter },
+          where: { trdar_cd: { in: codes }, stdr_yyqu_cd: quarter },
           _sum: STORE_SUM_FIELDS,
         })) as unknown as StoreAggregate;
     }
@@ -196,17 +196,17 @@ export class AnalysisRepository {
     switch (type) {
       case 'GU':
         return (await this.prisma.residentPopulationGu.aggregate({
-          where: { SIGNGU_CD: { in: codes }, STDR_YYQU_CD: quarter },
+          where: { signgu_cd: { in: codes }, stdr_yyqu_cd: quarter },
           _sum: POPULATION_SUM_FIELDS,
         })) as unknown as PopulationAggregate;
       case 'DONG':
         return (await this.prisma.residentPopulationDong.aggregate({
-          where: { ADSTRD_CD: { in: codes }, STDR_YYQU_CD: quarter },
+          where: { adstrd_cd: { in: codes }, stdr_yyqu_cd: quarter },
           _sum: POPULATION_SUM_FIELDS,
         })) as unknown as PopulationAggregate;
       case 'COMMERCIAL':
         return (await this.prisma.residentPopulationCommercial.aggregate({
-          where: { TRDAR_CD: { in: codes }, STDR_YYQU_CD: quarter },
+          where: { trdar_cd: { in: codes }, stdr_yyqu_cd: quarter },
           _sum: POPULATION_SUM_FIELDS,
         })) as unknown as PopulationAggregate;
     }
@@ -220,20 +220,20 @@ export class AnalysisRepository {
     switch (type) {
       case 'GU':
         return (await this.prisma.storeGu.groupBy({
-          by: ['SVC_INDUTY_CD_NM'],
-          where: { SIGNGU_CD: { in: codes }, STDR_YYQU_CD: quarter },
+          by: ['svc_induty_cd_nm'],
+          where: { signgu_cd: { in: codes }, stdr_yyqu_cd: quarter },
           _sum: STORE_SUM_FIELDS,
         })) as unknown as StoreCategoryGroup[];
       case 'DONG':
         return (await this.prisma.storeDong.groupBy({
-          by: ['SVC_INDUTY_CD_NM'],
-          where: { ADSTRD_CD: { in: codes }, STDR_YYQU_CD: quarter },
+          by: ['svc_induty_cd_nm'],
+          where: { adstrd_cd: { in: codes }, stdr_yyqu_cd: quarter },
           _sum: STORE_SUM_FIELDS,
         })) as unknown as StoreCategoryGroup[];
       case 'COMMERCIAL':
         return (await this.prisma.storeCommercial.groupBy({
-          by: ['SVC_INDUTY_CD_NM'],
-          where: { TRDAR_CD: { in: codes }, STDR_YYQU_CD: quarter },
+          by: ['svc_induty_cd_nm'],
+          where: { trdar_cd: { in: codes }, stdr_yyqu_cd: quarter },
           _sum: STORE_SUM_FIELDS,
         })) as unknown as StoreCategoryGroup[];
     }
@@ -247,21 +247,21 @@ export class AnalysisRepository {
     switch (type) {
       case 'GU':
         return (await this.prisma.salesGu.groupBy({
-          by: ['STDR_YYQU_CD'],
-          where: { SIGNGU_CD: { in: codes }, STDR_YYQU_CD: { in: quarters } },
-          _sum: { THSMON_SELNG_AMT: true },
+          by: ['stdr_yyqu_cd'],
+          where: { signgu_cd: { in: codes }, stdr_yyqu_cd: { in: quarters } },
+          _sum: { thsmon_selng_amt: true },
         })) as unknown as SalesTrendGroup[];
       case 'DONG':
         return (await this.prisma.salesDong.groupBy({
-          by: ['STDR_YYQU_CD'],
-          where: { ADSTRD_CD: { in: codes }, STDR_YYQU_CD: { in: quarters } },
-          _sum: { THSMON_SELNG_AMT: true },
+          by: ['stdr_yyqu_cd'],
+          where: { adstrd_cd: { in: codes }, stdr_yyqu_cd: { in: quarters } },
+          _sum: { thsmon_selng_amt: true },
         })) as unknown as SalesTrendGroup[];
       case 'COMMERCIAL':
         return (await this.prisma.salesCommercial.groupBy({
-          by: ['STDR_YYQU_CD'],
-          where: { TRDAR_CD: { in: codes }, STDR_YYQU_CD: { in: quarters } },
-          _sum: { THSMON_SELNG_AMT: true },
+          by: ['stdr_yyqu_cd'],
+          where: { trdar_cd: { in: codes }, stdr_yyqu_cd: { in: quarters } },
+          _sum: { thsmon_selng_amt: true },
         })) as unknown as SalesTrendGroup[];
     }
   }

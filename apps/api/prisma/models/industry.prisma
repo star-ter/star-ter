@@ -1,0 +1,13 @@
+model industry_mapping {
+  id                  Int    @id @default(autoincrement())
+  ksic_cd             String
+  ksic_nm             String
+  service_industry_cd String
+}
+
+model service_industry {
+  service_industry_cd    String  @id
+  service_industry_nm    String
+  service_industry_en_nm String?
+  description            String?
+}

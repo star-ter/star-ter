@@ -1,15 +1,15 @@
 export interface CommercialAreaResult {
-  TRDAR_CD: string;
-  TRDAR_CD_NM: string;
+  trdar_cd: string;
+  trdar_cd_nm: string;
   TRDAR_SE_1: string;
 }
 
 export interface AdministrativeAreaResult {
-  ADSTRD_CD: string;
-  ADSTRD_NM: string;
+  adstrd_cd: string;
+  adstrd_nm: string;
 }
 
 export interface GuAreaResult {
-  SIGNGU_CD: string;
-  SIGNGU_NM: string;
+  signgu_cd: string;
+  signgu_nm: string;
 }
