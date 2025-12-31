@@ -83,8 +83,15 @@ export interface KakaoLatLngBoundsClass {
 
 export interface KakaoMapClass {
   getLevel: () => number;
-  setLevel: (level: number) => void;
+  setLevel: (
+    level: number,
+    options?: { animate?: boolean | { duration: number } },
+  ) => void;
   setCenter: (latlng: KakaoLatLngClass) => void;
+  panTo: (
+    latlng: KakaoLatLngClass,
+    options?: { animate?: boolean | { duration: number } },
+  ) => void;
   getCenter: () => KakaoLatLngClass;
   getBounds: () => KakaoLatLngBoundsClass;
   setBounds: (bounds: KakaoLatLngBoundsClass) => void;
@@ -92,8 +99,14 @@ export interface KakaoMapClass {
 }
 
 export interface KakaoProjection {
-  containerPointFromCoords: (latlng: KakaoLatLngClass) => { x: number; y: number };
-  coordsFromContainerPoint: (point: { x: number; y: number }) => KakaoLatLngClass;
+  containerPointFromCoords: (latlng: KakaoLatLngClass) => {
+    x: number;
+    y: number;
+  };
+  coordsFromContainerPoint: (point: {
+    x: number;
+    y: number;
+  }) => KakaoLatLngClass;
 }
 
 export interface KakaoMaps {
@@ -146,7 +159,9 @@ export interface KakaoPolygonOptions {
 
 export interface KakaoPolygonClass {
   setMap: (map: KakaoMapClass | null) => void;
-  setOptions: (options: Partial<KakaoPolygonOptions> | Record<string, unknown>) => void;
+  setOptions: (
+    options: Partial<KakaoPolygonOptions> | Record<string, unknown>,
+  ) => void;
 }
 
 export interface KakaoCustomOverlayOptions {

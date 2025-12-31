@@ -12,7 +12,7 @@ export class AiController {
     const chatSession = await client.beta.chatkit.sessions.create({
       user: 'user',
       workflow: {
-        id: 'wf_6953ab3566a48190b1f760fcd765041a01ad2ee3c12c34e8',
+        id: 'wf_6952ba36ea588190af94165f9f6863800df828dd7d150ac7',
         version: 'draft',
       },
     });
