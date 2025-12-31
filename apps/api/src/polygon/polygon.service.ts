@@ -298,7 +298,7 @@ export class PolygonService {
           ST_AsGeoJSON(ST_SnapToGrid(b.geom, 0.00001)) as geom
         FROM building_integrated_info b
         JOIN seoul_commercial_store_info c ON b.unique_no = c.lot_code
-        WHERE ST_Intersects(b.geom, ST_MakeEnvelope(${parseFloat(minx)}, ${parseFloat(miny)}, ${parseFloat(maxx)}, ${parseFloat(maxy)}, 4326))
+        WHERE b.geom && ST_MakeEnvelope(${minx}, ${miny}, ${maxx}, ${maxy}, 4326)
       `;
 
       return results.map((row) => {

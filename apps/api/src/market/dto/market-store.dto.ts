@@ -1,9 +1,9 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class MarketStore {
-  name: string;
-  category: string;
-  subcategory?: string;
+  name: string | null;
+  category: string | null;
+  subcategory?: string | null;
 }
 
 /**
@@ -55,28 +55,28 @@ export class MarketStoreListDto {
 }
 
 export class GetBuildingStoreQueryDto {
-  @IsString()
+  @IsNumber()
   @IsNotEmpty()
-  minx: string;
+  minx: number;
 
-  @IsString()
+  @IsNumber()
   @IsNotEmpty()
-  miny: string;
+  miny: number;
 
-  @IsString()
+  @IsNumber()
   @IsNotEmpty()
-  maxx: string;
+  maxx: number;
 
-  @IsString()
+  @IsNumber()
   @IsNotEmpty()
-  maxy: string;
+  maxy: number;
 
   @IsOptional()
-  categories?: string[] | string;
+  categories: string | null;
 }
 
 export class BuildingStoreCountDto {
-  buildingId: string;
+  buildingId: string | null;
   lat: number;
   lng: number;
   count: number;

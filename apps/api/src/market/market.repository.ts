@@ -5,6 +5,7 @@ import {
   CommercialAreaResult,
   GuAreaResult,
 } from './dto/market.interface';
+import { BuildingStore, Prisma } from 'generated/prisma/client';
 
 @Injectable()
 export class MarketRepository {
@@ -292,5 +293,53 @@ export class MarketRepository {
       },
       take: 5,
     });
+  }
+
+  // 다각형내 상가업소 조회
+  async findStoresInPolygon(polygonWKT: string): Promise<BuildingStore[]> {
+    const result = await this.prisma.$queryRaw<any[]>`
+      SELECT *
+      FROM seoul_commercial_store_info
+      WHERE ST_Intersects(
+        geom,
+        ST_SetSRID(ST_GeomFromText(${polygonWKT}), 4326)
+      )
+    `;
+    return result as BuildingStore[];
+  }
+
+  //사각형내 상가업소 조회
+  async findStoresInRectangle({
+    minLng,
+    minLat,
+    maxLng,
+    maxLat,
+    categorie,
+  }: {
+    minLng: number;
+    minLat: number;
+    maxLng: number;
+    maxLat: number;
+    categorie: string | null;
+  }): Promise<BuildingStore[]> {
+    const whereCategory = categorie
+      ? Prisma.sql`AND business_category_large_code = ${categorie}`
+      : Prisma.empty;
+
+    const result = await this.prisma.$queryRaw<any[]>`
+      SELECT *
+      FROM seoul_commercial_store_info AS seoul_commercial_store_info
+      JOIN building_integrated_info b ON  seoul_commercial_store_info.lot_code = b.unique_no
+      WHERE seoul_commercial_store_info.geom && ST_MakeEnvelope(
+          ${minLng},
+          ${minLat},
+          ${maxLng},
+          ${maxLat},
+          4326
+      )
+      ${whereCategory}
+      
+    `;
+    return result as BuildingStore[];
   }
 }

@@ -32,4 +32,5 @@ model building_integrated_info {
   geom                        Unsupported("geometry")?
 
   @@index([geom], map: "building_integrated_info_geom_geom_idx", type: Gist)
+  @@index([unique_no])
 }

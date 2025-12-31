@@ -87,9 +87,7 @@ export const useBuildingMarkers = (
         currentThreshold = CATEGORY_VIEW_THRESHOLD;
         currentColor =
           CATEGORY_COLORS[selectedCategory.code] || DEFAULT_MARKET_COLOR;
-
-        const categories = mapCodeToBackend(selectedCategory.code);
-        categories.forEach((cat) => params.append('categories', cat));
+        params.append('categories', selectedCategory.code);
       }
 
       const res = await fetch(
@@ -100,14 +98,12 @@ export const useBuildingMarkers = (
       const data: BuildingStoreData[] = await res.json();
 
       let displayData = data;
-      
+
       // 레벨 3일때만 필터링
       if (level == 3 || level == 2) {
-        displayData = [...data]
-          .sort((a, b) => b.count - a.count)
-          .slice(0, 35);
+        displayData = [...data].sort((a, b) => b.count - a.count).slice(0, 35);
       }
-      
+
       clearMarkers();
 
       displayData.forEach((item) => {

@@ -1,5 +1,5 @@
 model BuildingStore {
-  store_id                      String  @id
+  store_id                      String                   @id
   store_name                    String?
   branch_name                   String?
   business_category_large_code  String?
@@ -38,6 +38,9 @@ model BuildingStore {
   unit_info                     String?
   longitude                     Float?
   latitude                      Float?
+  geom                          Unsupported("geometry")?
 
+  @@index([geom], map: "seoul_commercial_store_info_geom_gix", type: Gist)
+  @@index([lot_code])
   @@map("seoul_commercial_store_info")
 }

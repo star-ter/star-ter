@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import {
   GetMarketAnalysisQueryDto,
   MarketStoreListDto,
@@ -11,21 +7,11 @@ import {
   BuildingStoreCountDto,
 } from './dto/market-store.dto';
 
-import { OpenApiResponse, OpenApiStoreItem } from './dto/open-api.dto';
 import { MarketAnalyticsDto } from './dto/market-analytics.dto';
-import { KSIC_TO_CATEGORY } from './constants/ksic-category-map';
 
 import { MarketRepository } from './market.repository';
 import { MarketMapper } from './market.mapper';
-
-const PAGE_SIZE = 1000;
-const MAX_PAGES_TO_FETCH = 10;
-
-interface FetchPageResult {
-  items: OpenApiStoreItem[];
-  totalCount: number;
-  header?: OpenApiResponse['header'];
-}
+import { BuildingStore } from 'generated/prisma/client';
 
 @Injectable()
 export class MarketService {
@@ -50,8 +36,9 @@ export class MarketService {
     if (polygon) {
       this.logger.log(`[폴리곤 WKT도 같이 받음] 길이: ${polygon.length}`);
       try {
-        const externalStoreData = await this.fetchStoreDataFromOpenApi(polygon);
-        const items = externalStoreData.body?.items;
+        const externalStoreData =
+          await this.marketRepository.findStoresInPolygon(polygon);
+        const items = externalStoreData;
 
         if (items && items.length > 0) {
           stores = this.mapToMarketStores(items);
@@ -148,35 +135,37 @@ export class MarketService {
   async getBuildingStoreCounts(
     query: GetBuildingStoreQueryDto,
   ): Promise<BuildingStoreCountDto[]> {
-    const storesData = await this.fetchStoresInRectangle(query);
-    const items = storesData.body?.items || [];
-
-    const targetCategories = this.normalizeCategories(query.categories);
-
-    const grouped = new Map<string, OpenApiStoreItem[]>();
-
-    items.forEach((item) => {
-      if (!item.bldMngNo) return;
-
-      if (!this.shouldIncludeStore(item, targetCategories)) return;
-
-      if (!grouped.has(item.bldMngNo)) {
-        grouped.set(item.bldMngNo, []);
-      }
-      grouped.get(item.bldMngNo)!.push(item);
+    const storesData = await this.marketRepository.findStoresInRectangle({
+      minLng: query.minx,
+      minLat: query.miny,
+      maxLng: query.maxx,
+      maxLat: query.maxy,
+      categorie: query.categories || null,
     });
 
     const result: BuildingStoreCountDto[] = [];
 
+    const grouped = new Map<string, BuildingStore[]>();
+
+    storesData.forEach((item) => {
+      if (!item.building_management_no) return;
+
+      if (!grouped.has(item.building_management_no)) {
+        grouped.set(item.building_management_no, []);
+      }
+
+      grouped.get(item.building_management_no)!.push(item);
+    });
+
     for (const [key, storeItems] of grouped) {
       const representative = storeItems[0];
-      if (representative.lat && representative.lon) {
+      if (representative.latitude && representative.longitude) {
         result.push({
           buildingId: key,
-          lat: Number(representative.lat),
-          lng: Number(representative.lon),
+          lat: Number(representative.latitude),
+          lng: Number(representative.longitude),
           count: storeItems.length,
-          name: representative.bldNm || '상가건물',
+          name: representative.building_name || '상가건물',
         });
       }
     }
@@ -272,183 +261,14 @@ export class MarketService {
   }
 
   // ===============================
-  // PRIVATE - 외부 API (Open API)
-  // ===============================
-
-  private async fetchStoresInRectangle(
-    query: GetBuildingStoreQueryDto,
-  ): Promise<OpenApiResponse> {
-    const SERVICE_KEY = process.env.SBIZ_API_KEY;
-    if (!SERVICE_KEY) {
-      throw new InternalServerErrorException('SBIZ_API_KEY is not defined');
-    }
-
-    try {
-      const firstPageResult = await this.fetchListInRectangleFromOpenApi(
-        1,
-        query,
-        SERVICE_KEY,
-      );
-
-      const allItems = [...firstPageResult.items];
-      const totalCount = firstPageResult.totalCount;
-
-      if (totalCount > allItems.length) {
-        const totalPages = Math.ceil(totalCount / PAGE_SIZE);
-        const pagesToFetch: number[] = [];
-        for (let p = 2; p <= totalPages && p <= MAX_PAGES_TO_FETCH; p++) {
-          pagesToFetch.push(p);
-        }
-        const results = await Promise.all(
-          pagesToFetch.map((p) =>
-            this.fetchListInRectangleFromOpenApi(p, query, SERVICE_KEY),
-          ),
-        );
-        results.forEach((res) => allItems.push(...res.items));
-      }
-      return {
-        header: firstPageResult.header || {
-          resultCode: '00',
-          resultMsg: 'NORMAL SERVICE.',
-        },
-        body: { items: allItems, totalCount },
-      };
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      this.logger.error(`Fetch Rectangle Failed: ${msg}`);
-      return {
-        header: { resultCode: 'Err', resultMsg: msg },
-        body: { items: [], totalCount: 0 },
-      };
-    }
-  }
-
-  private async fetchListInRectangleFromOpenApi(
-    page: number,
-    query: GetBuildingStoreQueryDto,
-    serviceKey: string,
-  ): Promise<FetchPageResult> {
-    const params = new URLSearchParams({
-      serviceKey: serviceKey,
-      pageNo: String(page),
-      numOfRows: String(PAGE_SIZE),
-      minx: query.minx,
-      miny: query.miny,
-      maxx: query.maxx,
-      maxy: query.maxy,
-      type: 'json',
-    });
-
-    const url = `https://apis.data.go.kr/B553077/api/open/sdsc2/storeListInRectangle?${params.toString()}`;
-
-    try {
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (!response.ok) {
-        this.logger.warn(`Page ${page} fetch failed: ${response.status}`);
-        return { items: [], totalCount: 0 };
-      }
-      const data = (await response.json()) as unknown;
-      if (this.isValidOpenApiResponse(data)) {
-        return {
-          items: data.body.items || [],
-          totalCount: data.body.totalCount || 0,
-          header: data.header,
-        };
-      }
-      return { items: [], totalCount: 0 };
-    } catch (error) {
-      this.logger.error(`Page ${page} error: ${error}`);
-      return { items: [], totalCount: 0 };
-    }
-  }
-
-  private async fetchStoreDataFromOpenApi(
-    wkt: string,
-  ): Promise<OpenApiResponse> {
-    const BASE_URL =
-      'https://apis.data.go.kr/B553077/api/open/sdsc2/storeListInPolygon';
-    const SERVICE_KEY = process.env.SBIZ_API_KEY;
-
-    if (!SERVICE_KEY) {
-      throw new InternalServerErrorException('SBIZ_API_KEY is not defined');
-    }
-
-    const queryParams = new URLSearchParams({
-      serviceKey: SERVICE_KEY,
-      pageNo: '1',
-      numOfRows: '20',
-      key: wkt,
-      type: 'json',
-    });
-
-    const response = await fetch(`${BASE_URL}?${queryParams.toString()}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new InternalServerErrorException(
-        `OpenAPI Error: ${response.status} ${response.statusText} - ${errorText}`,
-      );
-    }
-    const data = (await response.json()) as unknown;
-    if (!this.isValidOpenApiResponse(data)) {
-      this.logger.error(`${BASE_URL}?${queryParams.toString()}`);
-      throw new InternalServerErrorException('Invalid API Response format');
-    }
-
-    if (!data.body.items) {
-      data.body.items = [];
-    }
-
-    return data;
-  }
-
-  // ===============================
   // PRIVATE - 데이터 변환/유틸
   // ===============================
 
-  private mapToMarketStores(items: OpenApiStoreItem[]): MarketStore[] {
+  private mapToMarketStores(items: BuildingStore[]): MarketStore[] {
     return items.map((item) => ({
-      name: item.bizesNm,
-      category: item.indsLclsNm,
-      subcategory: item.ksicNm,
+      name: item.store_name,
+      category: item.business_category_large_name,
+      subcategory: item.ksic_name,
     }));
-  }
-
-  private isValidOpenApiResponse(data: unknown): data is OpenApiResponse {
-    if (typeof data !== 'object' || data === null) return false;
-    const response = data as OpenApiResponse;
-    return 'header' in response && 'body' in response;
-  }
-
-  private getCategoryByCode(code: string): string {
-    return KSIC_TO_CATEGORY[String(code)] || '기타';
-  }
-
-  private normalizeCategories(categories?: string | string[]): string[] {
-    if (!categories) return [];
-    return Array.isArray(categories) ? categories : [categories];
-  }
-
-  private shouldIncludeStore(
-    item: OpenApiStoreItem,
-    targetCategories: string[],
-  ): boolean {
-    if (targetCategories.length === 0) return true;
-
-    const categoryByCode = this.getCategoryByCode(item.indsLclsCd);
-    const categoryByName = item.indsLclsNm;
-
-    return (
-      (!!categoryByCode && targetCategories.includes(categoryByCode)) ||
-      (!!categoryByName && targetCategories.includes(categoryByName))
-    );
   }
 }
