@@ -54,6 +54,10 @@ export class GetRevenueQueryDto {
 
   @IsString()
   @IsOptional()
+  industryCodes?: string;
+
+  @IsString()
+  @IsOptional()
   quarter?: string;
 }
 
@@ -70,6 +74,10 @@ export class GetRevenueRankingQueryDto {
   @IsString()
   @IsOptional()
   industryCode?: string;
+
+  @IsString()
+  @IsOptional()
+  industryCodes?: string;
 
   @IsString()
   @IsOptional()
