@@ -2,7 +2,7 @@
 import { useState } from 'react';
 
 import Kakaomap from '@/components/kakaomap';
-import MapBox from '@/components/map/MapBox';
+import MapOverlay from '@/components/map-overlay/MapOverlay';
 import { usePopulationVisual } from '@/hooks/usePopulationVisual';
 import ComparisonOverlay from '@/components/comparison/ComparisonOverlay';
 
@@ -12,11 +12,21 @@ import { IndustryCategory, CompareRequest } from '@/types/bottom-menu-types';
 
 export default function Home() {
   const { isOpen, width, isResizing } = useSidebarStore();
-  const { isVisible: isComparisonVisible, closeComparison, openComparison, dataA: comparisonDataA, dataB: comparisonDataB } = useComparisonStore();
-  
+  const {
+    isVisible: isComparisonVisible,
+    closeComparison,
+    openComparison,
+    dataA: comparisonDataA,
+    dataB: comparisonDataB,
+  } = useComparisonStore();
+
   // Location State now holds both Name and Code
-  const [locationA, setLocationA] = useState<{name: string, code?: string}>({ name: '' });
-  const [locationB, setLocationB] = useState<{name: string, code?: string}>({ name: '' });
+  const [locationA, setLocationA] = useState<{ name: string; code?: string }>({
+    name: '',
+  });
+  const [locationB, setLocationB] = useState<{ name: string; code?: string }>({
+    name: '',
+  });
   const [pickTarget, setPickTarget] = useState('');
   const [selectedCategory, setSelectedCategory] =
     useState<IndustryCategory | null>(null);
@@ -44,9 +54,9 @@ export default function Home() {
 
   // Handle Comparison Trigger (Manual via MapBox)
   function handleCompareRequest(data?: CompareRequest) {
-    // If data comes from search (codes + names), use them. 
+    // If data comes from search (codes + names), use them.
     // Otherwise fallback to locationA string (which might be name or code, usually name from Map)
-    
+
     // Code: The ID used for API fetching
     const codeA = data?.targetA || locationA.code || locationA.name || '지역 A';
     const codeB = data?.targetB || locationB.code || locationB.name || '지역 B';
@@ -62,7 +72,7 @@ export default function Home() {
         estimatedSales: '-',
         salesChange: '-',
         storeCount: '-',
-        regionCode: codeA, 
+        regionCode: codeA,
       },
       {
         title: titleB,
@@ -71,33 +81,35 @@ export default function Home() {
         salesChange: '-',
         storeCount: '-',
         regionCode: codeB,
-      }
+      },
     );
   }
 
   return (
-    <div 
-      className="relative h-screen w-screen overflow-hidden"
-    >
+    <div className="relative h-screen w-screen overflow-hidden">
       {/* Comparison Overlay */}
       <ComparisonOverlay
         isVisible={isComparisonVisible}
         onClose={closeComparison}
         // Fallbacks to avoid null errors if specific data isn't set yet
-        dataA={comparisonDataA || {
-          title: '정보 없음',
-          address: '-',
-          estimatedSales: '0',
-          salesChange: '',
-          storeCount: '0'
-        }}
-        dataB={comparisonDataB || {
-          title: '정보 없음',
-          address: '-',
-          estimatedSales: '0',
-          salesChange: '',
-          storeCount: '0'
-        }}
+        dataA={
+          comparisonDataA || {
+            title: '정보 없음',
+            address: '-',
+            estimatedSales: '0',
+            salesChange: '',
+            storeCount: '0',
+          }
+        }
+        dataB={
+          comparisonDataB || {
+            title: '정보 없음',
+            address: '-',
+            estimatedSales: '0',
+            salesChange: '',
+            storeCount: '0',
+          }
+        }
       />
       <div className="absolute inset-0 z-0">
         <Kakaomap
@@ -109,7 +121,7 @@ export default function Home() {
         />
       </div>
       <div className="z-10 pointer-events-none">
-        <MapBox
+        <MapOverlay
           locationA={locationA}
           locationB={locationB}
           setLocationA={setLocationA}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import BottomMenuBox from '../bottom-menu/BottomMenuBox';
 import RankNav from '../rank-nav/RankNav';
 import { usePopulationVisual } from '../../hooks/usePopulationVisual';
@@ -6,9 +6,9 @@ import { IndustryCategory } from '../../types/bottom-menu-types';
 import SearchBox from '../search/SearchBox';
 import LocationNav from '../left-top/LocationNav';
 import { useMapStore } from '../../stores/useMapStore';
-import ModeController from '../left-top/ModeController';
+import { useMapSync } from '@/hooks/useMapSync';
 
-interface MapBoxProps {
+interface MapOverlayProps {
   locationA: { name: string; code?: string };
   locationB: { name: string; code?: string };
   setLocationA: (area: { name: string; code?: string }) => void;
@@ -19,7 +19,7 @@ interface MapBoxProps {
   onSelectCategory: (category: IndustryCategory | null) => void;
 }
 
-export default function MapBox({
+export default function MapOverlay({
   locationA,
   locationB,
   setLocationA,
@@ -28,43 +28,10 @@ export default function MapBox({
   population,
   onCompare,
   onSelectCategory,
-}: MapBoxProps) {
-  const { center, zoom } = useMapStore();
+}: MapOverlayProps) {
+  const { zoom } = useMapStore();
   const [isRankOpen, setIsRankOpen] = useState(true);
-  const [currentGuCode, setCurrentGuCode] = useState<string | null>(null);
-  const [currentGuName, setCurrentGuName] = useState<string | null>(null);
-
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-
-    if (zoom <= 7 && zoom >= 5 && center) {
-      timeoutId = setTimeout(() => {
-        const fetchGuCode = async () => {
-          try {
-            const res = await fetch(
-              `${process.env.NEXT_PUBLIC_API_BASE_URL}/geo/gu?lat=${center.lat}&lng=${center.lng}`,
-            );
-            if (res.ok) {
-              const text = await res.text();
-              if (!text) return;
-              const data = JSON.parse(text);
-              if (data?.signguCode) {
-                setCurrentGuCode(data.signguCode);
-                setCurrentGuName(data.signguName);
-              }
-            }
-          } catch (error) {
-            console.error('Failed to fetch Gu code:', error);
-          }
-        };
-        fetchGuCode();
-      }, 500); // 500ms debounce (wait until map stops moving)
-    }
-
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [center, zoom]);
+  const { currentGuCode, currentGuName } = useMapSync();
 
   const shouldShowRank = zoom >= 5;
   const rankLevel = zoom >= 7 ? 'gu' : 'dong';
