@@ -42,7 +42,6 @@ export default function RankNav({
   const { moveToLocation } = useMapStore();
   const [isMoving, setIsMoving] = useState(false);
   const [items, setItems] = useState<RankItem[]>([]);
-  const [quarter, setQuarter] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -100,7 +99,6 @@ export default function RankNav({
         }
 
         setItems(data.items || []);
-        setQuarter(data.quarter || '');
       })
       .catch((err) => {
         if (err.name === 'AbortError') return;
