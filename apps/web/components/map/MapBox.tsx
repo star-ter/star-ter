@@ -6,7 +6,6 @@ import { IndustryCategory } from '../../types/bottom-menu-types';
 import SearchBox from '../search/SearchBox';
 import LocationNav from '../left-top/LocationNav';
 import { useMapStore } from '../../stores/useMapStore';
-import ModeController from '../left-top/ModeController';
 
 interface MapBoxProps {
   locationA: { name: string; code?: string };
@@ -29,42 +28,36 @@ export default function MapBox({
   onCompare,
   onSelectCategory,
 }: MapBoxProps) {
-  const { center, zoom } = useMapStore();
+  const { center, zoom, isMapIdle } = useMapStore();
   const [isRankOpen, setIsRankOpen] = useState(true);
   const [currentGuCode, setCurrentGuCode] = useState<string | null>(null);
   const [currentGuName, setCurrentGuName] = useState<string | null>(null);
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-
-    if (zoom <= 7 && zoom >= 5 && center) {
-      timeoutId = setTimeout(() => {
-        const fetchGuCode = async () => {
-          try {
-            const res = await fetch(
-              `${process.env.NEXT_PUBLIC_API_BASE_URL}/geo/gu?lat=${center.lat}&lng=${center.lng}`,
-            );
-            if (res.ok) {
-              const text = await res.text();
-              if (!text) return;
-              const data = JSON.parse(text);
-              if (data?.signguCode) {
-                setCurrentGuCode(data.signguCode);
-                setCurrentGuName(data.signguName);
-              }
+    // isMapIdle이 true일 때만 데이터 fetch
+    // zoom이 낮을수록(1레벨) 상세 지도이므로, 동 레벨 순위를 보여주기 위해 줌이 작을 때도 fetch해야 함.
+    if (zoom <= 8 && center && isMapIdle) {
+      const fetchGuCode = async () => {
+        try {
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/geo/gu?lat=${center.lat}&lng=${center.lng}`,
+          );
+          if (res.ok) {
+            const text = await res.text();
+            if (!text) return;
+            const data = JSON.parse(text);
+            if (data?.signguCode) {
+              setCurrentGuCode(data.signguCode);
+              setCurrentGuName(data.signguName);
             }
-          } catch (error) {
-            console.error('Failed to fetch Gu code:', error);
           }
-        };
-        fetchGuCode();
-      }, 500); // 500ms debounce (wait until map stops moving)
+        } catch (error) {
+          console.error('Failed to fetch Gu code:', error);
+        }
+      };
+      fetchGuCode();
     }
-
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [center, zoom]);
+  }, [center, zoom, isMapIdle]);
 
   const shouldShowRank = zoom >= 5;
   const rankLevel = zoom >= 7 ? 'gu' : 'dong';
