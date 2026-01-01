@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Controller, Get, Post, Query } from '@nestjs/common';
 import { AiService } from './ai.service';
 import OpenAI from 'openai';
 
@@ -17,5 +17,10 @@ export class AiController {
       },
     });
     return { client_secret: chatSession.client_secret };
+  }
+
+  @Get('/message')
+  async chatAI(@Query('message') message: string) {
+    return this.aiService.getAIMessage(message);
   }
 }
