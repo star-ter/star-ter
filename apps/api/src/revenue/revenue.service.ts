@@ -91,7 +91,6 @@ export class RevenueService {
       return {
         level,
         code,
-        quarter: resolvedQuarter,
         totalAmount: 0,
         totalCount: 0,
         items: [],
@@ -111,7 +110,6 @@ export class RevenueService {
     return {
       level,
       code,
-      quarter: resolvedQuarter,
       totalAmount,
       totalCount,
       items,
@@ -264,7 +262,6 @@ export class RevenueService {
 
     return {
       level,
-      quarter: resolvedQuarter,
       industryCode,
       items,
     };

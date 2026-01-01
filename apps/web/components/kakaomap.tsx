@@ -185,32 +185,70 @@ export default function Kakaomap({
     const initialCenter = map.getCenter();
     setCenter({ lat: initialCenter.getLat(), lng: initialCenter.getLng() });
 
+    const timerRef = { current: null as NodeJS.Timeout | null };
+
+    const setIdleDebounced = () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
+        useMapStore.getState().setIsMapIdle(true);
+      }, 300);
+    };
+
+    const handleInteractionStart = () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      useMapStore.getState().setIsMapIdle(false);
+    };
+
+    const handleZoomStart = () => {
+      handleInteractionStart();
+    };
+
     const handleZoomChange = () => {
       if (useMapStore.getState().isMoving) return;
       const level = map.getLevel();
       setZoom(level);
+
+      handleInteractionStart();
+      setIdleDebounced();
     };
 
     const handleCenterChange = () => {
       if (useMapStore.getState().isMoving) return;
       const center = map.getCenter();
       setCenter({ lat: center.getLat(), lng: center.getLng() });
+
+      handleInteractionStart();
+      setIdleDebounced();
     };
 
     const handleDragStart = () => {
+      handleInteractionStart();
       clearMarkers();
     };
 
+    const handleDragEnd = () => {
+      // 드래그가 끝나도 관성 이동이 있을 수 있으므로 바로 true로 설정하지 않음.
+      // center_changed에서 처리됨.
+      // 다만 관성이 없는 미세한 이동의 경우를 대비해 debounce 호출
+      setIdleDebounced();
+    };
+
+    window.kakao.maps.event.addListener(map, 'zoom_start', handleZoomStart);
     window.kakao.maps.event.addListener(map, 'zoom_changed', handleZoomChange);
     window.kakao.maps.event.addListener(
       map,
       'center_changed',
       handleCenterChange,
     );
-    window.kakao.maps.event.addListener(map, 'dragend', handleCenterChange);
+    window.kakao.maps.event.addListener(map, 'dragend', handleDragEnd);
     window.kakao.maps.event.addListener(map, 'dragstart', handleDragStart);
 
     return () => {
+      window.kakao.maps.event.removeListener(
+        map,
+        'zoom_start',
+        handleZoomStart,
+      );
       window.kakao.maps.event.removeListener(
         map,
         'zoom_changed',
@@ -221,11 +259,7 @@ export default function Kakaomap({
         'center_changed',
         handleCenterChange,
       );
-      window.kakao.maps.event.removeListener(
-        map,
-        'dragend',
-        handleCenterChange,
-      );
+      window.kakao.maps.event.removeListener(map, 'dragend', handleDragEnd);
       window.kakao.maps.event.removeListener(map, 'dragstart', handleDragStart);
     };
   }, [map, setZoom, setCenter, clearMarkers]);

@@ -6,6 +6,7 @@ export const useMapStore = create<MapStore>((set) => ({
   zoom: 3,
   searchedLocation: null,
   isMoving: false,
+  isMapIdle: true,
   overlayMode: 'revenue',
   markers: [],
 
@@ -13,6 +14,7 @@ export const useMapStore = create<MapStore>((set) => ({
   setZoom: (level) => set({ zoom: level }),
   setSearchedLocation: (location) => set({ searchedLocation: location }),
   setIsMoving: (moving) => set({ isMoving: moving }),
+  setIsMapIdle: (idle) => set({ isMapIdle: idle }),
   setOverlayMode: (mode) => set({ overlayMode: mode }),
 
   moveToLocation: (coords, location, zoom = 3, centered = false) => {

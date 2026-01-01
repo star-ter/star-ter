@@ -15,6 +15,7 @@ export interface MapStore {
   zoom: number;
   searchedLocation: string | null;
   isMoving: boolean;
+  isMapIdle: boolean;
   overlayMode: 'revenue' | 'population' | 'opening' | 'shutting';
   markers: MapMarker[];
 
@@ -22,7 +23,10 @@ export interface MapStore {
   setZoom: (level: number) => void;
   setSearchedLocation: (location: string | null) => void;
   setIsMoving: (moving: boolean) => void;
-  setOverlayMode: (mode: 'revenue' | 'population' | 'opening' | 'shutting') => void;
+  setIsMapIdle: (idle: boolean) => void;
+  setOverlayMode: (
+    mode: 'revenue' | 'population' | 'opening' | 'shutting',
+  ) => void;
 
   moveToLocation: (
     coords: MapCoordinates,
