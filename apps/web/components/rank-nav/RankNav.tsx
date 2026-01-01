@@ -144,6 +144,65 @@ export default function RankNav({
             분기 매출
           </p>
         </div>
+
+        {/* Info Tooltip */}
+        <div className="relative group p-1">
+          <svg
+            className="w-5 h-5 text-gray-400 cursor-help hover:text-gray-600 transition-colors"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+
+          <div className="absolute right-0 top-full mt-2 w-64 bg-gray-900/90 backdrop-blur-sm text-white text-xs rounded-xl p-3 shadow-xl z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 translate-y-2 group-hover:translate-y-0">
+            <h4 className="font-bold mb-2 text-gray-200 pb-1 border-b border-gray-700">
+              상권 유형 안내
+            </h4>
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <span className="text-blue-300 font-semibold min-w-16">
+                  뜨는 상권
+                </span>
+                <span className="text-gray-300">
+                  개업은 많고 폐업은 적어 성장하는 지역
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <span className="text-amber-400 font-semibold min-w-16">
+                  변동 상권
+                </span>
+                <span className="text-gray-300">
+                  개업과 폐업이 모두 많아 변화가 심한 지역
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <span className="text-gray-400 font-semibold min-w-16">
+                  정체 상권
+                </span>
+                <span className="text-gray-300">
+                  개업과 폐업이 모두 적어 변화가 없는 지역
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <span className="text-red-400 font-semibold min-w-16">
+                  위험 상권
+                </span>
+                <span className="text-gray-300">
+                  개업은 적고 폐업이 많아 쇠퇴하는 지역
+                </span>
+              </div>
+            </div>
+            {/* Arrow */}
+            <div className="absolute top-0 right-2 -mt-1 w-2 h-2 bg-gray-900/90 rotate-45 transform"></div>
+          </div>
+        </div>
       </header>
 
       <div className="space-y-2">
