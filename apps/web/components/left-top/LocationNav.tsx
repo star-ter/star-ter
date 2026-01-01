@@ -34,7 +34,7 @@ export default function LocationNav() {
     'block px-1 text-[13px] font-medium text-gray-700 transition-all group-hover:text-gray-900 group-hover:font-bold cursor-pointer whitespace-nowrap';
 
   const selectOverlayClass =
-    'absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed';
+    'absolute inset-0 h-full opacity-0 cursor-pointer disabled:cursor-not-allowed';
 
   const currentGuName =
     guList.find((g) => g.code === selectedGu)?.name ||
@@ -44,7 +44,7 @@ export default function LocationNav() {
     (isLoadingDong ? '로딩 중...' : '동 선택');
 
   return (
-    <div className="flex items-center gap-3 w-400">
+    <div className="flex items-center gap-3 w-fit">
       {/* Location Selectors */}
       <div className="flex items-center rounded-full bg-white/90 px-5 py-1.5 shadow-sm">
         <div className="relative flex min-w-fit items-center group">
