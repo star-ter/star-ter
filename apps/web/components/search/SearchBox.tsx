@@ -1,16 +1,14 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
-import { useMapStore } from '@/stores/useMapStore';
-import { geocodeAddress } from '@/services/geocoding/geocoding.service';
+import { useRef, useEffect } from 'react';
+import { useAddressSearch } from '@/hooks/useAddressSearch';
 
 export default function SearchBox() {
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [searchValue, setSearchValue] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
 
-  const { moveToLocation } = useMapStore();
+  const { searchValue, isSearching, setSearchValue, onSearch } =
+    useAddressSearch();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -28,35 +26,16 @@ export default function SearchBox() {
     };
   }, []);
 
-  const handleSearch = async () => {
-    if (!searchValue.trim() || isSearching) return;
-
-    setIsSearching(true);
-    try {
-      const result = await geocodeAddress(searchValue);
-      if (result) {
-        moveToLocation(
-          { lat: result.lat, lng: result.lng },
-          result.buildingName || result.address || searchValue,
-          3,
-          true,
-        );
-        setSearchValue('');
-        inputRef.current?.blur();
-      } else {
-        alert(`"${searchValue}"의 위치를 찾을 수 없습니다.`);
-      }
-    } catch (error) {
-      console.error('Search error:', error);
-    } finally {
-      setIsSearching(false);
-    }
+  const handleSearchSubmit = () => {
+    onSearch(() => {
+      inputRef.current?.blur();
+    });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      handleSearch();
+      handleSearchSubmit();
     }
   };
 
@@ -71,7 +50,7 @@ export default function SearchBox() {
           className="flex shrink-0 h-6 w-6 items-center justify-center text-gray-800 ml-0.4 cursor-pointer hover:text-blue-600 transition-colors"
           onClick={(e) => {
             e.stopPropagation();
-            handleSearch();
+            handleSearchSubmit();
           }}
         >
           <svg
