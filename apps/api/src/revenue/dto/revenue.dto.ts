@@ -19,7 +19,6 @@ export class RevenueItemDto {
 export class RevenueResponseDto {
   level: RevenueLevel;
   code: string;
-  quarter: string;
   totalAmount: number;
   totalCount: number;
   items: RevenueItemDto[];
@@ -35,7 +34,6 @@ export class RevenueRankingItemDto {
 
 export class RevenueRankingResponseDto {
   level: RevenueLevel;
-  quarter: string;
   industryCode?: string;
   items: RevenueRankingItemDto[];
 }
@@ -56,6 +54,10 @@ export class GetRevenueQueryDto {
 
   @IsString()
   @IsOptional()
+  industryCodes?: string;
+
+  @IsString()
+  @IsOptional()
   quarter?: string;
 }
 
@@ -72,6 +74,10 @@ export class GetRevenueRankingQueryDto {
   @IsString()
   @IsOptional()
   industryCode?: string;
+
+  @IsString()
+  @IsOptional()
+  industryCodes?: string;
 
   @IsString()
   @IsOptional()
