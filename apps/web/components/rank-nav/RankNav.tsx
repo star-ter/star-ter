@@ -125,7 +125,7 @@ export default function RankNav({
   };
 
   return (
-    <aside className="w-[330px] ml-4 z-300 rounded-2xl bg-white/90 p-3.5 shadow-lg ring-1 ring-black/5 backdrop-blur">
+    <aside className="w-[330px] ml-4 z-300 rounded-2xl bg-white/90 p-3.5 shadow-lg ring-1 ring-black/5 backdrop-blur pointer-events-auto">
       <header className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">
