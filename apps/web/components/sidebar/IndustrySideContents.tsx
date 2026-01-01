@@ -2,6 +2,8 @@ import React from 'react';
 import { InfoBarData } from '../../types/map-types';
 import { IndustryCategory } from '../../types/bottom-menu-types';
 import RevenueCard from './RevenueCard';
+import { useMapStore } from '@/stores/useMapStore';
+import { useMapSync } from '@/hooks/useMapSync';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const DEFAULT_CITY_CODE = '11';
@@ -60,9 +62,32 @@ export default function IndustrySideContents({
     [selectedCategory],
   );
 
+  const { zoom } = useMapStore();
+  const { currentGuCode, currentGuName } = useMapSync();
+
   React.useEffect(() => {
     setSelectedSubCode(null);
   }, [selectedCategory.code]);
+
+  const isZoomedIn = zoom <= 7;
+
+  const rankingContext = React.useMemo(() => {
+    if (isZoomedIn && currentGuCode) {
+      return {
+        level: 'dong',
+        code: currentGuCode,
+        name: currentGuName || '현재 지역',
+        parentGuCode: currentGuCode,
+      } as const;
+    }
+
+    return {
+      level: 'gu',
+      code: DEFAULT_CITY_CODE,
+      name: '서울시',
+      parentGuCode: undefined,
+    } as const;
+  }, [isZoomedIn, currentGuCode, currentGuName]);
 
   const areaInfo = React.useMemo(() => {
     if (!data) return null;
@@ -97,9 +122,23 @@ export default function IndustrySideContents({
 
     const controller = new AbortController();
     const industryCode = selectedSubCode || undefined;
-    const summaryLevel = areaInfo?.level ?? 'city';
-    const summaryCode = areaInfo?.code ?? DEFAULT_CITY_CODE;
-    const rankingLevel = areaInfo?.level ?? 'gu';
+
+    // 대분류 선택 시 하위 업종 코드들을 콤마로 구분해서 전송
+    let industryCodes: string | undefined = undefined;
+    if (!industryCode && subCategories.length > 0) {
+      industryCodes = subCategories.map((c) => c.code).join(',');
+    }
+
+    const rankingLevel = rankingContext.level;
+    const parentGuCode = rankingContext.parentGuCode;
+
+    const summaryLevel =
+      areaInfo?.level ?? (rankingContext.level === 'dong' ? 'gu' : 'city');
+    const summaryCode =
+      areaInfo?.code ??
+      (rankingContext.level === 'dong'
+        ? rankingContext.code
+        : DEFAULT_CITY_CODE);
 
     setIsLoading(true);
     setError(null);
@@ -109,12 +148,19 @@ export default function IndustrySideContents({
     summaryUrl.searchParams.set('code', summaryCode);
     if (industryCode) {
       summaryUrl.searchParams.set('industryCode', industryCode);
+    } else if (industryCodes) {
+      summaryUrl.searchParams.set('industryCodes', industryCodes);
     }
 
     const rankingUrl = new URL(`${API_BASE_URL}/revenue/ranking`);
     rankingUrl.searchParams.set('level', rankingLevel);
+    if (parentGuCode) {
+      rankingUrl.searchParams.set('parentGuCode', parentGuCode);
+    }
     if (industryCode) {
       rankingUrl.searchParams.set('industryCode', industryCode);
+    } else if (industryCodes) {
+      rankingUrl.searchParams.set('industryCodes', industryCodes);
     }
 
     Promise.all([
@@ -145,7 +191,7 @@ export default function IndustrySideContents({
       });
 
     return () => controller.abort();
-  }, [areaInfo, selectedSubCode]);
+  }, [areaInfo, rankingContext, selectedSubCode, subCategories]);
 
   const matchedStat =
     areaName && rankingItems.length > 0
@@ -167,16 +213,21 @@ export default function IndustrySideContents({
     displayAmountString = '로딩중...';
     description = '데이터를 불러오는 중입니다.';
   } else if (summaryAmount !== null) {
+    // 이제 서버에서 필터링된 합계를 주므로 그대로 사용
     displayAmountString = formatRevenue(summaryAmount);
+
     if (areaName && matchedStat) {
       description = `${areaName}의 실제 통계 데이터입니다.`;
     } else if (summaryQuarter) {
       const subName =
         subCategories.find((s) => s.code === selectedSubCode)?.name ||
         selectedCategory.name;
-      description = areaName
-        ? `${areaName}의 ${subName} 데이터가 없어 상위 평균을 표시합니다.`
-        : `${summaryQuarter} 기준 ${subName} 업종 평균 추정치입니다.`;
+
+      const contextName = areaInfo ? areaName : rankingContext.name;
+
+      description = `${contextName} ${subName} ${
+        rankingContext.level === 'dong' ? '(구 평균)' : '(서울시 평균)'
+      } 추정치`;
     }
   } else if (rankingItems.length > 0) {
     const totalRevenue = rankingItems.reduce(
@@ -185,8 +236,8 @@ export default function IndustrySideContents({
     );
     const avgRevenue = totalRevenue / rankingItems.length;
     displayAmountString = `약 ${formatRevenue(avgRevenue)}`;
-    description = areaName
-      ? `${areaName} 데이터가 없어 상위 평균을 표시합니다.`
+    description = rankingContext.name
+      ? `${rankingContext.name} 평균 추정치입니다.`
       : '선택하신 업종의 평균 추정치입니다.';
   } else if (selectedSubCode && rankingItems.length === 0) {
     displayAmountString = '-';
@@ -203,7 +254,7 @@ export default function IndustrySideContents({
           title={`${
             subCategories.find((s) => s.code === selectedSubCode)?.name ||
             selectedCategory.name
-          } 평균 매출 (월)`}
+          } 평균 매출 (분기)`}
           amount={displayAmountString}
           description={description}
         />
@@ -246,7 +297,9 @@ export default function IndustrySideContents({
       {rankingItems.length > 0 ? (
         <div className="p-4">
           <h3 className="text-sm font-semibold text-gray-700 mb-3">
-            지역별 매출 순위
+            {rankingContext.level === 'dong'
+              ? `${rankingContext.name} 동별 매출 순위`
+              : '서울시 구별 매출 순위'}
           </h3>
           <div className="space-y-3">
             {rankingItems.slice(0, 10).map((item, index) => (
@@ -276,7 +329,7 @@ export default function IndustrySideContents({
                 </div>
                 <div className="text-right">
                   <div className="font-bold text-blue-600">
-                    {formatRevenue(item.amount / 3)}
+                    {formatRevenue(item.amount)}
                   </div>
                 </div>
               </div>

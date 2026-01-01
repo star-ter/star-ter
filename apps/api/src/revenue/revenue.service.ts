@@ -54,7 +54,7 @@ export class RevenueService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getRevenue(query: GetRevenueQueryDto): Promise<RevenueResponseDto> {
-    const { level, code, industryCode, quarter } = query;
+    const { level, code, industryCode, industryCodes, quarter } = query;
     const modelConfig = this.modelMap[level];
     if (!modelConfig) {
       throw new BadRequestException(`지원하지 않는 레벨: ${level}`);
@@ -68,11 +68,14 @@ export class RevenueService {
     const resolvedQuarter =
       quarter || (await this.getLatestQuarter(client, modelConfig.modelName));
 
-    const where: Record<string, string> = {
+    const where: Record<string, any> = {
       stdr_yyqu_cd: resolvedQuarter,
       [modelConfig.codeField]: code,
     };
-    if (industryCode) {
+
+    if (industryCodes) {
+      where.svc_induty_cd = { in: industryCodes.split(',') };
+    } else if (industryCode) {
       where.svc_induty_cd = industryCode;
     }
 
@@ -119,7 +122,7 @@ export class RevenueService {
   async getRevenueRanking(
     query: GetRevenueRankingQueryDto,
   ): Promise<RevenueRankingResponseDto> {
-    const { level, industryCode, quarter, parentGuCode } = query;
+    const { level, industryCode, industryCodes, quarter, parentGuCode } = query;
     const modelConfig = this.modelMap[level];
     if (!modelConfig) {
       throw new BadRequestException(`지원하지 않는 레벨: ${level}`);
@@ -136,9 +139,13 @@ export class RevenueService {
     const where: Record<string, any> = {
       stdr_yyqu_cd: resolvedQuarter,
     };
-    if (industryCode) {
+
+    if (industryCodes) {
+      where.svc_induty_cd = { in: industryCodes.split(',') };
+    } else if (industryCode) {
       where.svc_induty_cd = industryCode;
     }
+
     if (level === 'dong' && parentGuCode) {
       where.adstrd_cd = { startsWith: parentGuCode };
     }
