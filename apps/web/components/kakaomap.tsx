@@ -172,10 +172,9 @@ export default function Kakaomap({
   );
 
   const handleClose = () => {
+    // 사이드바 닫기 (선택된 업종 필터는 유지)
+    setInfoBarOpen(false);
     clearSelection();
-    if (selectedCategory && onClearCategory) {
-      onClearCategory();
-    }
   };
 
   useEffect(() => {
