@@ -20,13 +20,10 @@ interface MapOverlayProps {
   population: ReturnType<typeof usePopulationVisual>;
   onCompare?: () => void;
   onSelectCategory: (category: IndustryCategory | null) => void;
-<<<<<<< HEAD
   selectedCategory: IndustryCategory | null;
-=======
   onCreateReport?: (data: ReportRequest) => void;
   isReportOpen?: boolean;
   onToggleReport?: (isOpen: boolean) => void;
->>>>>>> ed4fb4ea300e0c515a757fbc32586ffc623f91a7
 }
 
 export default function MapOverlay({
@@ -38,13 +35,10 @@ export default function MapOverlay({
   population,
   onCompare,
   onSelectCategory,
-<<<<<<< HEAD
   selectedCategory,
-=======
   onCreateReport,
   isReportOpen,
   onToggleReport,
->>>>>>> ed4fb4ea300e0c515a757fbc32586ffc623f91a7
 }: MapOverlayProps) {
   const { zoom } = useMapStore();
   const [isRankOpen, setIsRankOpen] = useState(true);

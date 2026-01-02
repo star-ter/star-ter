@@ -7,7 +7,8 @@ import { usePopulationVisual } from '@/hooks/usePopulationVisual';
 import ComparisonOverlay from '@/components/comparison/ComparisonOverlay';
 
 import { useComparisonStore } from '@/stores/useComparisonStore';
-import { IndustryCategory, CompareRequest } from '@/types/bottom-menu-types';
+import ReportOverlay from '@/components/report-overlay/ReportOverlay';
+import { IndustryCategory, CompareRequest, ReportRequest } from '@/types/bottom-menu-types';
 
 export default function Home() {
   const {
@@ -18,7 +19,6 @@ export default function Home() {
     dataB: comparisonDataB,
   } = useComparisonStore();
 
-  // Location State now holds both Name and Code
   const [locationA, setLocationA] = useState<{ name: string; code?: string }>({
     name: '',
   });
@@ -29,15 +29,15 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] =
     useState<IndustryCategory | null>(null);
 
-  // 유동인구 상태 통합
+  const [isReportOpen, setIsReportOpen] = useState(false);
+  const [reportRequest, setReportRequest] = useState<ReportRequest | null>(null);
+
   const population = usePopulationVisual();
 
-  // 비교 마커 첫번째인지 두번째인지 판단
   function handlePickMode(target: 'A' | 'B') {
     console.log('선택모드 시작합니다.');
     setPickTarget(target);
   }
-  // 지도를 클릭 (Updated to accept object)
   function mapClick(data: { name: string; code?: string }) {
     if (pickTarget === 'A') {
       setLocationA(data);
@@ -50,16 +50,11 @@ export default function Home() {
     }
   }
 
-  // Handle Comparison Trigger (Manual via MapBox)
   function handleCompareRequest(data?: CompareRequest) {
-    // If data comes from search (codes + names), use them.
-    // Otherwise fallback to locationA string (which might be name or code, usually name from Map)
 
-    // Code: The ID used for API fetching
     const codeA = data?.targetA || locationA.code || locationA.name || '지역 A';
     const codeB = data?.targetB || locationB.code || locationB.name || '지역 B';
 
-    // Name: The display title
     const titleA = data?.targetNameA || locationA.name || '지역 A';
     const titleB = data?.targetNameB || locationB.name || '지역 B';
 
@@ -83,13 +78,16 @@ export default function Home() {
     );
   }
 
+  function handleCreateReport(data: ReportRequest) {
+    setReportRequest(data);
+    setIsReportOpen(true);
+  }
+
   return (
     <div className="relative h-screen w-screen overflow-hidden">
-      {/* Comparison Overlay */}
       <ComparisonOverlay
         isVisible={isComparisonVisible}
         onClose={closeComparison}
-        // Fallbacks to avoid null errors if specific data isn't set yet
         dataA={
           comparisonDataA || {
             title: '정보 없음',
@@ -109,6 +107,12 @@ export default function Home() {
           }
         }
       />
+      <ReportOverlay 
+        isVisible={isReportOpen} 
+        onClose={() => setIsReportOpen(false)}
+        userSelection={reportRequest}
+      />
+
       <div className="absolute inset-0 z-0">
         <Kakaomap
           polygonClick={mapClick}
@@ -129,6 +133,9 @@ export default function Home() {
           onCompare={handleCompareRequest}
           onSelectCategory={setSelectedCategory}
           selectedCategory={selectedCategory}
+          onCreateReport={handleCreateReport}
+          isReportOpen={isReportOpen}
+          onToggleReport={setIsReportOpen}
         />
       </div>
     </div>

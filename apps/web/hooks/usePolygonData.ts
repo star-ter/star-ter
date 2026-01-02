@@ -16,15 +16,16 @@ export const usePolygonData = (
   map: KakaoMap | null,
   onPolygonClick: (data: InfoBarData) => void,
 ) => {
-  const { overlayMode } = useMapStore();
+  const { overlayMode, selectedIndustryCodes } = useMapStore();
 
   const lastLevelGroupRef = useRef<string | null>(null);
   const lastOverlayModeRef = useRef<string>('revenue');
+  const lastIndustryCodesRef = useRef<string[] | null>(null);
   const polygonsRef = useRef<KakaoPolygon[]>([]);
   const customOverlaysRef = useRef<KakaoCustomOverlay[]>([]);
   const onPolygonClickRef = useRef(onPolygonClick);
   const visitedCommercialRef = useRef<Set<string>>(new Set());
-  const allCommercialFeaturesRef = useRef<CommercialApiResponse[]>([]); // Store accumulated features
+  const allCommercialFeaturesRef = useRef<CommercialApiResponse[]>([]);
 
   useEffect(() => {
     onPolygonClickRef.current = onPolygonClick;
@@ -33,7 +34,10 @@ export const usePolygonData = (
   const fetchCombinedBoundary = useCallback(
     async (mapInstance: KakaoMap, lowSearch: number) => {
       try {
-        const url = `${API_ENDPOINTS.POLYGON_ADMIN}?low_search=${lowSearch}`;
+        let url = `${API_ENDPOINTS.POLYGON_ADMIN}?low_search=${lowSearch}`;
+        if (selectedIndustryCodes && selectedIndustryCodes.length > 0) {
+          url += `&industryCodes=${selectedIndustryCodes.join(',')}`;
+        }
         const response = await fetch(url);
         const data: unknown = await response.json();
 
@@ -50,11 +54,11 @@ export const usePolygonData = (
             lowSearch === 1 ? 'gu' : 'dong',
           );
         }
-      } catch (err) {
-        console.error('Combined Boundary Fetch Error:', err);
+      } catch {
+        return;
       }
     },
-    [overlayMode],
+    [overlayMode, selectedIndustryCodes],
   );
 
   const fetchBuildingData = useCallback(
@@ -85,11 +89,11 @@ export const usePolygonData = (
             true,
             overlayMode,
             undefined,
-            false, // 건물 마커 그리지 않음
+            false,
           );
         }
-      } catch (err) {
-        console.error('Building API Fetch Error:', err);
+      } catch {
+        return;
       }
     },
     [overlayMode],
@@ -111,6 +115,9 @@ export const usePolygonData = (
         maxx: ne.getLng().toString(),
         maxy: ne.getLat().toString(),
       });
+      if (selectedIndustryCodes && selectedIndustryCodes.length > 0) {
+        query.set('industryCodes', selectedIndustryCodes.join(','));
+      }
 
       try {
         const url = `${API_ENDPOINTS.POLYGON_COMMERCIAL}?${query}`;
@@ -176,11 +183,11 @@ export const usePolygonData = (
             );
           }
         }
-      } catch (err) {
-        console.error('Commercial API Fetch Error:', err);
+      } catch {
+        return;
       }
     },
-    [overlayMode],
+    [overlayMode, selectedIndustryCodes],
   );
 
   const refreshLayer = useCallback(
@@ -195,11 +202,13 @@ export const usePolygonData = (
 
       const modeChanged = overlayMode !== lastOverlayModeRef.current;
       const groupChanged = currentGroup !== lastLevelGroupRef.current;
-      const shouldClear = groupChanged || modeChanged;
+      const industryChanged = JSON.stringify(selectedIndustryCodes) !== JSON.stringify(lastIndustryCodesRef.current);
+      const shouldClear = groupChanged || modeChanged || industryChanged;
 
       if (shouldClear) {
         visitedCommercialRef.current.clear();
         lastOverlayModeRef.current = overlayMode;
+        lastIndustryCodesRef.current = selectedIndustryCodes;
       }
       lastLevelGroupRef.current = currentGroup;
 
@@ -218,6 +227,7 @@ export const usePolygonData = (
       fetchBuildingData,
       fetchCommercialData,
       overlayMode,
+      selectedIndustryCodes,
     ],
   );
 
@@ -245,5 +255,5 @@ export const usePolygonData = (
         debouncedRefresh,
       );
     };
-  }, [map, refreshLayer, overlayMode]);
+  }, [map, refreshLayer, overlayMode, selectedIndustryCodes]);
 };

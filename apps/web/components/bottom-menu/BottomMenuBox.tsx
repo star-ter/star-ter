@@ -15,6 +15,7 @@ import {
 } from '../../types/bottom-menu-types';
 import { IndustryData } from '../../mocks/industry';
 import { useSidebarStore } from '../../stores/useSidebarStore';
+import { useMapStore } from '../../stores/useMapStore';
 
 type ActiveType = /* 'area' | */ 'population' | 'industry' | 'compare' | 'report';
 
@@ -49,9 +50,7 @@ export default function BottomMenuBox({
 }: BottomMenuProps) {
   const [active, setActive] = useState<ActiveType | 'none'>('none');
   const { setInfoBarOpen, setIsOpen, clearSelection } = useSidebarStore();
-
-  // Sync active state with external isReportOpen prop
-  // Sync effect removed to allow button to de-highlight and modal to close when report is generated.
+  const { setSelectedIndustryCodes } = useMapStore();
 
   function modalClose() {
     if (active === 'report' && onToggleReport) {
@@ -61,35 +60,27 @@ export default function BottomMenuBox({
   }
 
   function handleIndustry(id: string) {
-    console.log('대분류 업종 코드 :', id);
-
     const selected = IndustryData.find((item) => item.code === id);
     if (selected) {
-      clearSelection(); // Clear map selection to ensure Industry contents show
+      setSelectedArea(null);
+      setInfoBarOpen(true);
       onSelectCategory(selected);
+      const childCodes = selected.children?.map((child) => child.code) || [];
+      setSelectedIndustryCodes(childCodes.length > 0 ? childCodes : null);
     }
-    // TODO: 선택된 업종에 대한 데이터 가져오기
     modalClose();
   }
 
   function handleCompare(data: CompareRequest) {
-    console.log('비교 요청:', data);
-    // TODO: 비교 로직 실행
     if (onCompare) {
       onCompare(data);
     }
     modalClose();
   }
 
-  function handlePopulation() {
-    console.log('유동인구 보기');
-    // TODO: 유동인구 레이어 토글
-  }
+  function handlePopulation() {}
 
   function handlePickLocation(target: 'A' | 'B') {
-    console.log(`${target}를 선택`);
-    // TODO: 지도 선택 모드 활성화
-
     if (handlePickMode) {
       handlePickMode(target);
     }
@@ -139,10 +130,6 @@ export default function BottomMenuBox({
           />
         );
       case 'report':
-        // The check `if (isReportOpen) return null;` is removed.
-        // When a report is created, `active` is set to 'none',
-        // which naturally closes the modal. If the user clicks 'report'
-        // again while the overlay is open, they likely intend to create a new report.
         return (
           <ReportInputView
             onCreateReport={(data) => {
@@ -171,18 +158,17 @@ export default function BottomMenuBox({
             key={value}
             label={label}
             onClick={() => {
-              // 초기화 버튼 처리 (항상 실행되어야 함)
               if (value === 'none') {
                 setActive('none');
                 setLocationA({ name: '' });
                 setLocationB({ name: '' });
                 onSelectCategory(null);
+                setSelectedIndustryCodes(null);
                 population.setShowLayer(false);
                 if (onToggleReport) onToggleReport(false);
                 return;
               }
 
-              // 이미 열려있는 메뉴를 다시 클릭하면 닫기
               if (active === value) {
                 // If report result is open, closing it means toggling off
                 if (value === 'report' && isReportOpen && onToggleReport) {
@@ -192,16 +178,9 @@ export default function BottomMenuBox({
                 return;
               }
 
-              // 보고서 클릭 처리 
               if (value === 'report') {
-                 // Close other overlays/sidebars
                  setInfoBarOpen(false);
                  setIsOpen(false);
-                 // If we have result, just show it (toggle on)? 
-                 // Or always start new input?
-                 // User expects "New Report" usually. 
-                 // If isReportOpen is true, maybe just focus it.
-                 // If false, open Input.
                  setActive('report');
                  setLocationA({ name: '' });
                  setLocationB({ name: '' });
@@ -209,7 +188,6 @@ export default function BottomMenuBox({
               }
 
               setActive(value as ActiveType);
-              // Report should be closed if switching to other tabs?
               if (onToggleReport) onToggleReport(false);
               
               setLocationA({ name: '' });
