@@ -126,10 +126,7 @@ export default function Home() {
       <ReportOverlay 
         isVisible={isReportOpen} 
         onClose={() => setIsReportOpen(false)}
-        userSelection={reportRequest ? {
-          regionName: reportRequest.regionName,
-          industryName: reportRequest.industryName
-        } : null}
+        userSelection={reportRequest}
       />
 
       <div className="absolute inset-0 z-0">
