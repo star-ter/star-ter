@@ -64,7 +64,7 @@ export default function UserPage() {
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
     toast.success('로그아웃 되었습니다.');
-    window.location.href = '/';
+    window.location.href = '/map';
   };
 
   if (!mounted || !isLoggedIn) {
@@ -81,7 +81,7 @@ export default function UserPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <Link
-            href="/"
+            href="/map"
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
           >
             <ArrowLeft className="h-5 w-5" />
