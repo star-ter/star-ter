@@ -17,7 +17,7 @@ import { IndustryData } from '../../mocks/industry';
 import { useSidebarStore } from '../../stores/useSidebarStore';
 import { useMapStore } from '../../stores/useMapStore';
 
-type ActiveType = /* 'area' | */ 'population' | 'industry' | 'compare' | 'report';
+type ActiveType = 'population' | 'industry' | 'compare' | 'report';
 
 import { usePopulationVisual } from '../../hooks/usePopulationVisual';
 interface BottomMenuProps {
@@ -30,7 +30,6 @@ interface BottomMenuProps {
   onCompare?: (data?: CompareRequest) => void;
   onSelectCategory: (category: IndustryCategory | null) => void;
   onCreateReport?: (data: ReportRequest) => void;
-  // New props for report sync
   isReportOpen?: boolean;
   onToggleReport?: (isOpen: boolean) => void;
 }
@@ -49,7 +48,7 @@ export default function BottomMenuBox({
   onToggleReport,
 }: BottomMenuProps) {
   const [active, setActive] = useState<ActiveType | 'none'>('none');
-  const { setInfoBarOpen, setIsOpen, clearSelection } = useSidebarStore();
+  const { setInfoBarOpen, setIsOpen, setSelectedArea } = useSidebarStore();
   const { setSelectedIndustryCodes } = useMapStore();
 
   function modalClose() {
@@ -87,7 +86,6 @@ export default function BottomMenuBox({
   }
 
   const items: { label: string; value: ActiveType | 'none' }[] = [
-    // { label: '영역', value: 'area' },
     { label: '유동인구', value: 'population' },
     { label: '업종', value: 'industry' },
     { label: '비교', value: 'compare' },
@@ -95,7 +93,6 @@ export default function BottomMenuBox({
     { label: '초기화', value: 'none' },
   ];
 
-  // Explicitly render content based on active state and rules
   const renderContent = () => {
     switch (active) {
       case 'population':
@@ -134,9 +131,7 @@ export default function BottomMenuBox({
           <ReportInputView
             onCreateReport={(data) => {
                 if (onCreateReport) onCreateReport(data);
-                // Close local modal and de-highlight the button
                 setActive('none');
-                // Trigger overlay open
                 if (onToggleReport) onToggleReport(true);
             }}
             initialRegion={undefined} 
@@ -170,7 +165,6 @@ export default function BottomMenuBox({
               }
 
               if (active === value) {
-                // If report result is open, closing it means toggling off
                 if (value === 'report' && isReportOpen && onToggleReport) {
                     onToggleReport(false);
                 }

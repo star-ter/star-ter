@@ -56,18 +56,25 @@ export default function IndustrySideContents({
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  // selectedCategory의 하위 카테고리 목록
   const subCategories = React.useMemo(
     () => selectedCategory.children || [],
     [selectedCategory],
   );
 
-  const { zoom } = useMapStore();
+  const { zoom, setSelectedIndustryCodes } = useMapStore();
   const { currentGuCode, currentGuName } = useMapSync();
 
   React.useEffect(() => {
     setSelectedSubCode(null);
   }, [selectedCategory.code]);
+
+  React.useEffect(() => {
+    if (selectedSubCode) {
+      setSelectedIndustryCodes([selectedSubCode]);
+    } else if (subCategories.length > 0) {
+      setSelectedIndustryCodes(subCategories.map((c) => c.code));
+    }
+  }, [selectedSubCode, subCategories, setSelectedIndustryCodes]);
 
   const isZoomedIn = zoom <= 7;
 
@@ -243,8 +250,6 @@ export default function IndustrySideContents({
     displayAmountString = '-';
     description = '해당 세부 업종의 데이터가 없습니다.';
   }
-
-  console.log(data?.adm_nm, data?.adm_cd);
 
   return (
     <div className="flex-1 overflow-y-auto">
