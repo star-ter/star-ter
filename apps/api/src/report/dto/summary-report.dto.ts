@@ -11,23 +11,43 @@ export class GetSummaryReportQueryDto {
 }
 
 export interface SummaryReportResponse {
-  areaName: string;
-  industryName: string;
-  generatedDate: string;
+  meta: {
+    generatedAt: string;
+    category: string;
+    subCategory?: string;
+    region: string;
+    radius: number;
+    period: string;
+  };
+
   // 1) 핵심 지표
-  keyIndicators: {
-    monthlyRevenue: {
-      conservative: number;
-      optimal: number;
+  keyMetrics: {
+    estimatedMonthlySales: {
+      max: number;
     };
-    estimatedFootTraffic: number;
-    peakDay: string;
-    peakAgeGroup: string;
-    competitionIntensity: 'Low' | 'Medium' | 'High';
+    wellDoingMonthlySales: {
+      max: number;
+    };
+    floatingPopulation: {
+      count: number;
+      mainTime: string;
+    };
+    mainVisitDays: {
+      days: string[];
+      comment: string;
+    };
+    coreCustomer: {
+      ageGroup: string;
+      comment: string;
+    };
+    competitionIntensity: {
+      level: '높음' | '보통' | '낮음';
+      comment: string;
+    };
   };
 
   // 2) 상권 개요
-  marketOverview: {
+  zoneOverview: {
     characteristics: string;
     visitMotivation: string;
     peakTime: string;
@@ -35,10 +55,9 @@ export interface SummaryReportResponse {
   };
 
   // 3) 고객 구성(성별)
-  genderDistribution: {
-    male: number;
-    female: number;
-    interpretation: string;
+  customerComposition: {
+    malePercentage: number;
+    femalePercentage: number;
   };
 
   // 4) 연령대 분포
@@ -47,43 +66,43 @@ export interface SummaryReportResponse {
     age20: number;
     age30: number;
     age40: number;
-    age50plus: number;
+    age50Plus: number;
   };
 
-  // 6) 시간대별 유동(요약)
-  timeBasedFootTraffic: {
-    time11_14: number;
-    time14_17: number;
-    time17_21: number;
-    time21_24: number;
-    interpretation: string;
+  // 5) 인사이트 (프론트엔드 요구사항 추가)
+  summaryInsights: {
+    category: '패턴' | '고객' | '상권';
+    content: string;
+    highlight?: string;
+  }[];
+
+  // 6) 시간대별 유동
+  hourlyFlow: {
+    summary: string;
+    data: {
+      timeRange: string;
+      level: '보통' | '낮음' | '상승' | '피크' | '높음';
+      intensity: number;
+    }[];
   };
 
-  // 7) 요일별 특성(요약)
-  dayOfWeekCharacteristics: {
-    weekday: string; // 월~목
-    friday: string;
-    saturday: string;
-    sunday: string;
-  };
+  // 7) 요일별 특성
+  weeklyCharacteristics: {
+    day: string;
+    characteristics: string;
+  }[];
 
-  // 8) 경쟁/상권 구조(요약)
-  competitionStructure: {
-    density: {
-      summary: string;
-      insight: string;
-    };
-    priceCompetition: {
-      summary: string;
-      insight: string;
-    };
-    inflowPath: {
-      summary: string;
-      insight: string;
-    };
-    linkedIndustries: {
-      summary: string;
-      insight: string;
-    };
-  };
+  // 8) 경쟁/상권 구조
+  competitionAnalysis: {
+    category: string;
+    summary: string;
+    implication: string;
+  }[];
+
+  // 9) 결론 (프론트엔드 요구사항 추가)
+  conclusion: {
+    category: '운영' | '상품' | '마케팅';
+    content: string;
+    highlight?: string;
+  }[];
 }
