@@ -1,35 +1,10 @@
 import { PrismaService } from 'src/prisma/prisma.service';
-import {
-  BusinessCategoryVectorDto,
-  ColumnVectorDto,
-} from './dto/column-vector';
+import { AreaVectorDto, BusinessCategoryVectorDto } from './dto/column-vector';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class AiRepository {
   constructor(private readonly prisma: PrismaService) {}
-
-  async columnsSearchByVector(
-    vector: number[],
-    limit: number,
-  ): Promise<ColumnVectorDto[]> {
-    const vectorLiteral = this.toVectorLiteral(vector);
-
-    const rows = await this.prisma.$queryRaw<ColumnVectorDto[]>`
-      SELECT
-        text,
-        domain,
-        area_level AS "areaLevel",
-        table_name AS "tableName",
-        column_name AS "columnName",
-        data_type AS "dataType",
-        embedding <=> ${vectorLiteral}::vector AS distance
-      FROM column_vector_table
-      ORDER BY embedding <=> ${vectorLiteral}::vector
-      LIMIT ${limit}
-    `;
-    return rows;
-  }
 
   async categorySearchByVector(
     vector: number[],
@@ -45,6 +20,25 @@ export class AiRepository {
       FROM business_category_vector_table
       GROUP BY code, category_name
       ORDER BY MIN(embedding <=> ${vectorLiteral}::vector)
+      LIMIT ${limit}
+    `;
+    return rows;
+  }
+
+  async areaSearchByVector(
+    vector: number[],
+    limit: number,
+  ): Promise<AreaVectorDto[]> {
+    const vectorLiteral = this.toVectorLiteral(vector);
+
+    const rows = await this.prisma.$queryRaw<AreaVectorDto[]>`
+      SELECT
+        area_name AS "areaName",
+        area_level AS "areaLevel",
+        area_code AS "areaCode",
+        embedding <=> ${vectorLiteral}::vector AS distance
+      FROM area_vector_table
+      ORDER BY embedding <=> ${vectorLiteral}::vector
       LIMIT ${limit}
     `;
     return rows;

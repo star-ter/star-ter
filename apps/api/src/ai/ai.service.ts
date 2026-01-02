@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
   analyzeSqlResults,
-  chatToVectorSearchWords,
   embedText,
   getCategoryByMessage,
+  getLocationByMessage,
   getText,
   nlToSql,
 } from './openAI/openAI';
@@ -18,25 +18,14 @@ export class AiService {
   async getAIMessage(message: string): Promise<string> {
     const startTime = Date.now();
 
-    const [similarColumns, categories] = await Promise.all([
-      this.getSimilarColumns(message),
+    const [categories, areaList] = await Promise.all([
       this.getCategories(message),
+      this.buildAreaList(message),
     ]);
 
-    this.logger.log(
-      `Time taken to get similar columns and categories: ${
-        (Date.now() - startTime) / 1000
-      } s`,
-    );
-
-    const sql = getText(await nlToSql(message, similarColumns, categories));
+    const sql = getText(await nlToSql(message, categories, areaList));
+    console.log('Generated SQL:', sql);
     const results = await this.aiRepository.runSql(sql);
-
-    this.logger.log(
-      `Time taken to run SQL and get results: ${
-        (Date.now() - startTime) / 1000
-      } s`,
-    );
 
     const analyzedResponse = await analyzeSqlResults(message, results);
     const returnMessage = getText(analyzedResponse);
@@ -48,18 +37,32 @@ export class AiService {
     return returnMessage;
   }
 
-  private async getSimilarColumns(message: string) {
-    const vectorSearchWordsResponse = await chatToVectorSearchWords(message);
-    const vectorSearchWords = getText(vectorSearchWordsResponse);
+  private async getAreaList(message: string) {
+    const areaText = getText(await getLocationByMessage(message));
+    if (areaText === '""') return [];
+    const areaList = areaText.split(',').map((area) => area.trim());
+    return areaList;
+  }
 
-    const vector = await embedText(vectorSearchWords);
-    const embedding = vector.data[0].embedding;
+  private async buildAreaList(message: string) {
+    const messageAreaList = await this.getAreaList(message);
 
-    return this.aiRepository.columnsSearchByVector(embedding, 30);
+    const results = await Promise.all(
+      messageAreaList.map(async (area) => {
+        const areaVector = await embedText(area);
+        const [first] = await this.aiRepository.areaSearchByVector(
+          areaVector.data[0].embedding,
+          1,
+        );
+        return first;
+      }),
+    );
+    return results;
   }
 
   private async getCategories(message: string) {
     const categoryResponse = await getCategoryByMessage(message);
+    if (getText(categoryResponse) === '""') return [];
     const categories = getText(categoryResponse)
       .split(',')
       .map((cat) => cat.trim());
