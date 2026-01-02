@@ -12,6 +12,8 @@ import { StoreModule } from './store/store.module';
 import { GeoModule } from './geo/geo.module';
 import { AiModule } from './ai/ai.module';
 import { AnalysisModule } from './analysis/analysis.module';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { AnalysisModule } from './analysis/analysis.module';
     GeoModule,
     AiModule,
     AnalysisModule,
+    AuthModule,
+    UsersModule,
   ],
   controllers: [HealthController],
   providers: [],

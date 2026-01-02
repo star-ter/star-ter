@@ -35,3 +35,16 @@ model seoul_vitality {
 
   @@ignore
 }
+
+model column_vector_table {
+  id          BigInt                @id @default(autoincrement())
+  text        String
+  embedding   Unsupported("vector")
+  domain      String?
+  area_level  String?
+  table_name  String?
+  column_name String?
+  data_type   String?
+
+  @@index([embedding], map: "vector_documents_embedding_hnsw")
+}
