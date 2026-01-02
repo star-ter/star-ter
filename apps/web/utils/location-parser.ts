@@ -11,7 +11,7 @@ export function extractLocations(text: string): string[] {
   const locations: string[] = [];
   
   // 1. 위치 관련 키워드/액션 제거
-  let cleanedText = text
+  const cleanedText = text
     .replace(/(으로|로)\s*(가|이동|보내|옮겨|가고|이동하고).*$/g, '')
     .replace(/\s*(보여줘|찾아줘|검색해줘|알려줘).*$/g, '')
     .replace(/\s*(분석|비교|상권).*$/g, '')
