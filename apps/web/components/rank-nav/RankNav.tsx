@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { geocodeAddress } from '@/services/geocoding/geocoding.service';
 import { useMapStore } from '@/stores/useMapStore';
+import { IndustryCategory } from '../../types/bottom-menu-types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -23,7 +24,7 @@ type RankNavProps = {
   level?: 'gu' | 'dong';
   parentGuCode?: string;
   parentGuName?: string;
-  industryCode?: string;
+  selectedCategory?: IndustryCategory;
 };
 
 const changeLabelMap: Record<string, string> = {
@@ -37,13 +38,18 @@ export default function RankNav({
   level = 'gu',
   parentGuCode,
   parentGuName,
-  industryCode,
+  selectedCategory,
 }: RankNavProps) {
   const { moveToLocation } = useMapStore();
   const [isMoving, setIsMoving] = useState(false);
   const [items, setItems] = useState<RankItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedSubCode, setSelectedSubCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSelectedSubCode(null);
+  }, [selectedCategory?.code]);
 
   const handleSelect = async (name: string) => {
     if (isMoving) return;
@@ -73,7 +79,18 @@ export default function RankNav({
     const controller = new AbortController();
     const url = new URL(`${API_BASE_URL}/revenue/ranking`);
     url.searchParams.set('level', level);
-    if (industryCode) url.searchParams.set('industryCode', industryCode);
+
+    if (selectedSubCode) {
+      url.searchParams.set('industryCode', selectedSubCode);
+    } else if (selectedCategory) {
+      if (selectedCategory.children && selectedCategory.children.length > 0) {
+        const allCodes = selectedCategory.children.map((c) => c.code).join(',');
+        url.searchParams.set('industryCodes', allCodes);
+      } else {
+        url.searchParams.set('industryCode', selectedCategory.code);
+      }
+    }
+
     if (level === 'dong' && parentGuCode) {
       url.searchParams.set('parentGuCode', parentGuCode);
     }
@@ -89,15 +106,13 @@ export default function RankNav({
         return res.json();
       })
       .then(async (data: RevenueRankingResponse) => {
-        // 최소 로딩 시간 보장 (깜빡임 방지)
         const elapsed = Date.now() - startTime;
-        const minLoadingTime = 500; // 0.5초
+        const minLoadingTime = 500;
         if (elapsed < minLoadingTime) {
           await new Promise((resolve) =>
             setTimeout(resolve, minLoadingTime - elapsed),
           );
         }
-
         setItems(data.items || []);
       })
       .catch((err) => {
@@ -106,16 +121,13 @@ export default function RankNav({
         setItems([]);
       })
       .finally(() => {
-        // 컴포넌트가 언마운트되지 않았는지 확인하는 로직이 있으면 좋지만,
-        // useEffect cleanup에서 abort하므로 괜찮음.
-        // 다만 비동기 delay 후 state 업데이트 시 mounted 체크가 안전함.
         if (!controller.signal.aborted) {
           setIsLoading(false);
         }
       });
 
     return () => controller.abort();
-  }, [level, parentGuCode, industryCode]);
+  }, [level, parentGuCode, selectedCategory, selectedSubCode]);
 
   const formatAmount = (amount: number) => {
     const revenueInOk = amount / 100000000;
@@ -126,83 +138,107 @@ export default function RankNav({
 
   return (
     <aside className="w-[330px] ml-4 z-300 rounded-2xl bg-white/90 p-3.5 shadow-lg ring-1 ring-black/5 backdrop-blur pointer-events-auto">
-      <header className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900">
-            {level === 'dong' && parentGuName
-              ? `${parentGuName} 매출 순위`
-              : level === 'dong'
-                ? '동 매출 순위'
-                : '서울시 매출 순위'}
-          </h2>
-          <p className="text-xs text-gray-500 mb-2">
-            {level === 'dong' && parentGuName
-              ? `${parentGuName} 기준`
-              : level === 'dong'
-                ? '현재 구 기준'
-                : '서울시 기준'}{' '}
-            분기 매출
-          </p>
-        </div>
+      <header className="flex flex-col gap-2 mb-2">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">
+              {selectedCategory ? `${selectedCategory.name} ` : ''}
+              {level === 'dong' && parentGuName
+                ? `${parentGuName} 매출 순위`
+                : level === 'dong'
+                  ? '동 매출 순위'
+                  : '서울시 매출 순위'}
+            </h2>
+            <p className="text-xs text-gray-500">
+              {level === 'dong' && parentGuName
+                ? `${parentGuName} 기준`
+                : level === 'dong'
+                  ? '현재 구 기준'
+                  : '서울시 기준'}{' '}
+              분기 매출
+            </p>
+          </div>
 
-        {/* Info Tooltip */}
-        <div className="relative group p-1">
-          <svg
-            className="w-5 h-5 text-gray-400 cursor-help hover:text-gray-600 transition-colors"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
+          {/* Info Tooltip */}
+          <div className="relative group p-1">
+            <svg
+              className="w-5 h-5 text-gray-400 cursor-help hover:text-gray-600 transition-colors"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
 
-          <div className="absolute right-0 top-full mt-2 w-64 bg-gray-900/90 backdrop-blur-sm text-white text-xs rounded-xl p-3 shadow-xl z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 translate-y-2 group-hover:translate-y-0">
-            <h4 className="font-bold mb-2 text-gray-200 pb-1 border-b border-gray-700">
-              상권 유형 안내
-            </h4>
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <span className="text-blue-300 font-semibold min-w-16">
-                  뜨는 상권
-                </span>
-                <span className="text-gray-300">
-                  개업은 많고 폐업은 적어 성장하는 지역
-                </span>
+            <div className="absolute right-0 top-full mt-2 w-64 bg-gray-900/90 backdrop-blur-sm text-white text-xs rounded-xl p-3 shadow-xl z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 translate-y-2 group-hover:translate-y-0">
+              <h4 className="font-bold mb-2 text-gray-200 pb-1 border-b border-gray-700">
+                상권 유형 안내
+              </h4>
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <span className="text-blue-300 font-semibold min-w-16">
+                    뜨는 상권
+                  </span>
+                  <span className="text-gray-300">
+                    개업은 많고 폐업은 적어 성장하는 지역
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <span className="text-amber-400 font-semibold min-w-16">
+                    변동 상권
+                  </span>
+                  <span className="text-gray-300">
+                    개업과 폐업이 모두 많아 변화가 심한 지역
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <span className="text-gray-400 font-semibold min-w-16">
+                    정체 상권
+                  </span>
+                  <span className="text-gray-300">
+                    개업과 폐업이 모두 적어 변화가 없는 지역
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <span className="text-red-400 font-semibold min-w-16">
+                    위험 상권
+                  </span>
+                  <span className="text-gray-300">
+                    개업은 적고 폐업이 많아 쇠퇴하는 지역
+                  </span>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <span className="text-amber-400 font-semibold min-w-16">
-                  변동 상권
-                </span>
-                <span className="text-gray-300">
-                  개업과 폐업이 모두 많아 변화가 심한 지역
-                </span>
-              </div>
-              <div className="flex gap-2">
-                <span className="text-gray-400 font-semibold min-w-16">
-                  정체 상권
-                </span>
-                <span className="text-gray-300">
-                  개업과 폐업이 모두 적어 변화가 없는 지역
-                </span>
-              </div>
-              <div className="flex gap-2">
-                <span className="text-red-400 font-semibold min-w-16">
-                  위험 상권
-                </span>
-                <span className="text-gray-300">
-                  개업은 적고 폐업이 많아 쇠퇴하는 지역
-                </span>
-              </div>
+              {/* Arrow */}
+              <div className="absolute top-0 right-2 -mt-1 w-2 h-2 bg-gray-900/90 rotate-45 transform"></div>
             </div>
-            {/* Arrow */}
-            <div className="absolute top-0 right-2 -mt-1 w-2 h-2 bg-gray-900/90 rotate-45 transform"></div>
           </div>
         </div>
+
+        {/* Sub Category Selector */}
+        {selectedCategory?.children && selectedCategory.children.length > 0 && (
+          <div className="mb-2">
+            <select
+              value={selectedSubCode || ''}
+              onChange={(e) => {
+                const val = e.target.value;
+                setSelectedSubCode(val === '' ? null : val);
+              }}
+              className="w-full rounded-xl border-gray-200 bg-gray-50 py-2 pl-3 pr-8 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500 transition-colors cursor-pointer hover:bg-white border"
+            >
+              <option value="">전체 ({selectedCategory.name})</option>
+              {selectedCategory.children.map((child) => (
+                <option key={child.code} value={child.code}>
+                  {child.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </header>
 
       <div className="space-y-2">

@@ -128,6 +128,7 @@ export default function Home() {
           population={population}
           onCompare={handleCompareRequest}
           onSelectCategory={setSelectedCategory}
+          selectedCategory={selectedCategory}
         />
       </div>
     </div>
