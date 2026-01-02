@@ -22,7 +22,7 @@ export const usePopulationVisual = () => {
 
       // 필터 조합에 따른 필드 매핑
       const getFieldsForFilter = (g: GenderFilter, a: AgeFilter): (keyof TimeSlotPopulation)[] => {
-        const genders = g === 'Total' ? ['M', 'F'] : [g === 'Male' ? 'M' : 'F'];
+        const genders = g === 'Total' ? ['m', 'f'] : [g === 'Male' ? 'm' : 'f'];
         
         let ages: string[] = [];
         if (a === '10대') ages = ['10', '15'];
