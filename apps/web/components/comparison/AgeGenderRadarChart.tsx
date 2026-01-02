@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react';
 import {
   Radar,
   RadarChart,
@@ -16,6 +17,17 @@ interface AgeGenderRadarChartProps {
 export default function AgeGenderRadarChart({
   populationData,
 }: AgeGenderRadarChartProps) {
+  const [animationComplete, setAnimationComplete] = useState(false);
+  const prevDataRef = useRef(populationData);
+
+  useEffect(() => {
+    if (prevDataRef.current !== populationData) {
+      prevDataRef.current = populationData;
+    }
+    const timer = setTimeout(() => setAnimationComplete(true), 1000);
+    return () => clearTimeout(timer);
+  }, [populationData]);
+
   if (!populationData) return null;
 
   const ages = ['10대', '20대', '30대', '40대', '50대', '60대 이상'];
@@ -52,7 +64,7 @@ export default function AgeGenderRadarChart({
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 min-h-0">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%" debounce={0}>
           <RadarChart cx="50%" cy="52%" outerRadius="80%" data={chartData}>
             <PolarGrid stroke="#e5e7eb" />
             <PolarAngleAxis
@@ -73,6 +85,8 @@ export default function AgeGenderRadarChart({
               strokeWidth={2}
               fill="#3b82f6"
               fillOpacity={0.2}
+              isAnimationActive={!animationComplete}
+              animationDuration={800}
             />
             <Radar
               name="여성"
@@ -81,6 +95,8 @@ export default function AgeGenderRadarChart({
               strokeWidth={2}
               fill="#ef4444"
               fillOpacity={0.2}
+              isAnimationActive={!animationComplete}
+              animationDuration={800}
             />
             <Legend
               verticalAlign="top"

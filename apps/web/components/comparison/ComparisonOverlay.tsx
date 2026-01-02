@@ -14,7 +14,7 @@ interface ComparisonData {
 interface ComparisonOverlayProps {
   isVisible: boolean;
   onClose: () => void;
-  dataA: ComparisonData; // 실제로는 비동기로 데이터를 가져오겠지만 일단 props로 받음
+  dataA: ComparisonData;
   dataB: ComparisonData;
 }
 
@@ -37,15 +37,12 @@ export default function ComparisonOverlay({
   const handleScroll = (source: 'A' | 'B') => (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.target as HTMLDivElement;
     
-    // If valid scroll event driven by the other panel's sync, ignore it
     if (activeScrollRef.current && activeScrollRef.current !== source) {
       return;
     }
 
-    // Set current source as active scroller
     activeScrollRef.current = source;
 
-    // Reset lock after scrolling stops
     if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
     }
@@ -56,7 +53,6 @@ export default function ComparisonOverlay({
     const other = source === 'A' ? scrollRefB.current : scrollRefA.current;
 
     if (other) {
-       // Direct sync
        if (Math.abs(other.scrollTop - target.scrollTop) > 0) {
           other.scrollTop = target.scrollTop;
        }
@@ -70,11 +66,10 @@ export default function ComparisonOverlay({
       className={`absolute inset-0 z-50 flex items-center justify-center animate-fade-in p-4 overflow-visible ${
         isResizing ? '' : 'transition-all duration-300 ease-in-out'
       }`}
-      style={{ paddingRight: isOpen ? `${width + 32}px` : '16px' }} // 사이드바 너비만큼 우측 여백 확보 (+기본 패딩)
+      style={{ paddingRight: isOpen ? `${width + 32}px` : '16px' }} 
     >
       
       <div className="relative flex flex-row gap-6 items-start justify-center flex-wrap">
-        {/* Close Button X - Positioned Top-Right of the Card Container */}
         <button 
           onClick={onClose}
           className="absolute -top-3 -right-3 sm:-right-10 sm:-top-6 text-white bg-blue-500/50 hover:bg-blue-500 rounded-full p-2 shadow-lg transition-transform transform hover:scale-110 z-[60]"
@@ -92,7 +87,7 @@ export default function ComparisonOverlay({
           estimatedSales={dataA.estimatedSales}
           salesChange={dataA.salesChange}
           storeCount={dataA.storeCount}
-          color="#4285F4" // Blue
+          color="#4285F4"
           onClose={onClose}
           onClear={() => console.log('Clear A')}
           hoveredTab={hoveredTab}
