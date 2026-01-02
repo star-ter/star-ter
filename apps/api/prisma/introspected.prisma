@@ -48,3 +48,76 @@ model column_vector_table {
 
   @@index([embedding], map: "vector_documents_embedding_hnsw")
 }
+
+model business_category_vector_table {
+  id            BigInt                 @id @default(autoincrement())
+  code          String
+  category_name String
+  text          String
+  embedding     Unsupported("vector")?
+
+  @@index([embedding], map: "business_category_vector_table_idx")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model dim_area {
+  area_level        String
+  area_cd           String
+  area_nm           String
+  trdar_se_cd       String?
+  trdar_se_cd_nm    String?
+  parent_area_level String?
+  parent_area_cd    String?
+  xcnts_value       Int?
+  ydnts_value       Int?
+  relm_ar           Int?
+  created_at        DateTime    @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime    @default(now()) @db.Timestamptz(6)
+  geo_alias         geo_alias[]
+
+  @@id([area_level, area_cd])
+  @@index([area_level, area_nm], map: "idx_dim_area_name")
+  @@index([parent_area_level, parent_area_cd], map: "idx_dim_area_parent")
+}
+
+model dim_industry {
+  svc_induty_cd    String           @id
+  svc_induty_cd_nm String
+  created_at       DateTime         @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime         @default(now()) @db.Timestamptz(6)
+  industry_alias   industry_alias[]
+
+  @@index([svc_induty_cd_nm], map: "idx_dim_industry_name")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model geo_alias {
+  alias      String
+  alias_norm String
+  area_level String
+  area_cd    String
+  source     String   @default("seed")
+  priority   Int      @default(100)
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  dim_area   dim_area @relation(fields: [area_level, area_cd], references: [area_level, area_cd], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([alias_norm, area_level, area_cd])
+  @@index([area_level, area_cd], map: "idx_geo_alias_area")
+  @@index([alias_norm], map: "idx_geo_alias_norm")
+}
+
+model industry_alias {
+  alias         String
+  alias_norm    String
+  svc_induty_cd String
+  source        String       @default("seed")
+  priority      Int          @default(100)
+  is_active     Boolean      @default(true)
+  created_at    DateTime     @default(now()) @db.Timestamptz(6)
+  dim_industry  dim_industry @relation(fields: [svc_induty_cd], references: [svc_induty_cd], onUpdate: NoAction)
+
+  @@id([alias_norm, svc_induty_cd])
+  @@index([svc_induty_cd], map: "idx_industry_alias_cd")
+  @@index([alias_norm], map: "idx_industry_alias_norm")
+}

@@ -37,10 +37,10 @@ export default function LoginPage() {
         throw new Error(data.message || '로그인에 실패했습니다.');
       }
 
-      // 토큰 저장 (임시로 localStorage 사용)
+      // localstorage에 담긴 토큰 가져온다
       localStorage.setItem('accessToken', data.accessToken);
 
-      toast.success('로그인 성공!');
+      toast.success('준비 완료!');
       router.push('/map');
     } catch (error) {
       if (error instanceof Error) {
@@ -58,7 +58,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-8 rounded-2xl bg-white p-8 shadow-xl ring-1 ring-gray-200/50">
         <div className="text-center">
           <h2 className="mt-2 text-3xl font-bold tracking-tight text-gray-900">
-            돌아오신 것을 환영해요! 👋
+            Star-ter에 오신 것을 환영해요! 👋
           </h2>
           <p className="mt-2 text-sm text-gray-600">
             서비스 이용을 위해 로그인이 필요합니다.
