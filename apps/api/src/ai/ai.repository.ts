@@ -1,5 +1,8 @@
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ColumnVectorDto } from './dto/column-vector';
+import {
+  BusinessCategoryVectorDto,
+  ColumnVectorDto,
+} from './dto/column-vector';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
@@ -22,7 +25,26 @@ export class AiRepository {
         data_type AS "dataType",
         embedding <=> ${vectorLiteral}::vector AS distance
       FROM column_vector_table
-      ORDER BY embedding <-> ${vectorLiteral}::vector
+      ORDER BY embedding <=> ${vectorLiteral}::vector
+      LIMIT ${limit}
+    `;
+    return rows;
+  }
+
+  async categorySearchByVector(
+    vector: number[],
+    limit: number,
+  ): Promise<BusinessCategoryVectorDto[]> {
+    const vectorLiteral = this.toVectorLiteral(vector);
+
+    const rows = await this.prisma.$queryRaw<BusinessCategoryVectorDto[]>`
+      SELECT
+        code,
+        category_name,
+        MIN(embedding <=> ${vectorLiteral}::vector) AS distance
+      FROM business_category_vector_table
+      GROUP BY code, category_name
+      ORDER BY MIN(embedding <=> ${vectorLiteral}::vector)
       LIMIT ${limit}
     `;
     return rows;

@@ -6,3 +6,8 @@ export class ColumnVectorDto {
   columnName: string;
   dataType: string;
 }
+
+export class BusinessCategoryVectorDto {
+  code: string;
+  category_name: string;
+}
