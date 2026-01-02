@@ -20,6 +20,7 @@ interface MapOverlayProps {
   population: ReturnType<typeof usePopulationVisual>;
   onCompare?: () => void;
   onSelectCategory: (category: IndustryCategory | null) => void;
+  selectedCategory: IndustryCategory | null;
 }
 
 export default function MapOverlay({
@@ -31,6 +32,7 @@ export default function MapOverlay({
   population,
   onCompare,
   onSelectCategory,
+  selectedCategory,
 }: MapOverlayProps) {
   const { zoom } = useMapStore();
   const [isRankOpen, setIsRankOpen] = useState(true);
@@ -77,6 +79,7 @@ export default function MapOverlay({
                 parentGuName={
                   rankLevel === 'dong' ? currentGuName || undefined : undefined
                 }
+                selectedCategory={selectedCategory || undefined}
               />
             )}
           </>

@@ -32,5 +32,5 @@ export const useSidebarStore = create<SidebarState>((set) => ({
   setIsResizing: (isResizing) => set({ isResizing }),
   setSelectedArea: (selectedArea) => set({ selectedArea }),
   selectArea: (data) => set({ selectedArea: data, isInfoBarOpen: true }),
-  clearSelection: () => set({ selectedArea: null }),
+  clearSelection: () => set({ selectedArea: null, isInfoBarOpen: false }),
 }));
