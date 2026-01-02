@@ -10,6 +10,11 @@ export class AnalysisController {
     return this.analysisService.searchRegions(query);
   }
 
+  @Get('search/industry')
+  searchIndustries(@Query('query') query: string) {
+    return this.analysisService.searchIndustries(query);
+  }
+
   @Get(':regionCode')
   getAnalysis(@Param('regionCode') regionCode: string) {
     return this.analysisService.getAnalysis(regionCode);

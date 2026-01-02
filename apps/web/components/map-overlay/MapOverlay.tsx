@@ -2,7 +2,7 @@ import { useState } from 'react';
 import BottomMenuBox from '../bottom-menu/BottomMenuBox';
 import RankNav from '../rank-nav/RankNav';
 import { usePopulationVisual } from '../../hooks/usePopulationVisual';
-import { IndustryCategory } from '../../types/bottom-menu-types';
+import { IndustryCategory, ReportRequest } from '../../types/bottom-menu-types';
 import SearchBox from '../search/SearchBox';
 import LocationNav from '../left-top/LocationNav';
 import { useMapStore } from '../../stores/useMapStore';
@@ -17,6 +17,9 @@ interface MapOverlayProps {
   population: ReturnType<typeof usePopulationVisual>;
   onCompare?: () => void;
   onSelectCategory: (category: IndustryCategory | null) => void;
+  onCreateReport?: (data: ReportRequest) => void;
+  isReportOpen?: boolean;
+  onToggleReport?: (isOpen: boolean) => void;
 }
 
 export default function MapOverlay({
@@ -28,6 +31,9 @@ export default function MapOverlay({
   population,
   onCompare,
   onSelectCategory,
+  onCreateReport,
+  isReportOpen,
+  onToggleReport,
 }: MapOverlayProps) {
   const { zoom } = useMapStore();
   const [isRankOpen, setIsRankOpen] = useState(true);
@@ -79,6 +85,9 @@ export default function MapOverlay({
           population={population}
           onCompare={onCompare}
           onSelectCategory={onSelectCategory}
+          onCreateReport={onCreateReport}
+          isReportOpen={isReportOpen}
+          onToggleReport={onToggleReport}
         />
       </div>
     </section>

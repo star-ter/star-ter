@@ -6,12 +6,13 @@ import MapOverlay from '@/components/map-overlay/MapOverlay';
 import { usePopulationVisual } from '@/hooks/usePopulationVisual';
 import ComparisonOverlay from '@/components/comparison/ComparisonOverlay';
 
-import { useSidebarStore } from '@/stores/useSidebarStore';
+// import { useSidebarStore } from '@/stores/useSidebarStore';
 import { useComparisonStore } from '@/stores/useComparisonStore';
-import { IndustryCategory, CompareRequest } from '@/types/bottom-menu-types';
+import ReportOverlay from '@/components/report-overlay/ReportOverlay';
+import { IndustryCategory, CompareRequest, ReportRequest } from '@/types/bottom-menu-types';
 
 export default function Home() {
-  const { isOpen, width, isResizing } = useSidebarStore();
+  // const { isOpen, width, isResizing } = useSidebarStore();
   const {
     isVisible: isComparisonVisible,
     closeComparison,
@@ -30,6 +31,10 @@ export default function Home() {
   const [pickTarget, setPickTarget] = useState('');
   const [selectedCategory, setSelectedCategory] =
     useState<IndustryCategory | null>(null);
+
+  // Report Overlay State
+  const [isReportOpen, setIsReportOpen] = useState(false);
+  const [reportRequest, setReportRequest] = useState<ReportRequest | null>(null);
 
   // 유동인구 상태 통합
   const population = usePopulationVisual();
@@ -85,6 +90,11 @@ export default function Home() {
     );
   }
 
+  function handleCreateReport(data: ReportRequest) {
+    setReportRequest(data);
+    setIsReportOpen(true);
+  }
+
   return (
     <div className="relative h-screen w-screen overflow-hidden">
       {/* Comparison Overlay */}
@@ -111,6 +121,17 @@ export default function Home() {
           }
         }
       />
+      
+      {/* Report Overlay */}
+      <ReportOverlay 
+        isVisible={isReportOpen} 
+        onClose={() => setIsReportOpen(false)}
+        userSelection={reportRequest ? {
+          regionName: reportRequest.regionName,
+          industryName: reportRequest.industryName
+        } : null}
+      />
+
       <div className="absolute inset-0 z-0">
         <Kakaomap
           polygonClick={mapClick}
@@ -130,6 +151,9 @@ export default function Home() {
           population={population}
           onCompare={handleCompareRequest}
           onSelectCategory={setSelectedCategory}
+          onCreateReport={handleCreateReport}
+          isReportOpen={isReportOpen}
+          onToggleReport={setIsReportOpen}
         />
       </div>
     </div>

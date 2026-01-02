@@ -265,4 +265,18 @@ export class AnalysisRepository {
         })) as unknown as SalesTrendGroup[];
     }
   }
+
+  async searchIndustry(query: string) {
+    return this.prisma.storeDong.findMany({
+      where: {
+        svc_induty_cd_nm: { contains: query },
+      },
+      select: {
+        svc_induty_cd: true,
+        svc_induty_cd_nm: true,
+      },
+      distinct: ['svc_induty_cd'],
+      take: 20,
+    });
+  }
 }
