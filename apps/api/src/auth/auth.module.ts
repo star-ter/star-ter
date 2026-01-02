@@ -10,7 +10,7 @@ import { JwtStrategy } from './jwt.strategy';
     PassportModule,
     JwtModule.register({
       secret: 'secretKey',
-      signOptions: { expiresIn: '30m' }, // 토큰 유효시간 15분
+      signOptions: { expiresIn: '30m' }, // 토큰 유효시간 30분
     }),
   ],
   controllers: [AuthController],

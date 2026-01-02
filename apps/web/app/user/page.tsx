@@ -19,7 +19,6 @@ export default function UserPage() {
   } | null>(null);
 
   useEffect(() => {
-    // eslint-disable-next-line
     setMounted(true);
   }, []);
 
