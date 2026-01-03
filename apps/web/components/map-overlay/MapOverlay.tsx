@@ -6,7 +6,7 @@ import { IndustryCategory, ReportRequest } from '../../types/bottom-menu-types';
 import SearchBox from '../search/SearchBox';
 import LocationNav from '../left-top/LocationNav';
 import { useMapStore } from '../../stores/useMapStore';
-import { useMapSync } from '@/hooks/useMapSync';
+import { useLocationSync } from '@/hooks/useLocationSync'; // Changed import
 import { User } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
@@ -42,11 +42,17 @@ export default function MapOverlay({
 }: MapOverlayProps) {
   const { zoom } = useMapStore();
   const [isRankOpen, setIsRankOpen] = useState(true);
-  const { currentGuCode, currentGuName } = useMapSync();
+
+  // Use LocationSync here to share state
+  const locationSync = useLocationSync();
+  const { selectedGu, guList } = locationSync;
+
   const { isLoggedIn } = useAuth();
 
   const shouldShowRank = zoom >= 5;
   const rankLevel = zoom >= 7 ? 'gu' : 'dong';
+
+  const currentGuName = guList.find((g) => g.code === selectedGu)?.name;
 
   return (
     <section className="absolute w-fit h-fit pointer-events-none">
@@ -62,7 +68,7 @@ export default function MapOverlay({
             />
           </Link>
           <SearchBox />
-          <LocationNav />
+          <LocationNav {...locationSync} />
         </div>
         {shouldShowRank && !isReportOpen && (
           <>
@@ -80,7 +86,7 @@ export default function MapOverlay({
               <RankNav
                 level={rankLevel}
                 parentGuCode={
-                  rankLevel === 'dong' ? currentGuCode || undefined : undefined
+                  rankLevel === 'dong' ? selectedGu || undefined : undefined
                 }
                 parentGuName={
                   rankLevel === 'dong' ? currentGuName || undefined : undefined

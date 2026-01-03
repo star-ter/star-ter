@@ -1,5 +1,17 @@
-import { useLocationSync } from '@/hooks/useLocationSync';
 import ModeController from './ModeController';
+import { AreaItem } from '@/hooks/useLocationSync';
+
+interface LocationNavProps {
+  guList: AreaItem[];
+  dongList: AreaItem[];
+  selectedGu: string;
+  selectedDong: string;
+  isLoadingGu: boolean;
+  isLoadingDong: boolean;
+  isSyncing: boolean;
+  changeGu: (guCode: string) => void;
+  changeDong: (dongCode: string) => void;
+}
 
 const Separator = () => (
   <svg
@@ -17,19 +29,17 @@ const Separator = () => (
   </svg>
 );
 
-export default function LocationNav() {
-  const {
-    guList,
-    dongList,
-    selectedGu,
-    selectedDong,
-    isLoadingGu,
-    isLoadingDong,
-    isSyncing,
-    changeGu,
-    changeDong,
-  } = useLocationSync();
-
+export default function LocationNav({
+  guList,
+  dongList,
+  selectedGu,
+  selectedDong,
+  isLoadingGu,
+  isLoadingDong,
+  isSyncing,
+  changeGu,
+  changeDong,
+}: LocationNavProps) {
   const labelClass =
     'block px-1 text-[13px] font-medium text-gray-700 transition-all group-hover:text-gray-900 group-hover:font-bold cursor-pointer whitespace-nowrap';
 
