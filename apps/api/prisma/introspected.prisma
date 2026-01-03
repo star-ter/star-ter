@@ -121,3 +121,13 @@ model industry_alias {
   @@index([svc_induty_cd], map: "idx_industry_alias_cd")
   @@index([alias_norm], map: "idx_industry_alias_norm")
 }
+
+model area_vector_table {
+  id         BigInt                 @id @default(autoincrement())
+  area_name  String
+  area_level String
+  area_code  String
+  embedding  Unsupported("vector")?
+
+  @@index([embedding])
+}

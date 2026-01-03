@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
+
 import { Toaster } from 'react-hot-toast';
-import RankNav from '@/components/rank-nav/RankNav';
-import { MyChat } from '@/components/chatkit/chatkit';
+
+import ClientModalWrapper from '@/components/modal/ClientModalWrapper';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -38,6 +39,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <ClientModalWrapper />
         {/* <MyChat /> */}
         <Toaster position="top-center" />
       </body>

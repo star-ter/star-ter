@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, useMemo } from 'react';
 import {
   KakaoMap,
   AdminArea,
@@ -11,12 +11,18 @@ import {
 import { drawPolygons, drawMarkers } from '../utils/kakao-draw-utils';
 import { useMapStore } from '../stores/useMapStore';
 import { API_ENDPOINTS } from '../config/api';
+import { useBookmark } from './useBookmark';
 
 export const usePolygonData = (
   map: KakaoMap | null,
   onPolygonClick: (data: InfoBarData) => void,
 ) => {
   const { overlayMode } = useMapStore();
+  const { bookmarks } = useBookmark();
+
+  const bookmarksSet = useMemo(() => {
+    return new Set(bookmarks.map((b) => b.commercialCode));
+  }, [bookmarks]);
 
   const lastLevelGroupRef = useRef<string | null>(null);
   const lastOverlayModeRef = useRef<string>('revenue');
@@ -48,13 +54,15 @@ export const usePolygonData = (
             true,
             overlayMode,
             lowSearch === 1 ? 'gu' : 'dong',
+            true,
+            bookmarksSet,
           );
         }
       } catch (err) {
         console.error('Combined Boundary Fetch Error:', err);
       }
     },
-    [overlayMode],
+    [overlayMode, bookmarksSet],
   );
 
   const fetchBuildingData = useCallback(
@@ -86,13 +94,14 @@ export const usePolygonData = (
             overlayMode,
             undefined,
             false, // 건물 마커 그리지 않음
+            bookmarksSet,
           );
         }
       } catch (err) {
         console.error('Building API Fetch Error:', err);
       }
     },
-    [overlayMode],
+    [overlayMode, bookmarksSet],
   );
 
   const fetchCommercialData = useCallback(
@@ -157,6 +166,7 @@ export const usePolygonData = (
               overlayMode,
               'commercial',
               false,
+              bookmarksSet,
             );
 
             allCommercialFeaturesRef.current = [
@@ -173,6 +183,7 @@ export const usePolygonData = (
               (clickedData) => onPolygonClickRef.current(clickedData),
               overlayMode,
               'commercial',
+              bookmarksSet,
             );
           }
         }
@@ -180,7 +191,7 @@ export const usePolygonData = (
         console.error('Commercial API Fetch Error:', err);
       }
     },
-    [overlayMode],
+    [overlayMode, bookmarksSet],
   );
 
   const refreshLayer = useCallback(

@@ -1,8 +1,20 @@
 model user_info {
-  id        String   @id @default(uuid())
-  email     String   @unique
+  id        String     @id @default(uuid())
+  email     String     @unique
   password  String
   nickname  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  bookmark  bookmark[]
+}
+
+model bookmark {
+  id             String    @id
+  user_id        String
+  commercialCode String
+  commercialName String
+  createdAt      DateTime  @default(now())
+  user           user_info @relation(fields: [user_id], references: [id])
+
+  @@unique([user_id, commercialCode])
 }
