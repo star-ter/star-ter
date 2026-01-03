@@ -33,7 +33,7 @@ export default function ReportOverlay({
       />
       
       <div
-        className={`fixed bottom-120px left-1/2 -translate-x-1/2 z-100 bg-white shadow-2xl rounded-2xl overflow-hidden animate-slide-up transition-all duration-300 ease-in-out w-[50vw] max-w-900px h-[calc(100vh-10rem)]`}
+        className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-[calc(50%+20px)] z-100 bg-white shadow-2xl rounded-2xl overflow-hidden animate-slide-up transition-all duration-300 ease-in-out w-[60vw] max-w-1000px h-[85vh]`}
       >
         {showLoading && !error && (
           <div className="flex flex-col items-center justify-center h-full bg-white">

@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { ReportRequest } from '../../../types/bottom-menu-types';
+import { IndustryData } from '../../../mocks/industry';
 
 interface ReportInputViewProps {
   onCreateReport: (data: ReportRequest) => void;
@@ -18,12 +19,13 @@ export default function ReportInputView({
     code: string;
   } | null>(null);
 
+  const [selectedMajorCode, setSelectedMajorCode] = useState<string | null>(null);
+
   const [regionSuggestions, setRegionSuggestions] = useState<{name: string, code: string}[]>([]);
   const [isRegionFocused, setIsRegionFocused] = useState(false);
   const isRegionSelected = !!selectedRegion.name; 
 
   const regionTimeout = useRef<NodeJS.Timeout | null>(null);
-  const industryTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const fetchRegions = async (query: string) => {
     if (!query) {
@@ -43,21 +45,6 @@ export default function ReportInputView({
     }
   };
 
-  const fetchIndustries = async (query: string) => {
-    if (!query) {
-      setIndustrySuggestions([]);
-      return;
-    }
-    try {
-      const res = await fetch(`/api/analysis/search/industry?query=${encodeURIComponent(query)}`);
-      if (!res.ok) throw new Error('Failed to fetch');
-      const data = await res.json();
-      setIndustrySuggestions(data);
-    } catch (err) {
-      console.error("Industry fetch error:", err);
-    }
-  };
-
   const handleRegionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const val = e.target.value;
       setSelectedRegion({ ...selectedRegion, name: val });
@@ -66,29 +53,26 @@ export default function ReportInputView({
       regionTimeout.current = setTimeout(() => fetchRegions(val), 300);
   }
 
-  const [industrySuggestions, setIndustrySuggestions] = useState<{name: string, code: string}[]>([]);
-  const [isIndustryFocused, setIsIndustryFocused] = useState(false);
-  const [industrySearch, setIndustrySearch] = useState('');
-
-  const handleIndustryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const val = e.target.value;
-      setIndustrySearch(val);
-      
-      if (industryTimeout.current) clearTimeout(industryTimeout.current);
-      industryTimeout.current = setTimeout(() => fetchIndustries(val), 300);
-  };
-
   const handleRegionSelect = (item: {name: string, code: string}) => {
       setSelectedRegion(item);
       setRegionSuggestions([]);
       setIsRegionFocused(false); 
   };
 
-  const handleIndustrySelect = (item: {name: string, code: string}) => {
-      setSelectedIndustry(item);
-      setIndustrySearch(item.name);
-      setIndustrySuggestions([]);
-      setIsIndustryFocused(false);
+  const [isMajorOpen, setIsMajorOpen] = useState(false);
+  const [isSubOpen, setIsSubOpen] = useState(false);
+
+  const selectedMajor = IndustryData.find(m => m.code === selectedMajorCode);
+
+  const handleMajorSelect = (code: string) => {
+    setSelectedMajorCode(code);
+    setSelectedIndustry(null);
+    setIsMajorOpen(false);
+  };
+
+  const handleSubSelect = (item: { name: string; code: string }) => {
+    setSelectedIndustry(item);
+    setIsSubOpen(false);
   };
 
   const handleSubmit = () => {
@@ -112,7 +96,7 @@ export default function ReportInputView({
       </div>
 
       <div className="space-y-5 mb-6">
-        <div className="relative z-20">
+        <div className="relative z-30">
           <label className="block text-[13px] font-bold text-gray-600 mb-1">분석지역</label>
            <div className="border-b border-gray-100 pb-1">
             <input 
@@ -126,7 +110,7 @@ export default function ReportInputView({
               />
            </div>
            {isRegionFocused && regionSuggestions.length > 0 && (
-             <ul className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-100 rounded-lg shadow-xl max-h-40 overflow-y-auto z-30">
+             <ul className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-100 rounded-lg shadow-xl max-h-40 overflow-y-auto z-40">
                {regionSuggestions.map((item, idx) => (
                  <li 
                    key={idx}
@@ -140,36 +124,88 @@ export default function ReportInputView({
            )}
         </div>
 
-        <div className="relative z-10">
-           <label className="block text-[13px] font-bold text-gray-600 mb-1">분석업종</label>
-           <div className="border-b border-gray-100 pb-1">
-             <input 
-                type="text" 
-                placeholder="업종 입력 (예: 커피)"
-                className="w-full text-[15px] text-gray-900 placeholder-gray-400 bg-transparent border-none p-0 focus:ring-0 font-bold cursor-pointer"
-                value={industrySearch}
-                onChange={handleIndustryChange}
-                onFocus={() => setIsIndustryFocused(true)}
-                onBlur={() => setTimeout(() => setIsIndustryFocused(false), 200)}
-             />
+        <div className="space-y-4 pt-2 border-t border-gray-50">
+           <div className="relative">
+             <label className="block text-[13px] font-bold text-gray-400 mb-1.5">업종 대분류</label>
+             <button
+               onClick={() => setIsMajorOpen(!isMajorOpen)}
+               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border transition-all ${
+                 isMajorOpen ? 'border-blue-400 bg-blue-50/30' : 'border-gray-100 bg-white hover:border-gray-200'
+               }`}
+             >
+               <span className={`text-[14px] font-bold ${selectedMajor ? 'text-gray-900' : 'text-gray-300'}`}>
+                 {selectedMajor ? selectedMajor.name : '대분류 선택'}
+               </span>
+               <svg 
+                 xmlns="http://www.w3.org/2000/svg" 
+                 width="16" height="16" 
+                 viewBox="0 0 24 24" fill="none" 
+                 stroke="currentColor" strokeWidth="2.5" 
+                 strokeLinecap="round" strokeLinejoin="round"
+                 className={`text-gray-400 transition-transform ${isMajorOpen ? 'rotate-180' : ''}`}
+               >
+                 <polyline points="6 9 12 15 18 9"></polyline>
+               </svg>
+             </button>
+             
+             {isMajorOpen && (
+               <ul className="absolute left-0 right-0 top-full mt-1 py-1 z-20 bg-white border border-gray-100 rounded-xl shadow-xl max-h-48 overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+                 {IndustryData.map((item) => (
+                   <li 
+                     key={item.code}
+                     onClick={() => handleMajorSelect(item.code)}
+                     className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-[13px] font-semibold text-gray-700 hover:text-blue-600 border-l-[3px] border-transparent hover:border-blue-500 transition-all"
+                   >
+                     {item.name}
+                   </li>
+                 ))}
+               </ul>
+             )}
            </div>
-           {isIndustryFocused && industrySuggestions.length > 0 && (
-             <ul className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-100 rounded-lg shadow-xl max-h-40 overflow-y-auto z-30">
-               {industrySuggestions.map((item, idx) => (
-                 <li 
-                   key={idx}
-                   className="px-3 py-2.5 hover:bg-blue-50 cursor-pointer text-[13px] text-gray-700 font-medium"
-                   onClick={() => handleIndustrySelect(item)}
-                 >
-                   {item.name}
-                 </li>
-               ))}
-             </ul>
-           )}
+
+           <div className="relative">
+             <label className="block text-[13px] font-bold text-gray-400 mb-1.5">상세 업종</label>
+             <button
+               disabled={!selectedMajor}
+               onClick={() => setIsSubOpen(!isSubOpen)}
+               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border transition-all ${
+                 !selectedMajor ? 'bg-gray-50 border-gray-100 opacity-60 cursor-not-allowed' : 
+                 isSubOpen ? 'border-blue-400 bg-blue-50/30' : 'border-gray-100 bg-white hover:border-gray-200'
+               }`}
+             >
+               <span className={`text-[14px] font-bold ${selectedIndustry ? 'text-gray-900' : 'text-gray-300'}`}>
+                 {selectedIndustry ? selectedIndustry.name : '세부업종 선택'}
+               </span>
+               <svg 
+                 xmlns="http://www.w3.org/2000/svg" 
+                 width="16" height="16" 
+                 viewBox="0 0 24 24" fill="none" 
+                 stroke="currentColor" strokeWidth="2.5" 
+                 strokeLinecap="round" strokeLinejoin="round"
+                 className={`text-gray-400 transition-transform ${isSubOpen ? 'rotate-180' : ''}`}
+               >
+                 <polyline points="6 9 12 15 18 9"></polyline>
+               </svg>
+             </button>
+
+             {isSubOpen && selectedMajor && (
+               <ul className="absolute left-0 right-0 top-full mt-1 py-1 z-20 bg-white border border-gray-100 rounded-xl shadow-xl max-h-48 overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+                 {selectedMajor.children?.map((child) => (
+                   <li 
+                     key={child.code}
+                     onClick={() => handleSubSelect({ name: child.name, code: child.code })}
+                     className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-[13px] font-semibold text-gray-700 hover:text-blue-600 border-l-[3px] border-transparent hover:border-blue-500 transition-all"
+                   >
+                     {child.name}
+                   </li>
+                 ))}
+               </ul>
+             )}
+           </div>
         </div>
       </div>
 
-      <div>
+      <div className="mt-auto">
         <button
           onClick={handleSubmit}
           disabled={!isRegionSelected || !selectedIndustry}
@@ -179,11 +215,8 @@ export default function ReportInputView({
              : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md active:scale-[0.98]'
           }`}
         >
-          보고서 생성 (0/5)
+          보고서 생성
         </button>
-        <p className="text-center text-[12px] text-gray-400 tracking-tight">
-           매일 최대 5회, 보고서를 <span className="text-blue-600 font-bold cursor-pointer hover:underline">무료로 생성</span> 해보세요.
-        </p>
       </div>
     </div>
   );

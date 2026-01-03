@@ -25,7 +25,7 @@ export interface KeyMetricsData {
     comment: string;
   };
   competitionIntensity: {
-    level: '높음' | '보통' | '낮음';
+    level: '높음' | '보통' | '낮음' | '데이터 부족';
     comment: string;
   };
 }
@@ -51,14 +51,14 @@ export interface AgeDistributionData {
 }
 
 export interface SummaryInsight {
-  category: '패턴' | '고객' | '상권';
+  category: '패턴' | '고객' | '상권' | '데이터 부족';
   content: string;
   highlight?: string; // Bold part of the text
 }
 
 export interface HourlyFlowData {
   timeRange: string;
-  level: '보통' | '낮음' | '상승' | '피크' | '높음';
+  level: '보통' | '낮음' | '상승' | '피크' | '높음' | '데이터 부족';
   intensity: number; // 0-100 for bar width
 }
 
@@ -74,7 +74,7 @@ export interface CompetitionTableItem {
 }
 
 export interface ConclusionItem {
-  category: '운영' | '상품' | '마케팅';
+  category: '운영' | '상품' | '마케팅' | '데이터 부족';
   content: string;
   highlight?: string;
 }

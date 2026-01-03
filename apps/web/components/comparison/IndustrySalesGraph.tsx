@@ -42,7 +42,7 @@ export default function IndustrySalesGraph({ data }: IndustrySalesGraphProps) {
   // 데이터가 없으면 안내 메시지 표시
   if (!data || data.length === 0) {
     return (
-      <div className="h-[180px] flex items-center justify-center text-gray-400 text-xs">
+      <div className="h-180px flex items-center justify-center text-gray-400 text-xs">
         업종 데이터 없음
       </div>
     );

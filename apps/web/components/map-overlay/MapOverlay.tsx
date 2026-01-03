@@ -49,7 +49,7 @@ export default function MapOverlay({
           <SearchBox />
           <LocationNav />
         </div>
-        {shouldShowRank && (
+        {shouldShowRank && !isReportOpen && (
           <>
             {/* 버튼은 클릭되어야 하므로 pointer-events-auto 추가 */}
             <button

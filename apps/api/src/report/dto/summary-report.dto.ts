@@ -41,7 +41,7 @@ export interface SummaryReportResponse {
       comment: string;
     };
     competitionIntensity: {
-      level: '높음' | '보통' | '낮음';
+      level: '높음' | '보통' | '낮음' | '데이터 부족';
       comment: string;
     };
   };
@@ -71,7 +71,7 @@ export interface SummaryReportResponse {
 
   // 5) 인사이트 (프론트엔드 요구사항 추가)
   summaryInsights: {
-    category: '패턴' | '고객' | '상권';
+    category: '패턴' | '고객' | '상권' | '데이터 부족';
     content: string;
     highlight?: string;
   }[];
@@ -81,7 +81,7 @@ export interface SummaryReportResponse {
     summary: string;
     data: {
       timeRange: string;
-      level: '보통' | '낮음' | '상승' | '피크' | '높음';
+      level: '보통' | '낮음' | '상승' | '피크' | '높음' | '데이터 부족';
       intensity: number;
     }[];
   };
@@ -101,7 +101,7 @@ export interface SummaryReportResponse {
 
   // 9) 결론 (프론트엔드 요구사항 추가)
   conclusion: {
-    category: '운영' | '상품' | '마케팅';
+    category: '운영' | '상품' | '마케팅' | '데이터 부족';
     content: string;
     highlight?: string;
   }[];

@@ -10,6 +10,8 @@ import { WeeklyCharacteristics } from '../report/WeeklyCharacteristics';
 import { CompetitionAnalysis } from '../report/CompetitionAnalysis';
 import { ReportConclusion } from '../report/ReportConclusion';
 import { ReportData } from '@/types/report.types';
+import { toPng } from 'html-to-image';
+import { jsPDF } from 'jspdf';
 
 interface ReportResultViewProps {
   onClose: () => void;
@@ -23,10 +25,55 @@ export default function ReportResultView({
   onClose,
   data,
 }: ReportResultViewProps) {
-  const [scale, setScale] = useState(0.8); // 0 대신 0.8로 시작하여 투명화 방지
+  const [scale, setScale] = useState(0.8);
   const containerRef = useRef<HTMLDivElement>(null);
+  // 페이지별 ref 분리
+  const page1Ref = useRef<HTMLDivElement>(null);
+  const page2Ref = useRef<HTMLDivElement>(null);
 
   const reportData = data;
+
+  const handleDownloadPDF = async () => {
+    // 캡처할 페이지들을 배열로 관리
+    const pages = [page1Ref.current, page2Ref.current];
+    if (pages.some(page => !page)) return;
+
+    try {
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210; // A4 width mm
+      const imgHeight = 297; // A4 height mm
+
+      for (let i = 0; i < pages.length; i++) {
+        const page = pages[i];
+        if (!page) continue;
+
+        // 각 페이지를 개별적으로 캡처
+        const dataUrl = await toPng(page, {
+          quality: 0.95,
+          cacheBust: true,
+          style: {
+            transform: 'scale(1)', // 캡처 시 스케일 1:1 강제
+            width: `${A4_WIDTH_PX}px`,
+            height: `${PAGE_HEIGHT_PX}px`,
+            backgroundColor: '#ffffff', // 배경 흰색 고정
+          },
+          pixelRatio: 2, // 고해상도
+        });
+
+        // 첫 페이지가 아니면 새 페이지 추가
+        if (i > 0) pdf.addPage();
+        
+        // 꽉 찬 A4 이미지로 추가 (여백 없이)
+        pdf.addImage(dataUrl, 'PNG', 0, 0, imgWidth, imgHeight, undefined, 'FAST');
+      }
+
+      const fileName = `리포트_${data.meta.region.replace(/\s+/g, '_')}_${data.meta.category}.pdf`;
+      pdf.save(fileName);
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      alert(`PDF 생성 중 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
+    }
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -35,8 +82,8 @@ export default function ReportResultView({
       const width = containerRef.current.clientWidth;
       if (width <= 0) return;
 
-      const padding = 48; // 더 넉넉한 여백
-      const availableWidth = Math.max(width - padding, 200); // 최소 너비 보장
+      const padding = 48; 
+      const availableWidth = Math.max(width - padding, 200); 
       
       const newScale = Math.min(availableWidth / A4_WIDTH_PX, 1.1);
       setScale(newScale);
@@ -55,7 +102,7 @@ export default function ReportResultView({
     return () => resizeObserver.disconnect();
   }, []);
 
-  const totalHeight = (PAGE_HEIGHT_PX * 2 + 64); // 페이지 간격 및 하단 여백 포함
+  const totalHeight = (PAGE_HEIGHT_PX * 2 + 64); 
   const scaledWidth = A4_WIDTH_PX * scale;
   const scaledHeight = totalHeight * scale;
 
@@ -66,7 +113,10 @@ export default function ReportResultView({
     >
       {/* 보고서 상단 버튼 - 더 강조된 스타일 */}
       <div className="absolute top-4 right-6 z-110 flex gap-3 pointer-events-auto">
-        <button className="bg-white hover:bg-gray-50 text-blue-600 p-2.5 rounded-full shadow-lg transition-all active:scale-95 border border-gray-200">
+        <button 
+          onClick={handleDownloadPDF}
+          className="bg-white hover:bg-gray-50 text-blue-600 p-2.5 rounded-full shadow-lg transition-all active:scale-95 border border-gray-200"
+        >
           <Download className="w-5 h-5" />
         </button>
         <button className="bg-white hover:bg-gray-50 text-blue-600 p-2.5 rounded-full shadow-lg transition-all active:scale-95 border border-gray-200">
@@ -94,7 +144,7 @@ export default function ReportResultView({
             transition: 'width 0.3s ease, height 0.3s ease', // 스케일 변경 시 부드럽게
           }}
         >
-          {/* Scaled Content */}
+          {/* Scaled Content - transform on parent */}
           <div
             className="flex flex-col gap-12 origin-top-left"
             style={{
@@ -104,11 +154,13 @@ export default function ReportResultView({
           >
             {/* Page 1 */}
             <div
-              className="bg-white p-12 flex flex-col gap-8 animate-slide-up"
+              ref={page1Ref}
+              className="bg-white p-12 flex flex-col gap-5 animate-slide-up"
               style={{
                 width: `${A4_WIDTH_PX}px`,
-                minHeight: `${PAGE_HEIGHT_PX}px`,
+                height: `${PAGE_HEIGHT_PX}px`,  // A4 고정
                 boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
+                overflow: 'hidden',
               }}
             >
               <ReportHeader
@@ -119,13 +171,13 @@ export default function ReportResultView({
 
               <KeyMetrics data={reportData.keyMetrics} />
 
-              <div className="grid grid-cols-2 gap-8 h-64">
+              <div className="grid grid-cols-2 gap-6 h-48">
                 <ZoneOverview data={reportData.zoneOverview} />
                 <CustomerComposition data={reportData.customerComposition} />
               </div>
 
-              <div className="mt-4">
-                <h3 className="text-sm font-bold text-gray-800 mb-4 border-l-4 border-blue-500 pl-3">
+              <div className="mt-1">
+                <h3 className="text-sm font-bold text-gray-800 mb-2 border-l-4 border-blue-500 pl-3">
                   4) 연령대 분포(요약)
                 </h3>
                 <AgeDistribution data={reportData.ageDistribution} />
@@ -136,11 +188,13 @@ export default function ReportResultView({
 
             {/* Page 2 */}
             <div
-              className="bg-white p-12 flex flex-col gap-10 animate-slide-up animation-delay-200"
+              ref={page2Ref}
+              className="bg-white p-12 flex flex-col gap-8 animate-slide-up animation-delay-200"
               style={{
                 width: `${A4_WIDTH_PX}px`,
-                minHeight: `${PAGE_HEIGHT_PX}px`,
+                height: `${PAGE_HEIGHT_PX}px`, // A4 고정
                 boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
+                overflow: 'hidden',
               }}
             >
               <ReportHeader
@@ -154,7 +208,7 @@ export default function ReportResultView({
                 }}
               />
 
-              <div className="grid grid-cols-2 gap-10">
+              <div className="grid grid-cols-2 gap-8">
                 <HourlyFlow
                   summary={reportData.hourlyFlow.summary}
                   data={reportData.hourlyFlow.data}
