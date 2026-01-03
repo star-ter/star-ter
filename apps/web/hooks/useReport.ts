@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react';
 import { ReportData } from '@/types/report.types';
 
-export const useReport = (regionCode: string, industryCode: string) => {
+export const useReport = (
+  regionCode: string,
+  industryCode: string,
+  regionName?: string,
+  industryName?: string
+) => {
   const [data, setData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(!!(regionCode && industryCode));
   const [error, setError] = useState<string | null>(null);
@@ -18,8 +23,14 @@ export const useReport = (regionCode: string, industryCode: string) => {
       setData(null); // 이전 데이터 초기화
       setError(null);
       try {
+        const queryParams = new URLSearchParams({
+          regionCode,
+          industryCode,
+          ...(regionName && { regionName }),
+          ...(industryName && { industryName }),
+        });
         const response = await fetch(
-          `${API_BASE_URL}/report/summary?regionCode=${regionCode}&industryCode=${industryCode}`
+          `${API_BASE_URL}/report/summary?${queryParams.toString()}`
         );
         if (!response.ok) {
           throw new Error(`리포트 데이터를 가져오는데 실패했습니다. (${response.status})`);
@@ -35,7 +46,7 @@ export const useReport = (regionCode: string, industryCode: string) => {
     };
 
     fetchReport();
-  }, [regionCode, industryCode, API_BASE_URL]);
+  }, [regionCode, industryCode, regionName, industryName, API_BASE_URL]);
 
   return { data, loading, error };
 };

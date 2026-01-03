@@ -9,6 +9,8 @@ export class ReportService {
   async getSummaryReport(
     regionCode: string,
     industryCode: string,
+    fallbackIndustryName?: string,
+    fallbackRegionName?: string,
   ): Promise<SummaryReportResponse> {
     const [
       sales,
@@ -60,12 +62,13 @@ export class ReportService {
     };
 
     const activeSales = sales || defaultSales;
-    const areaName = area.adstrd_nm || '데이터 부족';
+    const areaName = area?.adstrd_nm || fallbackRegionName || '데이터 부족';
 
-    // 업종명 결정: service_industry 테이블에서 먼저 찾고, 없으면 매출 데이터의 업종명 사용
+    // 업종명 결정: service_industry 테이블 -> 매출 데이터 -> 프론트엔드 전달값 -> 코드값
     const industryName =
       industry?.service_industry_nm ||
       (sales as { svc_induty_cd_nm: string } | null)?.svc_induty_cd_nm ||
+      fallbackIndustryName ||
       industryCode;
 
     // 1) 핵심 지표 계산

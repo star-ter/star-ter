@@ -16,6 +16,8 @@ export class ReportController {
     return this.reportService.getSummaryReport(
       query.regionCode,
       query.industryCode,
+      query.industryName,
+      query.regionName,
     );
   }
 }
