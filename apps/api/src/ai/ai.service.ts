@@ -18,14 +18,31 @@ export class AiService {
   async getAIMessage(message: string): Promise<string> {
     const startTime = Date.now();
 
-    const [categories, areaList] = await Promise.all([
+    const [categories, areaList, similarColumns] = await Promise.all([
       this.getCategories(message),
       this.buildAreaList(message),
+      this.getSimilarColumns(message),
     ]);
 
-    const sql = getText(await nlToSql(message, categories, areaList));
+    console.log('Categories:', similarColumns);
+
+    this.logger.log(
+      `Time taken to get categories and area list: ${
+        (Date.now() - startTime) / 1000
+      } s`,
+    );
+
+    const sql = getText(
+      await nlToSql(message, similarColumns, categories, areaList),
+    );
     console.log('Generated SQL:', sql);
     const results = await this.aiRepository.runSql(sql);
+
+    this.logger.log(
+      `Time taken to get categories and area list: ${
+        (Date.now() - startTime) / 1000
+      } s`,
+    );
 
     const analyzedResponse = await analyzeSqlResults(message, results);
     const returnMessage = getText(analyzedResponse);
@@ -35,6 +52,13 @@ export class AiService {
     );
 
     return returnMessage;
+  }
+
+  private async getSimilarColumns(message: string) {
+    const vector = await embedText(message);
+    const embedding = vector.data[0].embedding;
+
+    return this.aiRepository.columnsSearchByVector(embedding, 20);
   }
 
   private async getAreaList(message: string) {

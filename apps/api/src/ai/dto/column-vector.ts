@@ -1,6 +1,14 @@
+export class ColumnVectorDto {
+  question: string;
+  description: string;
+  tableName: string;
+  columnName: string;
+  dataType: string;
+}
+
 export class BusinessCategoryVectorDto {
   code: string;
-  category_name: string;
+  categoryName: string;
 }
 
 export class AreaVectorDto {
