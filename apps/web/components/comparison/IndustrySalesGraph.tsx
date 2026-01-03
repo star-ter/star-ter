@@ -101,7 +101,7 @@ export default function IndustrySalesGraph({ data }: IndustrySalesGraphProps) {
             <div key={i} className="relative z-10 flex flex-col items-center justify-end h-full w-full">
               {/* 막대 - isMax이면 다른 색상으로 강조 */}
               <div 
-                className={`w-8 rounded-t-sm transition-all duration-[800ms] ease-out ${
+                className={`w-8 rounded-t-sm transition-all duration-800 ease-out ${
                   isMax ? 'bg-[#E5858E]' : 'bg-[#90AFFF]'
                 }`}
                 style={{ height: loaded ? `${barHeight}px` : '0px' }}

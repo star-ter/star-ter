@@ -67,7 +67,6 @@ export default function BottomMenuBox({
     if (selected) {
       clearSelection(); // Clear map selection to ensure Industry contents show
       onSelectCategory(selected);
-      setTimeout(() => setInfoBarOpen(true), 100);
     }
     // TODO: 선택된 업종에 대한 데이터 가져오기
     modalClose();

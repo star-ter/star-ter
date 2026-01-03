@@ -7,6 +7,9 @@ import SearchBox from '../search/SearchBox';
 import LocationNav from '../left-top/LocationNav';
 import { useMapStore } from '../../stores/useMapStore';
 import { useMapSync } from '@/hooks/useMapSync';
+import { User } from 'lucide-react';
+import Link from 'next/link';
+import { useAuth } from '@/hooks/useAuth';
 
 interface MapOverlayProps {
   locationA: { name: string; code?: string };
@@ -17,6 +20,7 @@ interface MapOverlayProps {
   population: ReturnType<typeof usePopulationVisual>;
   onCompare?: () => void;
   onSelectCategory: (category: IndustryCategory | null) => void;
+  selectedCategory: IndustryCategory | null;
   onCreateReport?: (data: ReportRequest) => void;
   isReportOpen?: boolean;
   onToggleReport?: (isOpen: boolean) => void;
@@ -31,6 +35,7 @@ export default function MapOverlay({
   population,
   onCompare,
   onSelectCategory,
+  selectedCategory,
   onCreateReport,
   isReportOpen,
   onToggleReport,
@@ -38,6 +43,7 @@ export default function MapOverlay({
   const { zoom } = useMapStore();
   const [isRankOpen, setIsRankOpen] = useState(true);
   const { currentGuCode, currentGuName } = useMapSync();
+  const { isLoggedIn } = useAuth();
 
   const shouldShowRank = zoom >= 5;
   const rankLevel = zoom >= 7 ? 'gu' : 'dong';
@@ -46,6 +52,15 @@ export default function MapOverlay({
     <section className="absolute w-fit h-fit pointer-events-none">
       <div className="flex flex-col items-start gap-3 pointer-events-none">
         <div className="inline-flex items-center pointer-events-auto">
+          {/* Login/User Button */}
+          <Link
+            href={isLoggedIn ? '/user' : '/login'}
+            className="ml-4 flex h-12 w-12 items-center justify-center rounded-full bg-white/90 shadow-lg ring-1 ring-gray-200 transition-colors hover:bg-white"
+          >
+            <User
+              className={`h-6 w-6 ${isLoggedIn ? 'text-blue-600' : 'text-gray-700'}`}
+            />
+          </Link>
           <SearchBox />
           <LocationNav />
         </div>
@@ -70,6 +85,7 @@ export default function MapOverlay({
                 parentGuName={
                   rankLevel === 'dong' ? currentGuName || undefined : undefined
                 }
+                selectedCategory={selectedCategory || undefined}
               />
             )}
           </>

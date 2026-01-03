@@ -60,7 +60,6 @@ export default function Kakaomap({
   useEffect(() => {
     if (selectedCategory && selectedCategory !== prevCategoryRef.current) {
       clearSelection();
-      setInfoBarOpen(true);
     }
     prevCategoryRef.current = selectedCategory;
   }, [selectedCategory, clearSelection, setInfoBarOpen]);
@@ -172,8 +171,6 @@ export default function Kakaomap({
   );
 
   const handleClose = () => {
-    // 사이드바 닫기 (선택된 업종 필터는 유지)
-    setInfoBarOpen(false);
     clearSelection();
   };
 
