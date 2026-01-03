@@ -15,6 +15,7 @@ import { AnalysisModule } from './analysis/analysis.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './user/user.module';
 import { ReportModule } from './report/report.module';
+import { BookmarkModule } from './bookmark/bookmark.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { ReportModule } from './report/report.module';
     AuthModule,
     UsersModule,
     ReportModule,
+    BookmarkModule,
   ],
   controllers: [HealthController],
   providers: [],
