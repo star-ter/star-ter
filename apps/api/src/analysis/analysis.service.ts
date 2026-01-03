@@ -29,7 +29,7 @@ export class AnalysisService {
     }
 
     const latestQuarter = quarters[quarters.length - 1];
-    const [salesAgg, storeAgg, popAgg, storeGroups, trendGroups] =
+    const [salesAgg, storeAgg, popAgg, workingPopAgg, storeGroups, trendGroups] =
       await Promise.all([
         this.repository.aggregateSales(
           region.type,
@@ -46,6 +46,11 @@ export class AnalysisService {
           region.codes,
           latestQuarter,
         ),
+        this.repository.aggregateWorkingPopulation(
+          region.type,
+          region.codes,
+          latestQuarter,
+        ),
         this.repository.getStoreCategoryBreakdown(
           region.type,
           region.codes,
@@ -58,6 +63,7 @@ export class AnalysisService {
       salesAgg,
       storeAgg,
       popAgg,
+      workingPopAgg,
       storeGroups,
       trendGroups,
       {

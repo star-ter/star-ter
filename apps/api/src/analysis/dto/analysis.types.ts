@@ -108,6 +108,12 @@ export interface AnalysisResponse {
     male: number;
     female: number;
     age: PopulationAgeItem;
+    working?: {
+      total: number;
+      male: number;
+      female: number;
+      age: PopulationAgeItem;
+    };
   } | null;
 }
 
@@ -160,6 +166,23 @@ export interface StoreAggregate {
 
 export interface PopulationAggregate {
   _sum: Record<string, number | null>;
+}
+
+export interface WorkingPopulationAggregate {
+  _sum: Record<string, number | null>;
+}
+
+export interface WorkingPopulationRow {
+  tot_wrc_popltn_co: number;
+  ml_wrc_popltn_co: number;
+  fml_wrc_popltn_co: number;
+  agrde_10_wrc_popltn_co: number;
+  agrde_20_wrc_popltn_co: number;
+  agrde_30_wrc_popltn_co: number;
+  agrde_40_wrc_popltn_co: number;
+  agrde_50_wrc_popltn_co: number;
+  agrde_60_above_wrc_popltn_co: number;
+  stdr_yyqu_cd: string;
 }
 
 export interface StoreCategoryGroup {

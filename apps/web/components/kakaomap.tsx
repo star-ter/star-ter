@@ -36,9 +36,9 @@ export default function Kakaomap({
   const markersRef = useRef<KakaoMarker[]>([]);
 
   const { map } = useKakaoMap(mapRef);
-  const { selectedArea, selectArea, clearSelection, setInfoBarOpen, setSelectedArea } =
+  const { selectedArea, selectArea, clearSelection, setSelectedArea } =
     useSidebarStore();
-  const { center, zoom, markers, setZoom, setCenter, clearMarkers } =
+  const { center, zoom, markers, setZoom, setCenter, clearMarkers, setSelectedIndustryCodes } =
     useMapStore();
 
   usePolygonData(map, (data: InfoBarData) => {
@@ -171,6 +171,10 @@ export default function Kakaomap({
 
   const handleClose = () => {
     clearSelection();
+    if (onClearCategory) {
+      onClearCategory();
+    }
+    setSelectedIndustryCodes(null);
   };
 
   useEffect(() => {

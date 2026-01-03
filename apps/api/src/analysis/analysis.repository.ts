@@ -5,6 +5,7 @@ import {
   SalesAggregate,
   StoreAggregate,
   PopulationAggregate,
+  WorkingPopulationAggregate,
   StoreCategoryGroup,
   SalesTrendGroup,
 } from './dto/analysis.types';
@@ -50,6 +51,18 @@ const POPULATION_SUM_FIELDS = {
   agrde_40_repop_co: true,
   agrde_50_repop_co: true,
   agrde_60_above_repop_co: true,
+} as const;
+
+const WORKING_POPULATION_SUM_FIELDS = {
+  tot_wrc_popltn_co: true,
+  ml_wrc_popltn_co: true,
+  fml_wrc_popltn_co: true,
+  agrde_10_wrc_popltn_co: true,
+  agrde_20_wrc_popltn_co: true,
+  agrde_30_wrc_popltn_co: true,
+  agrde_40_wrc_popltn_co: true,
+  agrde_50_wrc_popltn_co: true,
+  agrde_60_above_wrc_popltn_co: true,
 } as const;
 
 @Injectable()
@@ -209,6 +222,30 @@ export class AnalysisRepository {
           where: { trdar_cd: { in: codes }, stdr_yyqu_cd: quarter },
           _sum: POPULATION_SUM_FIELDS,
         })) as unknown as PopulationAggregate;
+    }
+  }
+
+  async aggregateWorkingPopulation(
+    type: RegionType,
+    codes: string[],
+    quarter: string,
+  ): Promise<WorkingPopulationAggregate> {
+    switch (type) {
+      case 'GU':
+        return (await this.prisma.workingPopulationGu.aggregate({
+          where: { signgu_cd: { in: codes }, stdr_yyqu_cd: quarter },
+          _sum: WORKING_POPULATION_SUM_FIELDS,
+        })) as unknown as WorkingPopulationAggregate;
+      case 'DONG':
+        return (await this.prisma.workingPopulationDong.aggregate({
+          where: { adstrd_cd: { in: codes }, stdr_yyqu_cd: quarter },
+          _sum: WORKING_POPULATION_SUM_FIELDS,
+        })) as unknown as WorkingPopulationAggregate;
+      case 'COMMERCIAL':
+        return (await this.prisma.workingPopulationCommercial.aggregate({
+          where: { trdar_cd: { in: codes }, stdr_yyqu_cd: quarter },
+          _sum: WORKING_POPULATION_SUM_FIELDS,
+        })) as unknown as WorkingPopulationAggregate;
     }
   }
 
