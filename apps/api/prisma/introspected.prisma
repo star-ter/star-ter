@@ -38,10 +38,9 @@ model seoul_vitality {
 
 model column_vector_table {
   id          BigInt                @id @default(autoincrement())
-  text        String
+  question    String
+  description String?
   embedding   Unsupported("vector")
-  domain      String?
-  area_level  String?
   table_name  String?
   column_name String?
   data_type   String?
@@ -105,6 +104,7 @@ model geo_alias {
   @@id([alias_norm, area_level, area_cd])
   @@index([area_level, area_cd], map: "idx_geo_alias_area")
   @@index([alias_norm], map: "idx_geo_alias_norm")
+  @@index([alias_norm(ops: raw("gin_trgm_ops"))], map: "idx_geo_alias_trgm", type: Gin)
 }
 
 model industry_alias {
@@ -120,6 +120,7 @@ model industry_alias {
   @@id([alias_norm, svc_induty_cd])
   @@index([svc_induty_cd], map: "idx_industry_alias_cd")
   @@index([alias_norm], map: "idx_industry_alias_norm")
+  @@index([alias_norm(ops: raw("gin_trgm_ops"))], map: "idx_industry_alias_trgm", type: Gin)
 }
 
 model area_vector_table {
