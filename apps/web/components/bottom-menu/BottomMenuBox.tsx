@@ -7,6 +7,7 @@ import PillButton from './PillButton';
 import PopulationContents from './modal/PopulationContents';
 import IndustryContents from './modal/IndustryContents';
 import CompareContents from './modal/CompareContents';
+import CalculateRentContents from './modal/CalculateRentModal/CalculateRentContents';
 import ReportInputView from './modal/ReportInputView';
 import {
   IndustryCategory,
@@ -17,11 +18,9 @@ import { IndustryData } from '../../mocks/industry';
 import { useSidebarStore } from '../../stores/useSidebarStore';
 import { useModalStore } from '../../stores/useModalStore';
 
-type ActiveType = /* 'area' | */
-  | 'population'
-  | 'industry'
-  | 'compare'
-  | 'report';
+type ActiveType =
+  /* 'area' | */
+  'population' | 'industry' | 'compare' | 'report' | 'calculateRent';
 
 import { usePopulationVisual } from '../../hooks/usePopulationVisual';
 interface BottomMenuProps {
@@ -106,6 +105,7 @@ export default function BottomMenuBox({
     { label: '업종', value: 'industry' },
     { label: '비교', value: 'compare' },
     { label: '보고서', value: 'report' },
+    { label: '임대료 계산', value: 'calculateRent' },
     { label: '초기화', value: 'none' },
   ];
 
@@ -160,6 +160,8 @@ export default function BottomMenuBox({
             initialRegion={undefined}
           />
         );
+      case 'calculateRent':
+        return <CalculateRentContents onClose={modalClose} />;
       default:
         return null;
     }
@@ -168,7 +170,7 @@ export default function BottomMenuBox({
   const content = renderContent();
 
   return (
-    <section className="w-full flex flex-col items-center mb-[32px]">
+    <section className="w-full flex flex-col items-center mb-8">
       {content && <ModalCard>{content}</ModalCard>}
       <div className="flex items-center justify-center gap-4 rounded-2xl bg-white/80 px-4 py-3 shadow-md ring-1 ring-black/5">
         {items.map(({ label, value }) => (
@@ -242,6 +244,9 @@ export default function BottomMenuBox({
               if (value === 'compare') {
                 setInfoBarOpen(false);
                 setIsOpen(false);
+              }
+
+              if (value === 'calculateRent') {
               }
             }}
           />
