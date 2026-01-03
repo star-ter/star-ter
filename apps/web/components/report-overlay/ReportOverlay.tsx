@@ -18,6 +18,8 @@ export default function ReportOverlay({
   const { data, loading, error } = useReport(
     userSelection?.regionCode || '',
     userSelection?.industryCode || '',
+    userSelection?.regionName || '',
+    userSelection?.industryName || '',
   );
 
   if (!isVisible) return null;

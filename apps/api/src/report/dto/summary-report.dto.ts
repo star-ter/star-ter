@@ -8,6 +8,14 @@ export class GetSummaryReportQueryDto {
   @IsString()
   @IsNotEmpty()
   regionCode: string;
+
+  @IsString()
+  @IsNotEmpty()
+  industryName?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  regionName?: string;
 }
 
 export interface SummaryReportResponse {
