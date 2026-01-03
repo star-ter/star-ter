@@ -177,9 +177,13 @@ export default function Kakaomap({
   useEffect(() => {
     if (!map) return;
 
-    setZoom(map.getLevel());
-    const initialCenter = map.getCenter();
-    setCenter({ lat: initialCenter.getLat(), lng: initialCenter.getLng() });
+    // Only set initial store state if it's empty (first load)
+    // Otherwise, let the store drive the map (persistence)
+    if (!center) {
+      const initialCenter = map.getCenter();
+      setCenter({ lat: initialCenter.getLat(), lng: initialCenter.getLng() });
+      setZoom(map.getLevel());
+    }
 
     const timerRef = { current: null as NodeJS.Timeout | null };
 
