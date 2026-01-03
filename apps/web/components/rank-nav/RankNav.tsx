@@ -26,6 +26,8 @@ type RankNavProps = {
   parentGuCode?: string;
   parentGuName?: string;
   selectedCategory?: IndustryCategory;
+  selectedSubCode?: string | null;
+  onSubCodeChange?: (code: string | null) => void;
 };
 
 const changeLabelMap: Record<string, string> = {
@@ -40,17 +42,14 @@ export default function RankNav({
   parentGuCode,
   parentGuName,
   selectedCategory,
+  selectedSubCode,
+  onSubCodeChange,
 }: RankNavProps) {
   const { moveToLocation } = useMapStore();
   const [isMoving, setIsMoving] = useState(false);
   const [items, setItems] = useState<RankItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedSubCode, setSelectedSubCode] = useState<string | null>(null);
-
-  useEffect(() => {
-    setSelectedSubCode(null);
-  }, [selectedCategory?.code]);
 
   const handleSelect = async (name: string) => {
     if (isMoving) return;
@@ -144,8 +143,8 @@ export default function RankNav({
         areaName={parentGuName}
         categoryName={selectedCategory?.name}
         selectedCategory={selectedCategory}
-        selectedSubCode={selectedSubCode}
-        onSubCodeChange={setSelectedSubCode}
+        selectedSubCode={selectedSubCode || null}
+        onSubCodeChange={(code) => onSubCodeChange?.(code)}
       />
 
       <div className="space-y-2">

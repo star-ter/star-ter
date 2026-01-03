@@ -3,22 +3,16 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { InfoBarData } from '../../types/map-types';
-import { IndustryCategory } from '../../types/bottom-menu-types';
 import InfoBarHeader from './InfoBarHeader';
 import InfoBarContents from './InfoBarContents';
 import { useSidebarStore } from '../../stores/useSidebarStore';
 
 interface InfoBarProps {
   data: InfoBarData | null;
-  selectedCategory: IndustryCategory | null;
   onClose: () => void;
 }
 
-export default function InfoBar({
-  data,
-  selectedCategory,
-  onClose,
-}: InfoBarProps) {
+export default function InfoBar({ data, onClose }: InfoBarProps) {
   const [mounted, setMounted] = useState(false);
   const { isInfoBarOpen } = useSidebarStore();
 
@@ -27,33 +21,26 @@ export default function InfoBar({
     setMounted(true);
   }, []);
 
-  // 닫기 조건: 데이터도 없고, 선택된 업종도 없고, 사이드바 상태가 닫혀있으면
-  if (!mounted || (!data && !selectedCategory) || !isInfoBarOpen) return null;
+  // 데이터가 없거나 사이드바가 닫혀있으면 렌더링하지 않음
+  if (!mounted || !data || !isInfoBarOpen) return null;
 
   // 헤더 타이틀 계산
   let title: React.ReactNode = '';
   let subTitle: React.ReactNode = '';
 
-  if (data) {
-    // 지도 데이터가 있는 경우
-    if (data.buld_nm) {
-      // 건물명이 있으면 최우선 표시
-      title = data.buld_nm;
-      subTitle = data.adm_nm || '';
-    } else {
-      // 건물명이 없으면 행정구역명 파싱
-      const name = data.adm_nm || '정보 없음';
-      const nameParts = name.split(' ');
-      title = nameParts[nameParts.length - 1]; // e.g. "삼성동" or "강남구"
-      subTitle =
-        nameParts.length > 1
-          ? nameParts.slice(0, nameParts.length - 1).join(' ')
-          : '';
-    }
-  } else if (selectedCategory) {
-    // 업종만 선택된 경우
-    title = selectedCategory.name;
-    subTitle = '업종 분석';
+  if (data.buld_nm) {
+    // 건물명이 있으면 최우선 표시
+    title = data.buld_nm;
+    subTitle = data.adm_nm || '';
+  } else {
+    // 건물명이 없으면 행정구역명 파싱
+    const name = data.adm_nm || '정보 없음';
+    const nameParts = name.split(' ');
+    title = nameParts[nameParts.length - 1]; // e.g. "삼성동" or "강남구"
+    subTitle =
+      nameParts.length > 1
+        ? nameParts.slice(0, nameParts.length - 1).join(' ')
+        : '';
   }
 
   return createPortal(
@@ -63,7 +50,7 @@ export default function InfoBar({
         <InfoBarHeader title={title} subTitle={subTitle} onClose={onClose} />
 
         {/* 컨텐츠 */}
-        <InfoBarContents data={data} selectedCategory={selectedCategory} />
+        <InfoBarContents data={data} />
       </div>
     </div>,
     document.body,

@@ -88,6 +88,8 @@ export class PolygonService {
     miny: string,
     maxx: string,
     maxy: string,
+    industryCode?: string,
+    industryCodes?: string,
   ): Promise<CommercialPolygonResponse[]> {
     await this.ensureGlobalRanks();
 
@@ -108,6 +110,10 @@ export class PolygonService {
     const populationMap = new Map<string, number>();
     const openingStoresMap = new Map<string, number>();
     const closingStoresMap = new Map<string, number>();
+    const industryFilter = this.buildIndustryFilter(
+      industryCode,
+      industryCodes,
+    );
 
     if (trdarCds.length > 0) {
       const sales = await this.prisma.salesCommercial.groupBy({
@@ -115,6 +121,7 @@ export class PolygonService {
         where: {
           trdar_cd: { in: trdarCds },
           stdr_yyqu_cd: LATEST_QUARTER,
+          ...(industryFilter ? { svc_induty_cd: industryFilter } : {}),
         },
         _sum: { thsmon_selng_amt: true },
       });
@@ -150,6 +157,7 @@ export class PolygonService {
     }
 
     const { revenue, population, opening, closing } = this.globalRankCache!;
+    const applyRevenueRank = !industryFilter;
 
     return results.map(
       (row) =>
@@ -165,7 +173,7 @@ export class PolygonService {
           residentPopulation: populationMap.get(row.trdar_cd) || 0,
           openingStores: openingStoresMap.get(row.trdar_cd) || 0,
           closingStores: closingStoresMap.get(row.trdar_cd) || 0,
-          rankRevenue: revenue.get(row.trdar_cd),
+          rankRevenue: applyRevenueRank ? revenue.get(row.trdar_cd) : undefined,
           rankPopulation: population.get(row.trdar_cd),
           rankOpening: opening.get(row.trdar_cd),
           rankClosing: closing.get(row.trdar_cd),
@@ -179,21 +187,29 @@ export class PolygonService {
 
   async getAdminPolygonByLowSearch(
     lowSearch: number,
+    industryCode?: string,
+    industryCodes?: string,
   ): Promise<AdminPolygonResponse[]> {
     if (lowSearch === 2) {
-      return this.fetchAdminData('dong');
+      return this.fetchAdminData('dong', industryCode, industryCodes);
     } else {
-      return this.fetchAdminData('gu');
+      return this.fetchAdminData('gu', industryCode, industryCodes);
     }
   }
 
   private async fetchAdminData(
     type: 'gu' | 'dong',
+    industryCode?: string,
+    industryCodes?: string,
   ): Promise<AdminPolygonResponse[]> {
     const revenueMap = new Map<string, number>();
     const populationMap = new Map<string, number>();
     const openingStoresMap = new Map<string, number>();
     const closingStoresMap = new Map<string, number>();
+    const industryFilter = this.buildIndustryFilter(
+      industryCode,
+      industryCodes,
+    );
 
     let polygons: AdminPolygonResponse[] = [];
 
@@ -203,7 +219,10 @@ export class PolygonService {
 
       const sales = await this.prisma.salesDong.groupBy({
         by: ['adstrd_cd'],
-        where: { stdr_yyqu_cd: LATEST_QUARTER },
+        where: {
+          stdr_yyqu_cd: LATEST_QUARTER,
+          ...(industryFilter ? { svc_induty_cd: industryFilter } : {}),
+        },
         _sum: { thsmon_selng_amt: true },
       });
       sales.forEach(
@@ -245,7 +264,10 @@ export class PolygonService {
 
       const sales = await this.prisma.salesGu.groupBy({
         by: ['signgu_cd'],
-        where: { stdr_yyqu_cd: LATEST_QUARTER },
+        where: {
+          stdr_yyqu_cd: LATEST_QUARTER,
+          ...(industryFilter ? { svc_induty_cd: industryFilter } : {}),
+        },
         _sum: { thsmon_selng_amt: true },
       });
       sales.forEach(
@@ -330,5 +352,26 @@ export class PolygonService {
     if (!result) return null;
 
     return result as unknown as AdminPolygonResponse;
+  }
+
+  private buildIndustryFilter(
+    industryCode?: string,
+    industryCodes?: string,
+  ):
+    | string
+    | {
+        in: string[];
+      }
+    | null {
+    if (industryCodes) {
+      const codes = industryCodes.split(',').filter(Boolean);
+      if (codes.length > 0) {
+        return { in: codes };
+      }
+    }
+    if (industryCode) {
+      return industryCode;
+    }
+    return null;
   }
 }
