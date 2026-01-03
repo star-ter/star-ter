@@ -1,75 +1,54 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
-  analyzeSqlResults,
+  analyzeResults,
   embedText,
   getCategoryByMessage,
   getLocationByMessage,
   getText,
-  nlToSql,
+  toolCallAi,
 } from './openAI/openAI';
 import { AiRepository } from './ai.repository';
 import { BusinessCategoryVectorDto } from './dto/column-vector';
+import { ResponseInputItem } from 'openai/resources/responses/responses.js';
 
 @Injectable()
 export class AiService {
-  private readonly logger = new Logger(AiService.name);
   constructor(private readonly aiRepository: AiRepository) {}
 
   async getAIMessage(message: string): Promise<string> {
-    const startTime = Date.now();
-
-    const [categories, areaList, similarColumns] = await Promise.all([
+    const [categories, areaList] = await Promise.all([
       this.getCategories(message),
       this.buildAreaList(message),
-      this.getSimilarColumns(message),
     ]);
 
-    console.log('Categories:', similarColumns);
+    const input: ResponseInputItem[] = [{ role: 'user', content: message }];
+    const toolCallResponse = await toolCallAi(message, categories, areaList);
+    input.push(...toolCallResponse.output);
 
-    this.logger.log(
-      `Time taken to get categories and area list: ${
-        (Date.now() - startTime) / 1000
-      } s`,
-    );
+    for (const toolCall of toolCallResponse.output) {
+      if (toolCall.type !== 'function_call') continue;
 
-    const sql = getText(
-      await nlToSql(message, similarColumns, categories, areaList),
-    );
-    console.log('Generated SQL:', sql);
-    const results = await this.aiRepository.runSql(sql);
+      if (toolCall.name === 'get_store') {
+        // const args = JSON.parse(toolCall.arguments);
+        input.push({
+          type: 'function_call_output',
+          call_id: toolCall.call_id,
+          output: toolCall.arguments,
+        });
+      }
+    }
 
-    this.logger.log(
-      `Time taken to get categories and area list: ${
-        (Date.now() - startTime) / 1000
-      } s`,
-    );
+    const analyzeResult = await analyzeResults(input);
 
-    const analyzedResponse = await analyzeSqlResults(message, results);
-    const returnMessage = getText(analyzedResponse);
+    console.log(analyzeResult);
 
-    this.logger.log(
-      `Total time taken to get AI message: ${(Date.now() - startTime) / 1000} s`,
-    );
-
-    return returnMessage;
-  }
-
-  private async getSimilarColumns(message: string) {
-    const vector = await embedText(message);
-    const embedding = vector.data[0].embedding;
-
-    return this.aiRepository.columnsSearchByVector(embedding, 20);
-  }
-
-  private async getAreaList(message: string) {
-    const areaText = getText(await getLocationByMessage(message));
-    if (areaText === '""') return [];
-    const areaList = areaText.split(',').map((area) => area.trim());
-    return areaList;
+    return getText(analyzeResult);
   }
 
   private async buildAreaList(message: string) {
-    const messageAreaList = await this.getAreaList(message);
+    const areaText = getText(await getLocationByMessage(message));
+    if (areaText === '""') return [];
+    const messageAreaList = areaText.split(',').map((area) => area.trim());
 
     const results = await Promise.all(
       messageAreaList.map(async (area) => {

@@ -2,34 +2,12 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import {
   AreaVectorDto,
   BusinessCategoryVectorDto,
-  ColumnVectorDto,
 } from './dto/column-vector';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class AiRepository {
   constructor(private readonly prisma: PrismaService) {}
-
-  async columnsSearchByVector(
-    vector: number[],
-    limit: number,
-  ): Promise<ColumnVectorDto[]> {
-    const vectorLiteral = this.toVectorLiteral(vector);
-
-    const rows = await this.prisma.$queryRaw<ColumnVectorDto[]>`
-      SELECT
-        question,
-        description,
-        table_name AS "tableName",
-        column_name AS "columnName",
-        data_type AS "dataType",
-        embedding <=> ${vectorLiteral}::vector AS distance
-      FROM column_vector_table
-      ORDER BY embedding <=> ${vectorLiteral}::vector
-      LIMIT ${limit}
-    `;
-    return rows;
-  }
 
   async categorySearchByVector(
     vector: number[],

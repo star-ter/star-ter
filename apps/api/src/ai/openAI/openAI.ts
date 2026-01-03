@@ -1,9 +1,6 @@
 import OpenAI from 'openai';
-import {
-  AreaVectorDto,
-  BusinessCategoryVectorDto,
-  ColumnVectorDto,
-} from '../dto/column-vector';
+import { AreaVectorDto, BusinessCategoryVectorDto } from '../dto/column-vector';
+import { ResponseInput, Tool } from 'openai/resources/responses/responses.js';
 
 // Singleton OpenAI client
 class OpenAIClient {
@@ -59,63 +56,58 @@ export function getLocationByMessage(message: string) {
   });
 }
 
-export function nlToSql(
+export function toolCallAi(
   message: string,
-  similarColumns: ColumnVectorDto[],
   categories: BusinessCategoryVectorDto[],
   areaList: AreaVectorDto[],
 ) {
-  console.log(formatAreaVectors(areaList));
+  const tools = [
+    {
+      type: 'function',
+      name: 'get_store',
+      description: '상권 정보를 조회합니다.',
+      parameters: {
+        type: 'object',
+        properties: {
+          area_cd: {
+            type: 'string',
+            description: 'area_cd 값을 이용하여 상권 정보를 가져온다.',
+          },
+        },
+        required: ['area_cd'],
+        additionalProperties: false,
+      },
+      strict: true,
+    },
+  ];
   return OpenAIClient.getClient().responses.create({
     model: 'gpt-4.1-mini',
     input: message,
+    tools: tools as Array<Tool>,
     instructions: `
-            당신은 postgreSQL 전문가입니다.
-            Output only the SQL query.
-            Do not include explanations, comments, markdown, or code fences.
-            Return plain SQL text only.
-
-            주어진 질의에 대해 답변을 해줄 수 있는 적절한  postgreSQL 문을 짜주세요.
-            데이터 해석이 쉽도록 적절한 alias를 사용해 주세요.
-            컬럼과 테이블 매핑을 필수로 해주세요
-            시점에 따른 말이 없을 경우 기본적으로 stdr_yyqu_cd = '20253' 조건을 넣어주세요
-            
-            아래 데이터베이스 테이블과 컬럼을 참고하세요. 필요한 컬럼만 10개를 선택하여 사용하면 됩니다.
-            ${formatColumnVectors(similarColumns)}
+            사용자의 질의에 맞게 도구를 호출해 주세요.
+            필요한 경우에만 도구를 호출하고, 도구를 호출하지 않아도 되는 경우에는 호출하지 마세요.
+            도구를 호출할 때는 반드시 업종 코드(svc_induty_cd)와 지역 코드(area_cd)를 참고하여 호출해 주세요.
 
             업종 코드와 이름 같은경우 아래 값을 참고하세요.
             ${formatCategoryVectors(categories)}
-            사용자가 원하는 정보가 업종 관련된 내용일 경우 반드시 업종코드(svc_induty_cd) 조건을 포함시키고 풀력에 업종 명을 넣어주세요
 
             지역 코드와 이름 같은경우 아래 값을 참고하세요.
-            area_cd를 이용하여 조건을 걸어주세요.
             ${formatAreaVectors(areaList)}
             `,
   });
 }
 
-export function analyzeSqlResults(message: string, results: any[]) {
+export function analyzeResults(intput: ResponseInput) {
   return OpenAIClient.getClient().responses.create({
     model: 'gpt-4.1-mini',
-    input: message,
+    input: intput,
     temperature: 0.3,
     instructions: `
-            아래 주어진 SQL 조회 결과 데이터를 이용하여 사용자 질의에 답변해 주세요.
-            수치와 조회 결과 중심으로 설명해주세요.
-            사용자는 SQL 결과를 알지 못합니다. 설명을 할 때 상권 명, 수치 등을 구체적으로 언급해 주세요.
-            사용자에게 SQL문이나 코드와 같은 데이터를 말하지 마세요.
-            ${JSON.stringify(results, safeBigIntStringify)}
+            사용자의 질의에 맞게 응답을 생성해 주세요.
+            도구 호출 결과를 참고하여 최종 응답을 생성해 주세요.
             `,
   });
-}
-
-function formatColumnVectors(columns: ColumnVectorDto[]): string {
-  return columns
-    .map(
-      (col) =>
-        `table: ${col.tableName}, column: ${col.columnName}, dataType: ${col.dataType}, description: ${col.description}`,
-    )
-    .join('\n');
 }
 
 function formatAreaVectors(areas: AreaVectorDto[]): string {
@@ -136,9 +128,4 @@ function formatCategoryVectors(
         `svc_induty_cd: ${cat.code}, svc_induty_cd_nm: ${cat.categoryName}`,
     )
     .join('\n');
-}
-
-function safeBigIntStringify(key: string, value: any) {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return typeof value === 'bigint' ? value.toString() : value;
 }
