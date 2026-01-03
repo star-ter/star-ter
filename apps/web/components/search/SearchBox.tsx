@@ -40,7 +40,7 @@ export default function SearchBox() {
   };
 
   return (
-    <header className="m-4 pointer-events-none">
+    <header className="pointer-events-none">
       <div
         ref={containerRef}
         onClick={() => inputRef.current?.focus()}

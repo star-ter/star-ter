@@ -17,8 +17,11 @@ import { IndustryData } from '../../mocks/industry';
 import { useSidebarStore } from '../../stores/useSidebarStore';
 import { useModalStore } from '../../stores/useModalStore';
 
-type ActiveType =
-  /* 'area' | */ 'population' | 'industry' | 'compare' | 'report';
+type ActiveType = /* 'area' | */
+  | 'population'
+  | 'industry'
+  | 'compare'
+  | 'report';
 
 import { usePopulationVisual } from '../../hooks/usePopulationVisual';
 interface BottomMenuProps {
@@ -165,7 +168,7 @@ export default function BottomMenuBox({
   const content = renderContent();
 
   return (
-    <section className="w-full flex flex-col items-center mb-24px">
+    <section className="w-full flex flex-col items-center mb-[32px]">
       {content && <ModalCard>{content}</ModalCard>}
       <div className="flex items-center justify-center gap-4 rounded-2xl bg-white/80 px-4 py-3 shadow-md ring-1 ring-black/5">
         {items.map(({ label, value }) => (
