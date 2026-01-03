@@ -1,8 +1,5 @@
 import { PrismaService } from 'src/prisma/prisma.service';
-import {
-  AreaVectorDto,
-  BusinessCategoryVectorDto,
-} from './dto/column-vector';
+import { AreaVectorDto, BusinessCategoryVectorDto } from './dto/column-vector';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
@@ -56,10 +53,5 @@ export class AiRepository {
       return numberValue;
     });
     return `[${normalized.join(',')}]`;
-  }
-
-  async runSql(sql: string): Promise<any[]> {
-    const rows = await this.prisma.$queryRawUnsafe<any[]>(sql);
-    return rows;
   }
 }
