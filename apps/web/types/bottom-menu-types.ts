@@ -1,4 +1,4 @@
-// 
+
 export interface IndustryCategory {
   code: string;
   name: string;
@@ -32,4 +32,11 @@ export interface CompareRequest {
   targetB: string;
   targetNameA?: string;
   targetNameB?: string;
+}
+
+export interface ReportRequest {
+  regionCode: string;
+  regionName: string;
+  industryCode: string;
+  industryName: string;
 }

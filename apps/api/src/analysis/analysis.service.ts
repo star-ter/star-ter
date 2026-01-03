@@ -91,6 +91,15 @@ export class AnalysisService {
     return this.searchAll(trimmed, guMap);
   }
 
+  async searchIndustries(query: string) {
+    if (!query) return [];
+    const results = await this.repository.searchIndustry(query);
+    return results.map((r: any) => ({
+      code: r.svc_induty_cd,
+      name: r.svc_induty_cd_nm,
+    }));
+  }
+
   private async resolveRegion(
     regionCode: string,
   ): Promise<ResolvedRegion | null> {
