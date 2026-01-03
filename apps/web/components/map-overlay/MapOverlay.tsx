@@ -17,6 +17,8 @@ interface MapOverlayProps {
   onCompare?: () => void;
   onSelectCategory: (category: IndustryCategory | null) => void;
   selectedCategory: IndustryCategory | null;
+  selectedSubCode: string | null;
+  onSelectSubCode: (code: string | null) => void;
   onCreateReport?: (data: ReportRequest) => void;
   isReportOpen?: boolean;
   onToggleReport?: (isOpen: boolean) => void;
@@ -32,6 +34,8 @@ export default function MapOverlay({
   onCompare,
   onSelectCategory,
   selectedCategory,
+  selectedSubCode,
+  onSelectSubCode,
   onCreateReport,
   isReportOpen,
   onToggleReport,
@@ -78,6 +82,8 @@ export default function MapOverlay({
                       : undefined
                   }
                   selectedCategory={selectedCategory || undefined}
+                  selectedSubCode={selectedSubCode}
+                  onSubCodeChange={onSelectSubCode}
                 />
               )}
             </>

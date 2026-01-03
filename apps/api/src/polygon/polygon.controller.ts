@@ -12,8 +12,14 @@ export class PolygonController {
   @Get('admin')
   getAdminPolygon(
     @Query('low_search') lowSearch: number,
+    @Query('industryCode') industryCode?: string,
+    @Query('industryCodes') industryCodes?: string,
   ): Promise<AdminPolygonResponse[]> {
-    return this.polygonService.getAdminPolygonByLowSearch(lowSearch);
+    return this.polygonService.getAdminPolygonByLowSearch(
+      lowSearch,
+      industryCode,
+      industryCodes,
+    );
   }
 
   @Get('building')
@@ -40,8 +46,17 @@ export class PolygonController {
     @Query('miny') miny: string,
     @Query('maxx') maxx: string,
     @Query('maxy') maxy: string,
+    @Query('industryCode') industryCode?: string,
+    @Query('industryCodes') industryCodes?: string,
   ): Promise<CommercialPolygonResponse[]> {
-    return this.polygonService.getCommercialPolygon(minx, miny, maxx, maxy);
+    return this.polygonService.getCommercialPolygon(
+      minx,
+      miny,
+      maxx,
+      maxy,
+      industryCode,
+      industryCodes,
+    );
   }
 
   @Get('sido')

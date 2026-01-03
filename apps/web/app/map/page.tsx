@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import Kakaomap from '@/components/kakaomap';
 import MapOverlay from '@/components/map-overlay/MapOverlay';
@@ -29,6 +29,7 @@ export default function MapPage() {
   const [pickTarget, setPickTarget] = useState('');
   const [selectedCategory, setSelectedCategory] =
     useState<IndustryCategory | null>(null);
+  const [selectedSubCode, setSelectedSubCode] = useState<string | null>(null);
 
   // Report Overlay State
   const [isReportOpen, setIsReportOpen] = useState(false);
@@ -36,6 +37,10 @@ export default function MapPage() {
 
   // 유동인구 상태 통합
   const population = usePopulationVisual();
+
+  useEffect(() => {
+    setSelectedSubCode(null);
+  }, [selectedCategory?.code]);
 
   // 비교 마커 첫번째인지 두번째인지 판단
   function handlePickMode(target: 'A' | 'B') {
@@ -132,6 +137,7 @@ export default function MapPage() {
           polygonClick={mapClick}
           population={population}
           selectedCategory={selectedCategory}
+          selectedSubCategoryCode={selectedSubCode}
           onClearCategory={() => setSelectedCategory(null)}
           disableInfoBar={!!pickTarget}
         />
@@ -147,6 +153,8 @@ export default function MapPage() {
           onCompare={handleCompareRequest}
           onSelectCategory={setSelectedCategory}
           selectedCategory={selectedCategory}
+          selectedSubCode={selectedSubCode}
+          onSelectSubCode={setSelectedSubCode}
           onCreateReport={handleCreateReport}
           isReportOpen={isReportOpen}
           onToggleReport={setIsReportOpen}
