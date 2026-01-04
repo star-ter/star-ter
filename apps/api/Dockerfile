@@ -25,6 +25,7 @@ WORKDIR /app
 COPY --from=installer /app/ .
 COPY --from=pruner /app/out/full/ .
 # Prisma client generation (NestJS에서 사용하는 경우 필수)
+RUN cat apps/api/prisma/models/*.prisma apps/api/prisma/introspected.prisma >> apps/api/prisma/schema.prisma
 RUN npx prisma generate --schema=apps/api/prisma/schema.prisma
 RUN pnpm turbo run build --filter=api
 
