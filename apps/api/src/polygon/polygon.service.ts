@@ -8,7 +8,9 @@ import { RawCommercialBuilding } from './dto/raw-commercial-building.dto';
 
 const LATEST_QUARTER = '20253';
 
-type IndustryFilter = { svc_induty_cd: { in: string[] } } | Record<string, never>;
+type IndustryFilter =
+  | { svc_induty_cd: { in: string[] } }
+  | Record<string, never>;
 
 @Injectable()
 export class PolygonService {

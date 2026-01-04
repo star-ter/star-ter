@@ -31,6 +31,7 @@ export default function Kakaomap({
   population,
   selectedCategory = null,
   selectedSubCategoryCode = null,
+  onClearCategory,
   disableInfoBar = false,
 }: KakaomapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
