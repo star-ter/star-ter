@@ -1,0 +1,158 @@
+model FootTrafficCity {
+  stdr_yyqu_cd            String
+  mega_cd                 String
+  mega_cd_nm              String
+  tot_flpop_co            BigInt
+  ml_flpop_co             BigInt
+  fml_flpop_co            BigInt
+  agrde_10_flpop_co       BigInt
+  agrde_20_flpop_co       BigInt
+  agrde_30_flpop_co       BigInt
+  agrde_40_flpop_co       BigInt
+  agrde_50_flpop_co       BigInt
+  agrde_60_above_flpop_co BigInt
+  tmzon_00_06_flpop_co    BigInt
+  tmzon_06_11_flpop_co    BigInt
+  tmzon_11_14_flpop_co    BigInt
+  tmzon_14_17_flpop_co    BigInt
+  tmzon_17_21_flpop_co    BigInt
+  tmzon_21_24_flpop_co    BigInt
+  mon_flpop_co            BigInt
+  tues_flpop_co           BigInt
+  wed_flpop_co            BigInt
+  thur_flpop_co           BigInt
+  fri_flpop_co            BigInt
+  sat_flpop_co            BigInt
+  sun_flpop_co            BigInt
+
+  @@id([stdr_yyqu_cd, mega_cd])
+  @@map("foot_traffic_city")
+}
+
+model FootTrafficGu {
+  stdr_yyqu_cd            String
+  signgu_cd               String
+  signgu_cd_nm            String
+  tot_flpop_co            BigInt
+  ml_flpop_co             BigInt
+  fml_flpop_co            BigInt
+  agrde_10_flpop_co       BigInt
+  agrde_20_flpop_co       BigInt
+  agrde_30_flpop_co       BigInt
+  agrde_40_flpop_co       BigInt
+  agrde_50_flpop_co       BigInt
+  agrde_60_above_flpop_co BigInt
+  tmzon_00_06_flpop_co    BigInt
+  tmzon_06_11_flpop_co    BigInt
+  tmzon_11_14_flpop_co    BigInt
+  tmzon_14_17_flpop_co    BigInt
+  tmzon_17_21_flpop_co    BigInt
+  tmzon_21_24_flpop_co    BigInt
+  mon_flpop_co            BigInt
+  tues_flpop_co           BigInt
+  wed_flpop_co            BigInt
+  thur_flpop_co           BigInt
+  fri_flpop_co            BigInt
+  sat_flpop_co            BigInt
+  sun_flpop_co            BigInt
+
+  @@id([stdr_yyqu_cd, signgu_cd])
+  @@map("foot_traffic_gu")
+}
+
+model FootTrafficDong {
+  stdr_yyqu_cd            String
+  adstrd_cd               String
+  adstrd_cd_nm            String
+  tot_flpop_co            BigInt
+  ml_flpop_co             BigInt
+  fml_flpop_co            BigInt
+  agrde_10_flpop_co       BigInt
+  agrde_20_flpop_co       BigInt
+  agrde_30_flpop_co       BigInt
+  agrde_40_flpop_co       BigInt
+  agrde_50_flpop_co       BigInt
+  agrde_60_above_flpop_co BigInt
+  tmzon_00_06_flpop_co    BigInt
+  tmzon_06_11_flpop_co    BigInt
+  tmzon_11_14_flpop_co    BigInt
+  tmzon_14_17_flpop_co    BigInt
+  tmzon_17_21_flpop_co    BigInt
+  tmzon_21_24_flpop_co    BigInt
+  mon_flpop_co            BigInt
+  tues_flpop_co           BigInt
+  wed_flpop_co            BigInt
+  thur_flpop_co           BigInt
+  fri_flpop_co            BigInt
+  sat_flpop_co            BigInt
+  sun_flpop_co            BigInt
+
+  @@id([stdr_yyqu_cd, adstrd_cd])
+  @@map("foot_traffic_dong")
+}
+
+model FootTrafficBackarea {
+  stdr_yyqu_cd            String
+  trdar_se_cd             String
+  trdar_se_cd_nm          String
+  trdar_cd                String
+  trdar_cd_nm             String
+  tot_flpop_co            BigInt
+  ml_flpop_co             BigInt
+  fml_flpop_co            BigInt
+  agrde_10_flpop_co       BigInt
+  agrde_20_flpop_co       BigInt
+  agrde_30_flpop_co       BigInt
+  agrde_40_flpop_co       BigInt
+  agrde_50_flpop_co       BigInt
+  agrde_60_above_flpop_co BigInt
+  tmzon_00_06_flpop_co    BigInt
+  tmzon_06_11_flpop_co    BigInt
+  tmzon_11_14_flpop_co    BigInt
+  tmzon_14_17_flpop_co    BigInt
+  tmzon_17_21_flpop_co    BigInt
+  tmzon_21_24_flpop_co    BigInt
+  mon_flpop_co            BigInt
+  tues_flpop_co           BigInt
+  wed_flpop_co            BigInt
+  thur_flpop_co           BigInt
+  fri_flpop_co            BigInt
+  sat_flpop_co            BigInt
+  sun_flpop_co            BigInt
+
+  @@id([stdr_yyqu_cd, trdar_cd])
+  @@map("foot_traffic_backarea")
+}
+
+model FootTrafficCommercial {
+  stdr_yyqu_cd            String
+  trdar_se_cd             String
+  trdar_se_cd_nm          String
+  trdar_cd                String
+  trdar_cd_nm             String
+  tot_flpop_co            BigInt
+  ml_flpop_co             BigInt
+  fml_flpop_co            BigInt
+  agrde_10_flpop_co       BigInt
+  agrde_20_flpop_co       BigInt
+  agrde_30_flpop_co       BigInt
+  agrde_40_flpop_co       BigInt
+  agrde_50_flpop_co       BigInt
+  agrde_60_above_flpop_co BigInt
+  tmzon_00_06_flpop_co    BigInt
+  tmzon_06_11_flpop_co    BigInt
+  tmzon_11_14_flpop_co    BigInt
+  tmzon_14_17_flpop_co    BigInt
+  tmzon_17_21_flpop_co    BigInt
+  tmzon_21_24_flpop_co    BigInt
+  mon_flpop_co            BigInt
+  tues_flpop_co           BigInt
+  wed_flpop_co            BigInt
+  thur_flpop_co           BigInt
+  fri_flpop_co            BigInt
+  sat_flpop_co            BigInt
+  sun_flpop_co            BigInt
+
+  @@id([stdr_yyqu_cd, trdar_cd])
+  @@map("foot_traffic_commercial")
+}

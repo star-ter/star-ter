@@ -1,0 +1,46 @@
+model CommercialChangeGu {
+  stdr_yyqu_cd        String
+  signgu_cd           String
+  signgu_cd_nm        String
+  trdar_chnge_ix      String
+  trdar_chnge_ix_nm   String
+  opr_sale_mt_avrg    Int
+  cls_sale_mt_avrg    Int
+  su_opr_sale_mt_avrg Int
+  su_cls_sale_mt_avrg Int
+
+  @@id([stdr_yyqu_cd, signgu_cd])
+  @@map("commercial_change_gu")
+}
+
+model CommercialChangeDong {
+  stdr_yyqu_cd        String
+  adstrd_cd           String
+  adstrd_cd_nm        String
+  trdar_chnge_ix      String
+  trdar_chnge_ix_nm   String
+  opr_sale_mt_avrg    Int
+  cls_sale_mt_avrg    Int
+  su_opr_sale_mt_avrg Int
+  su_cls_sale_mt_avrg Int
+
+  @@id([stdr_yyqu_cd, adstrd_cd])
+  @@map("commercial_change_dong")
+}
+
+model CommercialChangeCommercial {
+  stdr_yyqu_cd        String
+  trdar_se_cd         String
+  trdar_se_cd_nm      String
+  trdar_cd            String
+  trdar_cd_nm         String
+  trdar_chnge_ix      String
+  trdar_chnge_ix_nm   String
+  opr_sale_mt_avrg    Int
+  cls_sale_mt_avrg    Int
+  su_opr_sale_mt_avrg Int
+  su_cls_sale_mt_avrg Int
+
+  @@id([stdr_yyqu_cd, trdar_cd])
+  @@map("commercial_change_commercial")
+}

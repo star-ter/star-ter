@@ -1,0 +1,123 @@
+model ApartmentCity {
+  stdr_yyqu_cd              String
+  mega_cd                   String
+  mega_cd_nm                String
+  apt_hsmp_co               Int
+  ae_66_sqmt_belo_hshld_co  Int
+  ae_66_sqmt_hshld_co       Int
+  ae_99_sqmt_hshld_co       Int
+  ae_132_sqmt_hshld_co      Int
+  ae_165_sqmt_hshld_co      Int
+  pc_1_hdmil_belo_hshld_co  Int
+  pc_1_hdmil_hshld_co       Int
+  pc_2_hdmil_hshld_co       Int
+  pc_3_hdmil_hshld_co       Int
+  pc_4_hdmil_hshld_co       Int
+  pc_5_hdmil_hshld_co       Int
+  pc_6_hdmil_above_hshld_co Int
+  avrg_ae                   Int
+  avrg_mktc                 BigInt
+
+  @@id([stdr_yyqu_cd, mega_cd])
+  @@map("apartment_city")
+}
+
+model ApartmentGu {
+  stdr_yyqu_cd              String
+  signgu_cd                 String
+  signgu_cd_nm              String
+  apt_hsmp_co               Int
+  ae_66_sqmt_belo_hshld_co  Int
+  ae_66_sqmt_hshld_co       Int
+  ae_99_sqmt_hshld_co       Int
+  ae_132_sqmt_hshld_co      Int
+  ae_165_sqmt_hshld_co      Int
+  pc_1_hdmil_belo_hshld_co  Int
+  pc_1_hdmil_hshld_co       Int
+  pc_2_hdmil_hshld_co       Int
+  pc_3_hdmil_hshld_co       Int
+  pc_4_hdmil_hshld_co       Int
+  pc_5_hdmil_hshld_co       Int
+  pc_6_hdmil_above_hshld_co Int
+  avrg_ae                   Int
+  avrg_mktc                 BigInt
+
+  @@id([stdr_yyqu_cd, signgu_cd])
+  @@map("apartment_gu")
+}
+
+model ApartmentDong {
+  stdr_yyqu_cd              String
+  adstrd_cd                 String
+  adstrd_cd_nm              String
+  apt_hsmp_co               Int
+  ae_66_sqmt_belo_hshld_co  Int
+  ae_66_sqmt_hshld_co       Int
+  ae_99_sqmt_hshld_co       Int
+  ae_132_sqmt_hshld_co      Int
+  ae_165_sqmt_hshld_co      Int
+  pc_1_hdmil_belo_hshld_co  Int
+  pc_1_hdmil_hshld_co       Int
+  pc_2_hdmil_hshld_co       Int
+  pc_3_hdmil_hshld_co       Int
+  pc_4_hdmil_hshld_co       Int
+  pc_5_hdmil_hshld_co       Int
+  pc_6_hdmil_above_hshld_co Int
+  avrg_ae                   Int
+  avrg_mktc                 BigInt
+
+  @@id([stdr_yyqu_cd, adstrd_cd])
+  @@map("apartment_dong")
+}
+
+model ApartmentBackarea {
+  stdr_yyqu_cd              String
+  trdar_se_cd               String
+  trdar_se_cd_nm            String
+  trdar_cd                  String
+  trdar_cd_nm               String
+  apt_hsmp_co               Int
+  ae_66_sqmt_belo_hshld_co  Int
+  ae_66_sqmt_hshld_co       Int
+  ae_99_sqmt_hshld_co       Int
+  ae_132_sqmt_hshld_co      Int
+  ae_165_sqmt_hshld_co      Int
+  pc_1_hdmil_belo_hshld_co  Int
+  pc_1_hdmil_hshld_co       Int
+  pc_2_hdmil_hshld_co       Int
+  pc_3_hdmil_hshld_co       Int
+  pc_4_hdmil_hshld_co       Int
+  pc_5_hdmil_hshld_co       Int
+  pc_6_hdmil_above_hshld_co Int
+  avrg_ae                   Int
+  avrg_mktc                 BigInt
+
+  @@id([stdr_yyqu_cd, trdar_cd])
+  @@map("apartment_backarea")
+}
+
+model ApartmentCommercial {
+  stdr_yyqu_cd              String
+  trdar_se_cd               String
+  trdar_se_cd_nm            String
+  trdar_cd                  String
+  trdar_cd_nm               String
+  apt_hsmp_co               Int
+  ae_66_sqmt_belo_hshld_co  Int
+  ae_66_sqmt_hshld_co       Int
+  ae_99_sqmt_hshld_co       Int
+  ae_132_sqmt_hshld_co      Int
+  ae_165_sqmt_hshld_co      Int
+  pc_1_hdmil_belo_hshld_co  Int
+  pc_1_hdmil_hshld_co       Int
+  pc_2_hdmil_hshld_co       Int
+  pc_3_hdmil_hshld_co       Int
+  pc_4_hdmil_hshld_co       Int
+  pc_5_hdmil_hshld_co       Int
+  pc_6_hdmil_above_hshld_co Int
+  avrg_ae                   Int
+  avrg_mktc                 BigInt
+
+  @@id([stdr_yyqu_cd, trdar_cd])
+  @@map("apartment_commercial")
+}

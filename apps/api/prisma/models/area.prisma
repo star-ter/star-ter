@@ -1,0 +1,59 @@
+model AreaCity {
+  mega_cd     String @id
+  mega_nm     String
+  xcnts_value Int
+  ydnts_value Int
+  relm_ar     Int
+
+  @@map("area_city")
+}
+
+model AreaGu {
+  signgu_cd   String @id
+  signgu_nm   String
+  xcnts_value Int
+  ydnts_value Int
+  relm_ar     Int
+
+  @@map("area_gu")
+}
+
+model AreaDong {
+  adstrd_cd   String @id
+  adstrd_nm   String
+  xcnts_value Int
+  ydnts_value Int
+  relm_ar     Int
+
+  @@map("area_dong")
+}
+
+model AreaBackarea {
+  alley_trdar_cd String @id
+  alley_trdar_nm String
+  xcnts_value    Int
+  ydnts_value    Int
+  signgu_cd      String
+  signgu_cd_nm   String
+  adstrd_cd      String
+  adstrd_cd_nm   String
+  relm_ar        Int
+
+  @@map("area_backarea")
+}
+
+model AreaCommercial {
+  trdar_se_cd    String
+  trdar_se_cd_nm String
+  trdar_cd       String @id
+  trdar_cd_nm    String
+  xcnts_value    Int
+  ydnts_value    Int
+  signgu_cd      String
+  signgu_cd_nm   String
+  adstrd_cd      String
+  adstrd_cd_nm   String
+  relm_ar        Int
+
+  @@map("area_commercial")
+}

@@ -1,0 +1,148 @@
+model FacilityCity {
+  stdr_yyqu_cd    String
+  mega_cd         String
+  mega_cd_nm      String
+  viatr_fclty_co  Int
+  pblofc_co       Int
+  bank_co         Int
+  gehspt_co       Int
+  gnrl_hsptl_co   Int
+  parmacy_co      Int
+  kndrgr_co       Int
+  elesch_co       Int
+  mskul_co        Int
+  hgschl_co       Int
+  univ_co         Int
+  drts_co         Int
+  supmk_co        Int
+  theat_co        Int
+  stayng_fclty_co Int
+  arprt_co        Int
+  rlroad_statn_co Int
+  bus_trminl_co   Int
+  subway_statn_co Int
+  bus_sttn_co     Int
+
+  @@id([stdr_yyqu_cd, mega_cd])
+  @@map("facility_city")
+}
+
+model FacilityGu {
+  stdr_yyqu_cd    String
+  signgu_cd       String
+  signgu_cd_nm    String
+  viatr_fclty_co  Int
+  pblofc_co       Int
+  bank_co         Int
+  gehspt_co       Int
+  gnrl_hsptl_co   Int
+  parmacy_co      Int
+  kndrgr_co       Int
+  elesch_co       Int
+  mskul_co        Int
+  hgschl_co       Int
+  univ_co         Int
+  drts_co         Int
+  supmk_co        Int
+  theat_co        Int
+  stayng_fclty_co Int
+  arprt_co        Int
+  rlroad_statn_co Int
+  bus_trminl_co   Int
+  subway_statn_co Int
+  bus_sttn_co     Int
+
+  @@id([stdr_yyqu_cd, signgu_cd])
+  @@map("facility_gu")
+}
+
+model FacilityDong {
+  stdr_yyqu_cd    String
+  adstrd_cd       String
+  adstrd_cd_nm    String
+  viatr_fclty_co  Int
+  pblofc_co       Int
+  bank_co         Int
+  gehspt_co       Int
+  gnrl_hsptl_co   Int
+  parmacy_co      Int
+  kndrgr_co       Int
+  elesch_co       Int
+  mskul_co        Int
+  hgschl_co       Int
+  univ_co         Int
+  drts_co         Int
+  supmk_co        Int
+  theat_co        Int
+  stayng_fclty_co Int
+  arprt_co        Int
+  rlroad_statn_co Int
+  bus_trminl_co   Int
+  subway_statn_co Int
+  bus_sttn_co     Int
+
+  @@id([stdr_yyqu_cd, adstrd_cd])
+  @@map("facility_dong")
+}
+
+model FacilityBackarea {
+  stdr_yyqu_cd    String
+  trdar_se_cd     String
+  trdar_se_cd_nm  String
+  trdar_cd        String
+  trdar_cd_nm     String
+  viatr_fclty_co  Int
+  pblofc_co       Int
+  bank_co         Int
+  gehspt_co       Int
+  gnrl_hsptl_co   Int
+  parmacy_co      Int
+  kndrgr_co       Int
+  elesch_co       Int
+  mskul_co        Int
+  hgschl_co       Int
+  univ_co         Int
+  drts_co         Int
+  supmk_co        Int
+  theat_co        Int
+  stayng_fclty_co Int
+  arprt_co        Int
+  rlroad_statn_co Int
+  bus_trminl_co   Int
+  subway_statn_co Int
+  bus_sttn_co     Int
+
+  @@id([stdr_yyqu_cd, trdar_cd])
+  @@map("facility_backarea")
+}
+
+model FacilityCommercial {
+  stdr_yyqu_cd    String
+  trdar_se_cd     String
+  trdar_se_cd_nm  String
+  trdar_cd        String
+  trdar_cd_nm     String
+  viatr_fclty_co  Int
+  pblofc_co       Int
+  bank_co         Int
+  gehspt_co       Int
+  gnrl_hsptl_co   Int
+  parmacy_co      Int
+  kndrgr_co       Int
+  elesch_co       Int
+  mskul_co        Int
+  hgschl_co       Int
+  univ_co         Int
+  drts_co         Int
+  supmk_co        Int
+  theat_co        Int
+  stayng_fclty_co Int
+  arprt_co        Int
+  rlroad_statn_co Int
+  bus_trminl_co   Int
+  subway_statn_co Int
+  bus_sttn_co     Int
+
+  @@id([stdr_yyqu_cd, trdar_cd])
+  @@map("facility_commercial")
+}

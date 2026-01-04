@@ -28,3 +28,47 @@ export const convertCoord = (x: number, y: number) => {
   }
   return new window.kakao.maps.LatLng(y, x);
 };
+
+/* GeoJSON -> WKT format(소상공인) */
+export const convertToWKT = (
+  data: number[][][][] | number[][][] | number[][],
+): string => {
+  if (!data || data.length === 0) return '';
+
+  let ring: number[][] | undefined;
+
+  // data[0]이 number[] (즉 [x, y]) 형태인지 확인하는 함수 (Ring 판별)
+  const isRing = (val: unknown): val is number[][] => {
+    return (
+      Array.isArray(val) &&
+      val.length > 0 &&
+      Array.isArray(val[0]) &&
+      typeof val[0][0] === 'number'
+    );
+  };
+
+  // Case 1: number[][] (Ring)
+  if (isRing(data)) {
+    ring = data;
+  }
+  // Case 2: number[][][] (Polygon)
+  else if (Array.isArray(data[0]) && isRing(data[0])) {
+    ring = data[0] as number[][];
+  }
+  // Case 3: number[][][][] (MultiPolygon)
+  else {
+    const layer1 = data[0];
+    if (Array.isArray(layer1)) {
+      const layer2 = layer1[0];
+      if (isRing(layer2)) {
+        ring = layer2;
+      }
+    }
+  }
+
+  if (!ring) return '';
+
+  const coordinates = ring.map((point) => `${point[0]} ${point[1]}`).join(', ');
+
+  return `POLYGON((${coordinates}))`;
+};

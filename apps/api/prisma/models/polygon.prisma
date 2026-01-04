@@ -1,0 +1,49 @@
+model AdminAreaSido {
+  adm_cd   Int    @id
+  adm_nm   String
+  x        Float
+  y        Float
+  polygons Json
+
+  @@map("admin_area_sido")
+}
+
+model AdminAreaGu {
+  adm_cd    Int     @id
+  adm_nm    String
+  x         Float
+  y         Float
+  polygons  Json
+  signgu_cd String?
+
+  @@map("admin_area_gu")
+}
+
+model AdminAreaDong {
+  adm_cd    Int     @id
+  adm_nm    String
+  x         Float
+  y         Float
+  polygons  Json
+  adstrd_cd String?
+
+  @@map("admin_area_dong")
+}
+
+model CommercialArea {
+  trdar_se_c String?                  @db.VarChar
+  trdar_se_1 String?                  @db.VarChar
+  trdar_cd   String                   @id @db.VarChar
+  trdar_cd_n String?                  @db.VarChar
+  xcnts_valu Float?
+  ydnts_valu Float?
+  signgu_cd  String?                  @db.VarChar
+  signgu_cd_ String?                  @db.VarChar
+  adstrd_cd  String?                  @db.VarChar
+  adstrd_cd_ String?                  @db.VarChar
+  relm_ar    Float?
+  geom       Unsupported("geometry")?
+
+  @@index([geom], map: "seoul_commercial_area_grid_geom_geom_idx", type: Gist)
+  @@map("seoul_commercial_area_grid")
+}

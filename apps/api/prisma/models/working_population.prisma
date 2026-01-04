@@ -1,0 +1,153 @@
+model WorkingPopulationCity {
+  stdr_yyqu_cd                 String
+  mega_cd                      String
+  mega_cd_nm                   String
+  tot_wrc_popltn_co            Int
+  ml_wrc_popltn_co             Int
+  fml_wrc_popltn_co            Int
+  agrde_10_wrc_popltn_co       Int
+  agrde_20_wrc_popltn_co       Int
+  agrde_30_wrc_popltn_co       Int
+  agrde_40_wrc_popltn_co       Int
+  agrde_50_wrc_popltn_co       Int
+  agrde_60_above_wrc_popltn_co Int
+  mag_10_wrc_popltn_co         Int
+  mag_20_wrc_popltn_co         Int
+  mag_30_wrc_popltn_co         Int
+  mag_40_wrc_popltn_co         Int
+  mag_50_wrc_popltn_co         Int
+  mag_60_above_wrc_popltn_co   Int
+  fag_10_wrc_popltn_co         Int
+  fag_20_wrc_popltn_co         Int
+  fag_30_wrc_popltn_co         Int
+  fag_40_wrc_popltn_co         Int
+  fag_50_wrc_popltn_co         Int
+  fag_60_above_wrc_popltn_co   Int
+
+  @@id([stdr_yyqu_cd, mega_cd])
+  @@map("working_population_city")
+}
+
+model WorkingPopulationGu {
+  stdr_yyqu_cd                 String
+  signgu_cd                    String
+  signgu_cd_nm                 String
+  tot_wrc_popltn_co            Int
+  ml_wrc_popltn_co             Int
+  fml_wrc_popltn_co            Int
+  agrde_10_wrc_popltn_co       Int
+  agrde_20_wrc_popltn_co       Int
+  agrde_30_wrc_popltn_co       Int
+  agrde_40_wrc_popltn_co       Int
+  agrde_50_wrc_popltn_co       Int
+  agrde_60_above_wrc_popltn_co Int
+  mag_10_wrc_popltn_co         Int
+  mag_20_wrc_popltn_co         Int
+  mag_30_wrc_popltn_co         Int
+  mag_40_wrc_popltn_co         Int
+  mag_50_wrc_popltn_co         Int
+  mag_60_above_wrc_popltn_co   Int
+  fag_10_wrc_popltn_co         Int
+  fag_20_wrc_popltn_co         Int
+  fag_30_wrc_popltn_co         Int
+  fag_40_wrc_popltn_co         Int
+  fag_50_wrc_popltn_co         Int
+  fag_60_above_wrc_popltn_co   Int
+
+  @@id([stdr_yyqu_cd, signgu_cd])
+  @@map("working_population_gu")
+}
+
+model WorkingPopulationDong {
+  stdr_yyqu_cd                 String
+  adstrd_cd                    String
+  adstrd_cd_nm                 String
+  tot_wrc_popltn_co            Int
+  ml_wrc_popltn_co             Int
+  fml_wrc_popltn_co            Int
+  agrde_10_wrc_popltn_co       Int
+  agrde_20_wrc_popltn_co       Int
+  agrde_30_wrc_popltn_co       Int
+  agrde_40_wrc_popltn_co       Int
+  agrde_50_wrc_popltn_co       Int
+  agrde_60_above_wrc_popltn_co Int
+  mag_10_wrc_popltn_co         Int
+  mag_20_wrc_popltn_co         Int
+  mag_30_wrc_popltn_co         Int
+  mag_40_wrc_popltn_co         Int
+  mag_50_wrc_popltn_co         Int
+  mag_60_above_wrc_popltn_co   Int
+  fag_10_wrc_popltn_co         Int
+  fag_20_wrc_popltn_co         Int
+  fag_30_wrc_popltn_co         Int
+  fag_40_wrc_popltn_co         Int
+  fag_50_wrc_popltn_co         Int
+  fag_60_above_wrc_popltn_co   Int
+
+  @@id([stdr_yyqu_cd, adstrd_cd])
+  @@map("working_population_dong")
+}
+
+model WorkingPopulationBackarea {
+  stdr_yyqu_cd                 String
+  trdar_se_cd                  String
+  trdar_se_cd_nm               String
+  trdar_cd                     String
+  trdar_cd_nm                  String
+  tot_wrc_popltn_co            Int
+  ml_wrc_popltn_co             Int
+  fml_wrc_popltn_co            Int
+  agrde_10_wrc_popltn_co       Int
+  agrde_20_wrc_popltn_co       Int
+  agrde_30_wrc_popltn_co       Int
+  agrde_40_wrc_popltn_co       Int
+  agrde_50_wrc_popltn_co       Int
+  agrde_60_above_wrc_popltn_co Int
+  mag_10_wrc_popltn_co         Int
+  mag_20_wrc_popltn_co         Int
+  mag_30_wrc_popltn_co         Int
+  mag_40_wrc_popltn_co         Int
+  mag_50_wrc_popltn_co         Int
+  mag_60_above_wrc_popltn_co   Int
+  fag_10_wrc_popltn_co         Int
+  fag_20_wrc_popltn_co         Int
+  fag_30_wrc_popltn_co         Int
+  fag_40_wrc_popltn_co         Int
+  fag_50_wrc_popltn_co         Int
+  fag_60_above_wrc_popltn_co   Int
+
+  @@id([stdr_yyqu_cd, trdar_cd])
+  @@map("working_population_backarea")
+}
+
+model WorkingPopulationCommercial {
+  stdr_yyqu_cd                 String
+  trdar_se_cd                  String
+  trdar_se_cd_nm               String
+  trdar_cd                     String
+  trdar_cd_nm                  String
+  tot_wrc_popltn_co            Int
+  ml_wrc_popltn_co             Int
+  fml_wrc_popltn_co            Int
+  agrde_10_wrc_popltn_co       Int
+  agrde_20_wrc_popltn_co       Int
+  agrde_30_wrc_popltn_co       Int
+  agrde_40_wrc_popltn_co       Int
+  agrde_50_wrc_popltn_co       Int
+  agrde_60_above_wrc_popltn_co Int
+  mag_10_wrc_popltn_co         Int
+  mag_20_wrc_popltn_co         Int
+  mag_30_wrc_popltn_co         Int
+  mag_40_wrc_popltn_co         Int
+  mag_50_wrc_popltn_co         Int
+  mag_60_above_wrc_popltn_co   Int
+  fag_10_wrc_popltn_co         Int
+  fag_20_wrc_popltn_co         Int
+  fag_30_wrc_popltn_co         Int
+  fag_40_wrc_popltn_co         Int
+  fag_50_wrc_popltn_co         Int
+  fag_60_above_wrc_popltn_co   Int
+
+  @@id([stdr_yyqu_cd, trdar_cd])
+  @@map("working_population_commercial")
+}

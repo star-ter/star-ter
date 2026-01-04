@@ -1,0 +1,111 @@
+model IncomeConsumptionCity {
+  mega_cd                   String
+  stdr_yyqu_cd              String
+  mega_cd_nm                String
+  mt_avrg_income_amt        Int
+  income_sctn_cd            String
+  expndtr_totamt            BigInt
+  fdstffs_expndtr_totamt    BigInt
+  clths_ftwr_expndtr_totamt BigInt
+  lvspl_expndtr_totamt      BigInt
+  mcp_expndtr_totamt        BigInt
+  trnsport_expndtr_totamt   BigInt
+  edc_expndtr_totamt        BigInt
+  plesr_expndtr_totamt      BigInt
+  lsr_cltur_expndtr_totamt  BigInt
+  etc_expndtr_totamt        BigInt
+  fd_expndtr_totamt         BigInt
+
+  @@id([stdr_yyqu_cd, mega_cd])
+  @@map("income_consumption_city")
+}
+
+model IncomeConsumptionGu {
+  signgu_cd                 String
+  stdr_yyqu_cd              String
+  signgu_cd_nm              String
+  mt_avrg_income_amt        Int
+  income_sctn_cd            String
+  expndtr_totamt            BigInt
+  fdstffs_expndtr_totamt    BigInt
+  clths_ftwr_expndtr_totamt BigInt
+  lvspl_expndtr_totamt      BigInt
+  mcp_expndtr_totamt        BigInt
+  trnsport_expndtr_totamt   BigInt
+  edc_expndtr_totamt        BigInt
+  plesr_expndtr_totamt      BigInt
+  lsr_cltur_expndtr_totamt  BigInt
+  etc_expndtr_totamt        BigInt
+  fd_expndtr_totamt         BigInt
+
+  @@id([stdr_yyqu_cd, signgu_cd])
+  @@map("income_consumption_gu")
+}
+
+model IncomeConsumptionDong {
+  adstrd_cd                 String
+  stdr_yyqu_cd              String
+  adstrd_cd_nm              String
+  mt_avrg_income_amt        Int
+  income_sctn_cd            String
+  expndtr_totamt            BigInt
+  fdstffs_expndtr_totamt    BigInt
+  clths_ftwr_expndtr_totamt BigInt
+  lvspl_expndtr_totamt      BigInt
+  mcp_expndtr_totamt        BigInt
+  trnsport_expndtr_totamt   BigInt
+  edc_expndtr_totamt        BigInt
+  plesr_expndtr_totamt      BigInt
+  lsr_cltur_expndtr_totamt  BigInt
+  etc_expndtr_totamt        BigInt
+  fd_expndtr_totamt         BigInt
+
+  @@id([stdr_yyqu_cd, adstrd_cd])
+  @@map("income_consumption_dong")
+}
+
+model IncomeConsumptionBackarea {
+  trdar_se_cd               String
+  stdr_yyqu_cd              String
+  trdar_se_cd_nm            String
+  trdar_cd                  String
+  trdar_cd_nm               String
+  mt_avrg_income_amt        Int
+  income_sctn_cd            String
+  expndtr_totamt            BigInt
+  fdstffs_expndtr_totamt    BigInt
+  clths_ftwr_expndtr_totamt BigInt
+  lvspl_expndtr_totamt      BigInt
+  mcp_expndtr_totamt        BigInt
+  trnsport_expndtr_totamt   BigInt
+  lsr_expndtr_totamt        BigInt
+  cltur_expndtr_totamt      BigInt
+  edc_expndtr_totamt        BigInt
+  plesr_expndtr_totamt      BigInt
+
+  @@id([stdr_yyqu_cd, trdar_cd])
+  @@map("income_consumption_backarea")
+}
+
+model IncomeConsumptionCommercial {
+  trdar_se_cd               String
+  stdr_yyqu_cd              String
+  trdar_se_cd_nm            String
+  trdar_cd                  String
+  trdar_cd_nm               String
+  mt_avrg_income_amt        Int
+  income_sctn_cd            String
+  expndtr_totamt            BigInt
+  fdstffs_expndtr_totamt    BigInt
+  clths_ftwr_expndtr_totamt BigInt
+  lvspl_expndtr_totamt      BigInt
+  mcp_expndtr_totamt        BigInt
+  trnsport_expndtr_totamt   BigInt
+  lsr_expndtr_totamt        BigInt
+  cltur_expndtr_totamt      BigInt
+  edc_expndtr_totamt        BigInt
+  plesr_expndtr_totamt      BigInt
+
+  @@id([stdr_yyqu_cd, trdar_cd])
+  @@map("income_consumption_commercial")
+}

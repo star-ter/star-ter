@@ -1,0 +1,134 @@
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model spatial_ref_sys {
+  srid      Int     @id
+  auth_name String? @db.VarChar(256)
+  auth_srid Int?
+  srtext    String? @db.VarChar(2048)
+  proj4text String? @db.VarChar(2048)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model seoul_vitality {
+  service_name           String?
+  service_id             String?
+  local_gov_code         Int?
+  manage_no              String?
+  permit_date            DateTime? @db.Date
+  permit_cancel_date     DateTime? @db.Date
+  biz_status_code        Int?
+  biz_status_name        String?
+  biz_status_detail_code Int?
+  biz_status_detail_name String?
+  close_date             DateTime? @db.Date
+  suspend_start_date     DateTime? @db.Date
+  suspend_end_date       DateTime? @db.Date
+  reopen_date            DateTime? @db.Date
+  addr_jibun             String?
+  addr_road              String?
+  road_zipcode           String?
+  store_name             String?
+  updated_at             DateTime? @db.Timestamp(6)
+  biz_type_name          String?
+  x_5174                 Float?
+  y_5174                 Float?
+  source_file            String?
+
+  @@ignore
+}
+
+model column_vector_table {
+  id          BigInt                @id @default(autoincrement())
+  question    String
+  description String?
+  embedding   Unsupported("vector")
+  table_name  String?
+  column_name String?
+  data_type   String?
+
+  @@index([embedding], map: "vector_documents_embedding_hnsw")
+}
+
+model business_category_vector_table {
+  id            BigInt                 @id @default(autoincrement())
+  code          String
+  category_name String
+  text          String
+  embedding     Unsupported("vector")?
+
+  @@index([embedding], map: "business_category_vector_table_idx")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model dim_area {
+  area_level        String
+  area_cd           String
+  area_nm           String
+  trdar_se_cd       String?
+  trdar_se_cd_nm    String?
+  parent_area_level String?
+  parent_area_cd    String?
+  xcnts_value       Int?
+  ydnts_value       Int?
+  relm_ar           Int?
+  created_at        DateTime    @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime    @default(now()) @db.Timestamptz(6)
+  geo_alias         geo_alias[]
+
+  @@id([area_level, area_cd])
+  @@index([area_level, area_nm], map: "idx_dim_area_name")
+  @@index([parent_area_level, parent_area_cd], map: "idx_dim_area_parent")
+}
+
+model dim_industry {
+  svc_induty_cd    String           @id
+  svc_induty_cd_nm String
+  created_at       DateTime         @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime         @default(now()) @db.Timestamptz(6)
+  industry_alias   industry_alias[]
+
+  @@index([svc_induty_cd_nm], map: "idx_dim_industry_name")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model geo_alias {
+  alias      String
+  alias_norm String
+  area_level String
+  area_cd    String
+  source     String   @default("seed")
+  priority   Int      @default(100)
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  dim_area   dim_area @relation(fields: [area_level, area_cd], references: [area_level, area_cd], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([alias_norm, area_level, area_cd])
+  @@index([area_level, area_cd], map: "idx_geo_alias_area")
+  @@index([alias_norm], map: "idx_geo_alias_norm")
+  @@index([alias_norm(ops: raw("gin_trgm_ops"))], map: "idx_geo_alias_trgm", type: Gin)
+}
+
+model industry_alias {
+  alias         String
+  alias_norm    String
+  svc_induty_cd String
+  source        String       @default("seed")
+  priority      Int          @default(100)
+  is_active     Boolean      @default(true)
+  created_at    DateTime     @default(now()) @db.Timestamptz(6)
+  dim_industry  dim_industry @relation(fields: [svc_induty_cd], references: [svc_induty_cd], onUpdate: NoAction)
+
+  @@id([alias_norm, svc_induty_cd])
+  @@index([svc_induty_cd], map: "idx_industry_alias_cd")
+  @@index([alias_norm], map: "idx_industry_alias_norm")
+  @@index([alias_norm(ops: raw("gin_trgm_ops"))], map: "idx_industry_alias_trgm", type: Gin)
+}
+
+model area_vector_table {
+  id         BigInt                 @id @default(autoincrement())
+  area_name  String
+  area_level String
+  area_code  String
+  embedding  Unsupported("vector")?
+
+  @@index([embedding])
+}

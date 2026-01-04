@@ -1,0 +1,36 @@
+model building_integrated_info {
+  id                          Int                      @id @default(autoincrement())
+  source_shape_id             Int?
+  gis_building_unified_id     String?                  @db.VarChar
+  unique_no                   String?                  @db.VarChar
+  legal_dong_code             String?                  @db.VarChar
+  legal_dong_name             String?                  @db.VarChar
+  lot_no                      String?                  @db.VarChar
+  special_land_code           String?                  @db.VarChar
+  special_land_type_name      String?                  @db.VarChar
+  building_use_code           String?                  @db.VarChar
+  building_use_name           String?                  @db.VarChar
+  building_structure_code     String?                  @db.VarChar
+  building_structure_name     String?                  @db.VarChar
+  building_area_sqm           Float?
+  use_approval_date           DateTime?                @db.Date
+  gross_floor_area            Float?
+  site_area_sqm               Float?
+  height_m                    Float?
+  building_coverage_ratio_pct Float?
+  floor_area_ratio_pct        Float?
+  building_id                 String?                  @db.VarChar
+  is_illegal_building         String?                  @db.VarChar
+  ref_system_link_key         String?                  @db.VarChar
+  data_base_date              DateTime?                @db.Date
+  source_sido_sigungu_code    String?                  @db.VarChar
+  building_name               String?                  @db.VarChar
+  building_block_name         String?                  @db.VarChar
+  above_ground_floors         Int?
+  below_ground_floors         Int?
+  data_created_updated_at     DateTime?                @db.Date
+  geom                        Unsupported("geometry")?
+
+  @@index([geom], map: "building_integrated_info_geom_geom_idx", type: Gist)
+  @@index([unique_no])
+}

@@ -1,0 +1,168 @@
+model ResidentPopulationCity {
+  stdr_yyqu_cd            String
+  mega_cd                 String
+  mega_cd_nm              String
+  tot_repop_co            Int
+  ml_repop_co             Int
+  fml_repop_co            Int
+  agrde_10_repop_co       Int
+  agrde_20_repop_co       Int
+  agrde_30_repop_co       Int
+  agrde_40_repop_co       Int
+  agrde_50_repop_co       Int
+  agrde_60_above_repop_co Int
+  mag_10_repop_co         Int
+  mag_20_repop_co         Int
+  mag_30_repop_co         Int
+  mag_40_repop_co         Int
+  mag_50_repop_co         Int
+  mag_60_above_repop_co   Int
+  fag_10_repop_co         Int
+  fag_20_repop_co         Int
+  fag_30_repop_co         Int
+  fag_40_repop_co         Int
+  fag_50_repop_co         Int
+  fag_60_above_repop_co   Int
+  tot_hshld_co            Int
+  apt_hshld_co            Int
+  non_apt_hshld_co        Int
+
+  @@id([stdr_yyqu_cd, mega_cd])
+  @@map("resident_population_city")
+}
+
+model ResidentPopulationGu {
+  stdr_yyqu_cd            String
+  signgu_cd               String
+  signgu_cd_nm            String
+  tot_repop_co            Int
+  ml_repop_co             Int
+  fml_repop_co            Int
+  agrde_10_repop_co       Int
+  agrde_20_repop_co       Int
+  agrde_30_repop_co       Int
+  agrde_40_repop_co       Int
+  agrde_50_repop_co       Int
+  agrde_60_above_repop_co Int
+  mag_10_repop_co         Int
+  mag_20_repop_co         Int
+  mag_30_repop_co         Int
+  mag_40_repop_co         Int
+  mag_50_repop_co         Int
+  mag_60_above_repop_co   Int
+  fag_10_repop_co         Int
+  fag_20_repop_co         Int
+  fag_30_repop_co         Int
+  fag_40_repop_co         Int
+  fag_50_repop_co         Int
+  fag_60_above_repop_co   Int
+  tot_hshld_co            Int
+  apt_hshld_co            Int
+  non_apt_hshld_co        Int
+
+  @@id([stdr_yyqu_cd, signgu_cd])
+  @@map("resident_population_gu")
+}
+
+model ResidentPopulationDong {
+  stdr_yyqu_cd            String
+  adstrd_cd               String
+  adstrd_cd_nm            String
+  tot_repop_co            Int
+  ml_repop_co             Int
+  fml_repop_co            Int
+  agrde_10_repop_co       Int
+  agrde_20_repop_co       Int
+  agrde_30_repop_co       Int
+  agrde_40_repop_co       Int
+  agrde_50_repop_co       Int
+  agrde_60_above_repop_co Int
+  mag_10_repop_co         Int
+  mag_20_repop_co         Int
+  mag_30_repop_co         Int
+  mag_40_repop_co         Int
+  mag_50_repop_co         Int
+  mag_60_above_repop_co   Int
+  fag_10_repop_co         Int
+  fag_20_repop_co         Int
+  fag_30_repop_co         Int
+  fag_40_repop_co         Int
+  fag_50_repop_co         Int
+  fag_60_above_repop_co   Int
+  tot_hshld_co            Int
+  apt_hshld_co            Int
+  non_apt_hshld_co        Int
+
+  @@id([stdr_yyqu_cd, adstrd_cd])
+  @@map("resident_population_dong")
+}
+
+model ResidentPopulationBackarea {
+  stdr_yyqu_cd            String
+  trdar_se_cd             String
+  trdar_se_cd_nm          String
+  trdar_cd                String
+  trdar_cd_nm             String
+  tot_repop_co            Int
+  ml_repop_co             Int
+  fml_repop_co            Int
+  agrde_10_repop_co       Int
+  agrde_20_repop_co       Int
+  agrde_30_repop_co       Int
+  agrde_40_repop_co       Int
+  agrde_50_repop_co       Int
+  agrde_60_above_repop_co Int
+  mag_10_repop_co         Int
+  mag_20_repop_co         Int
+  mag_30_repop_co         Int
+  mag_40_repop_co         Int
+  mag_50_repop_co         Int
+  mag_60_above_repop_co   Int
+  fag_10_repop_co         Int
+  fag_20_repop_co         Int
+  fag_30_repop_co         Int
+  fag_40_repop_co         Int
+  fag_50_repop_co         Int
+  fag_60_above_repop_co   Int
+  tot_hshld_co            Int
+  apt_hshld_co            Int
+  non_apt_hshld_co        Int
+
+  @@id([stdr_yyqu_cd, trdar_cd])
+  @@map("resident_population_backarea")
+}
+
+model ResidentPopulationCommercial {
+  stdr_yyqu_cd            String
+  trdar_se_cd             String
+  trdar_se_cd_nm          String
+  trdar_cd                String
+  trdar_cd_nm             String
+  tot_repop_co            Int
+  ml_repop_co             Int
+  fml_repop_co            Int
+  agrde_10_repop_co       Int
+  agrde_20_repop_co       Int
+  agrde_30_repop_co       Int
+  agrde_40_repop_co       Int
+  agrde_50_repop_co       Int
+  agrde_60_above_repop_co Int
+  mag_10_repop_co         Int
+  mag_20_repop_co         Int
+  mag_30_repop_co         Int
+  mag_40_repop_co         Int
+  mag_50_repop_co         Int
+  mag_60_above_repop_co   Int
+  fag_10_repop_co         Int
+  fag_20_repop_co         Int
+  fag_30_repop_co         Int
+  fag_40_repop_co         Int
+  fag_50_repop_co         Int
+  fag_60_above_repop_co   Int
+  tot_hshld_co            Int
+  apt_hshld_co            Int
+  non_apt_hshld_co        Int
+
+  @@id([stdr_yyqu_cd, trdar_cd])
+  @@map("resident_population_commercial")
+}

@@ -1,0 +1,143 @@
+import { useState, useEffect, useRef } from 'react';
+import {
+  Radar,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  ResponsiveContainer,
+  Legend,
+} from 'recharts';
+import { PopulationData } from '../../types/analysis-types';
+
+type ColorTheme = 'blue' | 'emerald';
+
+interface AgeGenderRadarChartProps {
+  populationData: PopulationData | null;
+  colorTheme?: ColorTheme;
+}
+
+const themeColors = {
+  blue: {
+    male: '#3b82f6',
+    female: '#ef4444',
+    highlight: 'text-blue-600',
+    bg: 'bg-blue-50',
+  },
+  emerald: {
+    male: '#10b981',
+    female: '#f59e0b',
+    highlight: 'text-emerald-600',
+    bg: 'bg-emerald-50',
+  },
+};
+
+export default function AgeGenderRadarChart({
+  populationData,
+  colorTheme = 'blue',
+}: AgeGenderRadarChartProps) {
+  const colors = themeColors[colorTheme];
+  const [animationComplete, setAnimationComplete] = useState(false);
+  const prevDataRef = useRef(populationData);
+
+  useEffect(() => {
+    if (prevDataRef.current !== populationData) {
+      prevDataRef.current = populationData;
+    }
+    const timer = setTimeout(() => setAnimationComplete(true), 1000);
+    return () => clearTimeout(timer);
+  }, [populationData]);
+
+  if (!populationData) return null;
+
+  const ages = ['10대', '20대', '30대', '40대', '50대', '60대 이상'];
+  const keys = ['a10', 'a20', 'a30', 'a40', 'a50', 'a60'];
+
+  const maleRatio =
+    populationData.total > 0 ? populationData.male / populationData.total : 0.5;
+  const femaleRatio =
+    populationData.total > 0
+      ? populationData.female / populationData.total
+      : 0.5;
+
+  let maxGroup = { label: '', val: -1 };
+
+  const chartData = keys.map((key, index) => {
+    const totalAgePop = populationData.age[key] || 0;
+    const maleVal = Math.round(totalAgePop * maleRatio);
+    const femaleVal = Math.round(totalAgePop * femaleRatio);
+
+    if (maleVal > maxGroup.val) {
+      maxGroup = { label: `${ages[index]}, 남성`, val: maleVal };
+    }
+    if (femaleVal > maxGroup.val) {
+      maxGroup = { label: `${ages[index]}, 여성`, val: femaleVal };
+    }
+
+    return {
+      subject: ages[index],
+      male: maleVal,
+      female: femaleVal,
+    };
+  });
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex-1 min-h-0">
+        <ResponsiveContainer width="100%" height="100%" debounce={0}>
+          <RadarChart cx="50%" cy="52%" outerRadius="80%" data={chartData}>
+            <PolarGrid stroke="#e5e7eb" />
+            <PolarAngleAxis
+              dataKey="subject"
+              tick={{ fill: '#4b5563', fontSize: 11, fontWeight: 500 }}
+            />
+            <PolarRadiusAxis
+              angle={30}
+              domain={[0, 'auto']}
+              tick={false}
+              axisLine={false}
+            />
+
+            <Radar
+              name="남성"
+              dataKey="male"
+              stroke={colors.male}
+              strokeWidth={2}
+              fill={colors.male}
+              fillOpacity={0.2}
+              isAnimationActive={!animationComplete}
+              animationDuration={800}
+            />
+            <Radar
+              name="여성"
+              dataKey="female"
+              stroke={colors.female}
+              strokeWidth={2}
+              fill={colors.female}
+              fillOpacity={0.2}
+              isAnimationActive={!animationComplete}
+              animationDuration={800}
+            />
+            <Legend
+              verticalAlign="top"
+              wrapperStyle={{ top: -5 }}
+              height={36}
+              iconType="rect"
+              formatter={(value) => (
+                <span className="text-sm font-semibold text-gray-700 ml-1">
+                  {value}
+                </span>
+              )}
+            />
+          </RadarChart>
+        </ResponsiveContainer>
+      </div>
+      <div className={`mt-1 ${colors.bg} rounded-lg py-2 px-3 text-center`}>
+        <span className="text-sm text-gray-800 tracking-tight">
+          <span className={`font-bold ${colors.highlight}`}>{maxGroup.label}</span>{' '}
+          비율이 가장 높아요.
+        </span>
+      </div>
+    </div>
+  );
+}
