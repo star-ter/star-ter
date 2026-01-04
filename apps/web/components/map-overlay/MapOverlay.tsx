@@ -6,6 +6,7 @@ import { IndustryCategory, ReportRequest } from '../../types/bottom-menu-types';
 import { useMapStore } from '../../stores/useMapStore';
 import { useLocationSync } from '@/hooks/useLocationSync';
 import MapHeader from '../header/MapHeader';
+import IndustrySubSelect from '../rank-nav/IndustrySubSelect';
 
 interface MapOverlayProps {
   locationA: { name: string; code?: string };
@@ -57,14 +58,21 @@ export default function MapOverlay({
       <MapHeader {...locationSync} />
 
       <section className="absolute w-fit h-fit pointer-events-none mt-20 ml-6">
-        <div className="flex flex-col items-start gap-3 pointer-events-none">
+        <div className="flex flex-col items-start gap-4 pointer-events-none">
+          {/* 업종 상세 선택 (순위창과 별개로 항상 표시) */}
+          <IndustrySubSelect
+            selectedCategory={selectedCategory}
+            selectedSubCode={selectedSubCode}
+            onSubCodeChange={onSelectSubCode}
+          />
+
           {shouldShowRank && !isReportOpen && (
             <>
               {/* 버튼은 클릭되어야 하므로 pointer-events-auto 추가 */}
               <button
                 type="button"
                 onClick={() => setIsRankOpen((prev) => !prev)}
-                className="inline-flex items-center rounded-full bg-white/90 px-3 py-1.5 text-sm font-semibold text-gray-700 shadow-sm ring-1 ring-gray-200 transition hover:bg-white pointer-events-auto"
+                className="inline-flex items-center rounded-full bg-white/90 px-4 py-2 text-sm font-bold text-gray-700 shadow-lg ring-1 ring-black/5 backdrop-blur transition hover:bg-white pointer-events-auto"
               >
                 {isRankOpen ? '순위 닫기' : '순위 열기'}
               </button>

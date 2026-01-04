@@ -43,7 +43,6 @@ export default function RankNav({
   parentGuName,
   selectedCategory,
   selectedSubCode,
-  onSubCodeChange,
 }: RankNavProps) {
   const { moveToLocation } = useMapStore();
   const [isMoving, setIsMoving] = useState(false);
@@ -137,14 +136,11 @@ export default function RankNav({
   };
 
   return (
-    <aside className="w-[330px] ml-4 z-300 rounded-2xl bg-white/90 p-3.5 shadow-lg ring-1 ring-black/5 backdrop-blur pointer-events-auto">
+    <aside className="w-[330px] z-300 rounded-2xl bg-white/90 p-3.5 shadow-lg ring-1 ring-black/5 backdrop-blur pointer-events-auto">
       <RankNavHeader
         level={level}
         areaName={parentGuName}
         categoryName={selectedCategory?.name}
-        selectedCategory={selectedCategory}
-        selectedSubCode={selectedSubCode || null}
-        onSubCodeChange={(code) => onSubCodeChange?.(code)}
       />
 
       <div className="space-y-2">
