@@ -1,12 +1,11 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { LATEST_QUARTER } from '../market/market.repository';
 import { AdminPolygonResponse } from './dto/admin-polygon-dto';
 import { BuildingPolygonResponse } from './dto/building-polygon-dto';
 import { CommercialPolygonResponse } from './dto/commercial-polygon-dto';
 import { RawCommercialArea } from './dto/raw-commercial-area.dto';
 import { RawCommercialBuilding } from './dto/raw-commercial-building.dto';
-
-const LATEST_QUARTER = '20253';
 
 type IndustryFilter =
   | { svc_induty_cd: { in: string[] } }
