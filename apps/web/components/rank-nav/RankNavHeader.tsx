@@ -1,21 +1,14 @@
-import { IndustryCategory } from '../../types/bottom-menu-types';
 
 type RankNavHeaderProps = {
   areaName?: string;
   categoryName?: string;
   level: 'gu' | 'dong';
-  selectedCategory?: IndustryCategory;
-  selectedSubCode: string | null;
-  onSubCodeChange: (code: string | null) => void;
 };
 
 export default function RankNavHeader({
   areaName,
   categoryName,
   level,
-  selectedCategory,
-  selectedSubCode,
-  onSubCodeChange,
 }: RankNavHeaderProps) {
   return (
     <header className="flex flex-col gap-2 mb-2">
@@ -98,27 +91,6 @@ export default function RankNavHeader({
           </div>
         </div>
       </div>
-
-      {/* Sub Category Selector */}
-      {selectedCategory?.children && selectedCategory.children.length > 0 && (
-        <div className="mb-2">
-          <select
-            value={selectedSubCode || ''}
-            onChange={(e) => {
-              const val = e.target.value;
-              onSubCodeChange(val === '' ? null : val);
-            }}
-            className="w-full rounded-xl border-gray-200 bg-gray-50 py-2 pl-3 pr-8 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500 transition-colors cursor-pointer hover:bg-white border outline-none"
-          >
-            <option value="">전체 ({selectedCategory.name})</option>
-            {selectedCategory.children.map((child) => (
-              <option key={child.code} value={child.code}>
-                {child.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
     </header>
   );
 }

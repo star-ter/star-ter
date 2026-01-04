@@ -71,7 +71,7 @@ export const IndustryData: IndustryCategory[] = [
     name: '숙박',
     level: 1,
     children: [
-      { code: 'CS200034', name: '여관', level: 2 },
+      { code: 'CS200034', name: '모텔/여관', level: 2 },
       { code: 'CS200036', name: '고시원', level: 2 },
     ],
   },
