@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+
+export const LATEST_QUARTER = '20253';
 import {
   AdministrativeAreaResult,
   CommercialAreaResult,
@@ -247,15 +249,14 @@ export class MarketRepository {
    */
   async getCommercialTopIndustries(code: string) {
     return this.prisma.salesCommercial.groupBy({
-      by: ['svc_induty_cd_nm'],
-      where: { trdar_cd: code },
+      by: ['svc_induty_cd', 'svc_induty_cd_nm'],
+      where: { trdar_cd: code, stdr_yyqu_cd: LATEST_QUARTER },
       _sum: {
         thsmon_selng_amt: true,
       },
       orderBy: {
         _sum: { thsmon_selng_amt: 'desc' },
       },
-      take: 5,
     });
   }
 
@@ -265,15 +266,14 @@ export class MarketRepository {
    */
   async getDongTopIndustries(code: string) {
     return this.prisma.salesDong.groupBy({
-      by: ['svc_induty_cd_nm'],
-      where: { adstrd_cd: code },
+      by: ['svc_induty_cd', 'svc_induty_cd_nm'],
+      where: { adstrd_cd: code, stdr_yyqu_cd: LATEST_QUARTER },
       _sum: {
         thsmon_selng_amt: true,
       },
       orderBy: {
         _sum: { thsmon_selng_amt: 'desc' },
       },
-      take: 5,
     });
   }
 
@@ -283,15 +283,14 @@ export class MarketRepository {
    */
   async getGuTopIndustries(code: string) {
     return this.prisma.salesGu.groupBy({
-      by: ['svc_induty_cd_nm'],
-      where: { signgu_cd: code },
+      by: ['svc_induty_cd', 'svc_induty_cd_nm'],
+      where: { signgu_cd: code, stdr_yyqu_cd: LATEST_QUARTER },
       _sum: {
         thsmon_selng_amt: true,
       },
       orderBy: {
         _sum: { thsmon_selng_amt: 'desc' },
       },
-      take: 5,
     });
   }
 

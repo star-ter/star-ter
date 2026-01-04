@@ -49,12 +49,26 @@ export interface TopIndustry {
   ratio: number;
 }
 
+export interface IndustryBreakdownItem {
+  code: string;
+  name: string;
+  revenue: number;
+}
+
+export interface IndustryCategoryBreakdown {
+  macroCode: string;
+  macroName: string;
+  totalRevenue: number;
+  subIndustries: IndustryBreakdownItem[];
+}
+
 export interface MarketSalesDetail {
   trend: SalesTrendItem[];
   timeSlot: TimeSlotDistribution;
   dayOfWeek: DayOfWeekDistribution;
   demographics: Demographics;
   topIndustries: TopIndustry[];
+  industryBreakdown?: IndustryCategoryBreakdown[];
 }
 
 export interface MarketAnalysisData {

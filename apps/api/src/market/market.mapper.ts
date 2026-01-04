@@ -1,4 +1,8 @@
-import { MarketAnalyticsDto } from './dto/market-analytics.dto';
+import {
+  IndustryCategoryBreakdown,
+  MarketAnalyticsDto,
+} from './dto/market-analytics.dto';
+import { INDUSTRY_MAPPING, MACRO_CATEGORIES } from './utils/industry-mapping';
 
 interface SalesSum {
   thsmon_selng_amt?: number | bigint | null;
@@ -32,6 +36,7 @@ interface AggregatedSalesRow {
 
 // 업종별 매출 데이터 타입 (repository에서 groupBy 결과)
 interface IndustryData {
+  svc_induty_cd: string;
   svc_induty_cd_nm: string;
   _sum: {
     thsmon_selng_amt: number | bigint | null;
@@ -46,7 +51,7 @@ export class MarketMapper {
    * @param isCommercial - 상권 여부
    * @param openingRate - 개업률
    * @param closureRate - 폐업률
-   * @param topIndustries - 업종별 매출 Top 5 (선택)
+   * @param industries - 모든 업종별 매출 데이터
    */
   static mapToAnalyticsDto(
     groupedRows: AggregatedSalesRow[],
@@ -54,7 +59,7 @@ export class MarketMapper {
     isCommercial: boolean,
     openingRate: number = 0,
     closureRate: number = 0,
-    topIndustries: IndustryData[] = [],
+    industries: IndustryData[] = [],
   ): MarketAnalyticsDto {
     if (!groupedRows || groupedRows.length === 0) {
       return this.getEmptySalesData(`${areaName} (데이터 없음)`);
@@ -66,18 +71,55 @@ export class MarketMapper {
     // Helper to safely get number
     const val = (v: bigint | number | null | undefined) => Number(v || 0);
 
-    // 업종별 매출 비율 계산
-    const totalIndustryRevenue = topIndustries.reduce(
+    // 1. 기존 Top 5 유지 및 비율 계산
+    const top5 = industries.slice(0, 5);
+    const totalIndustryRevenue = industries.reduce(
       (acc, item) => acc + val(item._sum.thsmon_selng_amt),
       0,
     );
-    const mappedIndustries = topIndustries.map((item) => ({
+    const mappedTopIndustries = top5.map((item) => ({
       name: item.svc_induty_cd_nm,
       ratio:
         totalIndustryRevenue > 0
           ? val(item._sum.thsmon_selng_amt) / totalIndustryRevenue
           : 0,
     }));
+
+    // 2. 대분류별 그룹화 (Industry Breakdown)
+    const breakdownMap = new Map<string, IndustryCategoryBreakdown>();
+
+    industries.forEach((item) => {
+      const macroCode = INDUSTRY_MAPPING[item.svc_induty_cd];
+      const macroName = macroCode ? MACRO_CATEGORIES[macroCode] : '기타';
+      const revenue = val(item._sum.thsmon_selng_amt);
+
+      const mapKey = macroCode || 'ETC';
+      if (!breakdownMap.has(mapKey)) {
+        breakdownMap.set(mapKey, {
+          macroCode: mapKey,
+          macroName,
+          totalRevenue: 0,
+          subIndustries: [],
+        });
+      }
+
+      const macroInfo = breakdownMap.get(mapKey)!;
+      macroInfo.totalRevenue += revenue;
+      macroInfo.subIndustries.push({
+        code: item.svc_induty_cd,
+        name: item.svc_induty_cd_nm,
+        revenue,
+      });
+    });
+
+    // 정렬: 대분류 매출순
+    const industryBreakdown = Array.from(breakdownMap.values()).sort(
+      (a, b) => b.totalRevenue - a.totalRevenue,
+    );
+    // 하위 업종도 매출순 정렬
+    industryBreakdown.forEach((cat) => {
+      cat.subIndustries.sort((a, b) => b.revenue - a.revenue);
+    });
 
     return {
       areaName,
@@ -122,7 +164,8 @@ export class MarketMapper {
           age60: val(sum.agrde_60_above_selng_amt),
           primaryGroupSummaryComment: '성별/연령별 매출 분포입니다.',
         },
-        topIndustries: mappedIndustries,
+        topIndustries: mappedTopIndustries,
+        industryBreakdown,
       },
       vitality: {
         openingRate: Math.round(openingRate * 10) / 10,

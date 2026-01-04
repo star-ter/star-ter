@@ -1,6 +1,5 @@
 'use client';
 import { useState } from 'react';
-
 import ModalCard from './modal/ModalCard';
 import PillButton from './PillButton';
 // import AreaContents from './modal/AreaContents';
@@ -20,7 +19,11 @@ import { useMapStore } from '../../stores/useMapStore';
 import { useModalStore } from '../../stores/useModalStore';
 
 type ActiveType =
-  'population' | 'industry' | 'compare' | 'report' | 'calculateRent';
+  | 'population'
+  | 'industry'
+  | 'compare'
+  | 'report'
+  | 'calculateRent';
 
 import { usePopulationVisual } from '../../hooks/usePopulationVisual';
 interface BottomMenuProps {
@@ -204,11 +207,6 @@ export default function BottomMenuBox({
                   });
                   return;
                 }
-                // If we have result, just show it (toggle on)?
-                // Or always start new input?
-                // User expects "New Report" usually.
-                // If isReportOpen is true, maybe just focus it.
-                // If false, open Input.
                 setActive('report');
                 setLocationA({ name: '' });
                 setLocationB({ name: '' });
@@ -224,9 +222,6 @@ export default function BottomMenuBox({
               if (value === 'compare') {
                 setInfoBarOpen(false);
                 setIsOpen(false);
-              }
-
-              if (value === 'calculateRent') {
               }
             }}
           />

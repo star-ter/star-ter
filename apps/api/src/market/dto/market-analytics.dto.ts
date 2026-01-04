@@ -43,6 +43,19 @@ export class TopIndustry {
   ratio: number;
 }
 
+export class IndustryBreakdownItem {
+  code: string;
+  name: string;
+  revenue: number;
+}
+
+export class IndustryCategoryBreakdown {
+  macroCode: string;
+  macroName: string;
+  totalRevenue: number;
+  subIndustries: IndustryBreakdownItem[];
+}
+
 // 2. 생명력(개업/폐업) / 매출 상세 그룹
 export class MarketVitality {
   openingRate: number;
@@ -55,6 +68,7 @@ export class MarketSalesDetail {
   dayOfWeek: DayOfWeekDistribution;
   demographics: Demographics;
   topIndustries: TopIndustry[];
+  industryBreakdown?: IndustryCategoryBreakdown[];
 }
 
 // 3. 메인 분석용 DTO
