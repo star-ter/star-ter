@@ -1,18 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from 'generated/prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-
-type AreaQueryParams = {
-  stdrYyquCd: string;
-  areaCd: string;
-};
+import { QueryParams } from './dto/query-dto';
 
 @Injectable()
 export class ToolsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   // 2) 상권 기본 요약(간단): 유동/상주/직장/매출/점포 (업종 합계 기준)
-  async getCommercialSummary(params: AreaQueryParams) {
+  async getCommercialSummary(params: QueryParams) {
     const { stdrYyquCd, areaCd } = params;
     const rows = await this.prisma.$queryRaw<any[]>`
       WITH
@@ -100,7 +96,7 @@ export class ToolsRepository {
   }
 
   // 3) 유동인구 조회(간단): 핵심 지표 + 시간대/요일 일부
-  async getFootTrafficSummary(params: AreaQueryParams) {
+  async getFootTrafficSummary(params: QueryParams) {
     const { stdrYyquCd, areaCd } = params;
     const rows = await this.prisma.$queryRaw<any[]>`
       SELECT
@@ -127,7 +123,7 @@ export class ToolsRepository {
   }
 
   // 4) 상주인구 조회(간단): 인구 + 가구(아파트/비아파트)
-  async getResidentPopulationSummary(params: AreaQueryParams) {
+  async getResidentPopulationSummary(params: QueryParams) {
     const { stdrYyquCd, areaCd } = params;
     const rows = await this.prisma.$queryRaw<any[]>`
       SELECT
@@ -154,7 +150,7 @@ export class ToolsRepository {
   }
 
   // 5) 직장인구 조회(간단): 인구 + 성별/연령 일부
-  async getWorkingPopulationSummary(params: AreaQueryParams) {
+  async getWorkingPopulationSummary(params: QueryParams) {
     const { stdrYyquCd, areaCd } = params;
     const rows = await this.prisma.$queryRaw<any[]>`
       SELECT
@@ -178,7 +174,7 @@ export class ToolsRepository {
   }
 
   // 6) 매출 조회(업종 TOP): 상권 내 업종별 매출 상위
-  async getSalesTopIndustries(params: AreaQueryParams & { limit?: number }) {
+  async getSalesTopIndustries(params: QueryParams) {
     const { stdrYyquCd, areaCd, limit = 5 } = params;
     const rows = await this.prisma.$queryRaw<any[]>`
       SELECT
@@ -202,7 +198,7 @@ export class ToolsRepository {
   }
 
   // 7) 점포/경쟁 조회(업종 TOP): 상권 내 업종별 점포/경쟁/프차/개폐업
-  async getStoreTopIndustries(params: AreaQueryParams & { limit?: number }) {
+  async getStoreTopIndustries(params: QueryParams) {
     const { stdrYyquCd, areaCd, limit = 5 } = params;
     const rows = await this.prisma.$queryRaw<any[]>`
       SELECT
@@ -229,7 +225,7 @@ export class ToolsRepository {
   }
 
   // 8) 소득/소비 조회(간단): 소득 + 소비 항목 일부
-  async getIncomeConsumptionSummary(params: AreaQueryParams) {
+  async getIncomeConsumptionSummary(params: QueryParams) {
     const { stdrYyquCd, areaCd } = params;
     const rows = await this.prisma.$queryRaw<any[]>`
       SELECT
@@ -253,7 +249,7 @@ export class ToolsRepository {
   }
 
   // 9) 상권 변화지표 조회(간단): 상태 + 운영/폐업 개월
-  async getCommercialChangeSummary(params: AreaQueryParams) {
+  async getCommercialChangeSummary(params: QueryParams) {
     const { stdrYyquCd, areaCd } = params;
     const rows = await this.prisma.$queryRaw<any[]>`
       SELECT
@@ -277,12 +273,9 @@ export class ToolsRepository {
   }
 
   // 10) 상권 비교(2개 상권 예시): 유동인구/매출 합계 비교
-  async compareCommercialAreas(params: {
-    stdrYyquCd: string;
-    areaCodes: string[];
-  }) {
-    const { stdrYyquCd, areaCodes } = params;
-    if (areaCodes.length === 0) {
+  async compareCommercialAreas(params: QueryParams) {
+    const { stdrYyquCd, areaCdList } = params;
+    if (areaCdList.length === 0) {
       return [];
     }
 
@@ -299,7 +292,7 @@ export class ToolsRepository {
           tot_flpop_co
         FROM v_foot_traffic
         WHERE stdr_yyqu_cd = ${stdrYyquCd}
-          AND area_cd IN (${Prisma.join(areaCodes)})
+          AND area_cd IN (${Prisma.join(areaCdList)})
       ),
       sales AS (
         SELECT
@@ -312,7 +305,7 @@ export class ToolsRepository {
           SUM(thsmon_selng_amt) AS thsmon_selng_amt
         FROM v_sales
         WHERE stdr_yyqu_cd = ${stdrYyquCd}
-          AND area_cd IN (${Prisma.join(areaCodes)})
+          AND area_cd IN (${Prisma.join(areaCdList)})
         GROUP BY 1, 2, 3, 4, 5, 6
       )
       SELECT

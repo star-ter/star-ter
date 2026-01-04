@@ -1,11 +1,11 @@
-export class BusinessCategoryVectorDto {
+export type BusinessCategoryVectorDto = {
   code: string;
   categoryName: string;
-}
+};
 
-export class AreaVectorDto {
+export type AreaVectorDto = {
   areaName: string;
   areaLevel: 'city' | 'gu' | 'dong' | 'commercial';
   areaCode: string;
   distance: number;
-}
+};

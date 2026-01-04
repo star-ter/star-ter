@@ -10,13 +10,13 @@ import {
 import { AiRepository } from './ai.repository';
 import { BusinessCategoryVectorDto } from './dto/column-vector';
 import { ResponseInputItem } from 'openai/resources/responses/responses.js';
-import { ToolsRepository } from './tools.repository';
+import { AiToolsService } from './ai-tools.service';
 
 @Injectable()
 export class AiService {
   constructor(
     private readonly aiRepository: AiRepository,
-    private readonly toolsRepository: ToolsRepository,
+    private readonly aiToolsService: AiToolsService,
   ) {}
 
   async getAIMessage(message: string): Promise<string> {
@@ -24,161 +24,29 @@ export class AiService {
       this.getCategories(message),
       this.buildAreaList(message),
     ]);
-    console.log('전처리 완료 -- AI 도구 호출 시작'); // --- IGNORE ---
+
     const input: ResponseInputItem[] = [{ role: 'user', content: message }];
     const toolCallResponse = await toolCallAi(message, categories, areaList);
     input.push(...toolCallResponse.output);
 
     for (const toolCall of toolCallResponse.output) {
       if (toolCall.type !== 'function_call') continue;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const args: Record<string, unknown> = JSON.parse(toolCall.arguments);
-      const stdrYyquCd = (args.stdr_yyqu_cd as string | undefined) ?? '20253';
-      let output = '';
-
-      switch (toolCall.name) {
-        case 'get_store': {
-          const areaCd =
-            (args.area_cd as string | undefined) ??
-            (args.areaCd as string | undefined);
-          if (!areaCd) {
-            throw new Error('Missing area_cd');
-          }
-          const result = await this.toolsRepository.getCommercialSummary({
-            stdrYyquCd,
-            areaCd: String(areaCd),
-          });
-          output = JSON.stringify(result, safeBigIntStringify);
-          break;
-        }
-        case 'get_foot_traffic': {
-          const areaCd =
-            (args.area_cd as string | undefined) ??
-            (args.areaCd as string | undefined);
-          if (!areaCd) {
-            throw new Error('Missing area_cd');
-          }
-          const result = await this.toolsRepository.getFootTrafficSummary({
-            stdrYyquCd,
-            areaCd: String(areaCd),
-          });
-          output = JSON.stringify(result, safeBigIntStringify);
-          break;
-        }
-        case 'get_resident_population': {
-          const areaCd =
-            (args.area_cd as string | undefined) ??
-            (args.areaCd as string | undefined);
-          if (!areaCd) {
-            throw new Error('Missing area_cd');
-          }
-          const result =
-            await this.toolsRepository.getResidentPopulationSummary({
-              stdrYyquCd,
-              areaCd: String(areaCd),
-            });
-          output = JSON.stringify(result, safeBigIntStringify);
-          break;
-        }
-        case 'get_working_population': {
-          const areaCd =
-            (args.area_cd as string | undefined) ??
-            (args.areaCd as string | undefined);
-          if (!areaCd) {
-            throw new Error('Missing area_cd');
-          }
-          const result = await this.toolsRepository.getWorkingPopulationSummary(
-            {
-              stdrYyquCd,
-              areaCd: String(areaCd),
-            },
-          );
-          output = JSON.stringify(result, safeBigIntStringify);
-          break;
-        }
-        case 'get_sales_top_industries': {
-          const areaCd =
-            (args.area_cd as string | undefined) ??
-            (args.areaCd as string | undefined);
-          if (!areaCd) {
-            throw new Error('Missing area_cd');
-          }
-          const result = await this.toolsRepository.getSalesTopIndustries({
-            stdrYyquCd,
-            areaCd: String(areaCd),
-          });
-          output = JSON.stringify(result, safeBigIntStringify);
-          break;
-        }
-        case 'get_store_top_industries': {
-          const areaCd =
-            (args.area_cd as string | undefined) ??
-            (args.areaCd as string | undefined);
-          if (!areaCd) {
-            throw new Error('Missing area_cd');
-          }
-          const result = await this.toolsRepository.getStoreTopIndustries({
-            stdrYyquCd,
-            areaCd: String(areaCd),
-          });
-          output = JSON.stringify(result, safeBigIntStringify);
-          break;
-        }
-        case 'get_income_consumption': {
-          const areaCd =
-            (args.area_cd as string | undefined) ??
-            (args.areaCd as string | undefined);
-          if (!areaCd) {
-            throw new Error('Missing area_cd');
-          }
-          const result = await this.toolsRepository.getIncomeConsumptionSummary(
-            {
-              stdrYyquCd,
-              areaCd: String(areaCd),
-            },
-          );
-          output = JSON.stringify(result, safeBigIntStringify);
-          break;
-        }
-        case 'get_commercial_change': {
-          const areaCd =
-            (args.area_cd as string | undefined) ??
-            (args.areaCd as string | undefined);
-          if (!areaCd) {
-            throw new Error('Missing area_cd');
-          }
-          const result = await this.toolsRepository.getCommercialChangeSummary({
-            stdrYyquCd,
-            areaCd: String(areaCd),
-          });
-          output = JSON.stringify(result, safeBigIntStringify);
-          break;
-        }
-        case 'compare_commercial_areas': {
-          const areaCodes =
-            (args.area_codes as string[] | undefined) ??
-            (args.areaCodes as string[] | undefined);
-          if (!Array.isArray(areaCodes) || areaCodes.length === 0) {
-            throw new Error('Missing area_codes');
-          }
-          const result = await this.toolsRepository.compareCommercialAreas({
-            stdrYyquCd,
-            areaCodes: areaCodes.map((code) => String(code)),
-          });
-          output = JSON.stringify(result, safeBigIntStringify);
-          break;
-        }
-        default:
-          continue;
+      const toolResult = await this.aiToolsService.run(
+        toolCall.name,
+        toolCall.arguments,
+      );
+      
+      if (toolResult === undefined) {
+        continue;
       }
 
       input.push({
         type: 'function_call_output',
         call_id: toolCall.call_id,
-        output: output,
+        output: JSON.stringify(toolResult, safeBigIntStringify),
       });
     }
-    console.log('도구 호출 완료'); // --- IGNORE ---
+
     const analyzeResult = await analyzeResults(input);
 
     return getText(analyzeResult);
