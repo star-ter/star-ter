@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 
 import Kakaomap from '@/components/kakaomap';
 import MapOverlay from '@/components/map-overlay/MapOverlay';
@@ -36,9 +36,11 @@ export default function MapPage() {
 
   const population = usePopulationVisual();
 
-  useEffect(() => {
+  // 업종 선택 핸들러 - 선택 시 세부 코드 초기화
+  const handleSelectCategory = useCallback((category: IndustryCategory | null) => {
+    setSelectedCategory(category);
     setSelectedSubCode(null);
-  }, [selectedCategory?.code]);
+  }, []);
 
   // 비교 마커 첫번째인지 두번째인지 판단
   function handlePickMode(target: 'A' | 'B') {
@@ -128,7 +130,7 @@ export default function MapPage() {
           population={population}
           selectedCategory={selectedCategory}
           selectedSubCategoryCode={selectedSubCode}
-          onClearCategory={() => setSelectedCategory(null)}
+          onClearCategory={() => handleSelectCategory(null)}
           disableInfoBar={!!pickTarget}
         />
       </div>
@@ -141,7 +143,7 @@ export default function MapPage() {
           handlePickMode={handlePickMode}
           population={population}
           onCompare={handleCompareRequest}
-          onSelectCategory={setSelectedCategory}
+          onSelectCategory={handleSelectCategory}
           selectedCategory={selectedCategory}
           selectedSubCode={selectedSubCode}
           onSelectSubCode={setSelectedSubCode}
