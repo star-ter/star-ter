@@ -1,7 +1,8 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { KakaoMap, KakaoCustomOverlay } from '../types/map-types';
+import { KakaoMap, KakaoCustomOverlay, OverlayMode } from '../types/map-types';
 import { IndustryCategory } from '../types/bottom-menu-types';
 import { createMarkerContent } from '@/utils/building-marker-utils';
+import { useMapStore } from '@/stores/useMapStore';
 
 interface BuildingStoreData {
   buildingId: string;
@@ -38,6 +39,7 @@ export const useBuildingMarkers = (
   map: KakaoMap | null,
   selectedCategory: IndustryCategory | null,
 ) => {
+  const { overlayMode } = useMapStore();
   const customOverlaysRef = useRef<KakaoCustomOverlay[]>([]);
 
   const TOTAL_VIEW_THRESHOLD = 1;
@@ -52,6 +54,12 @@ export const useBuildingMarkers = (
 
   const fetchAndDrawMarkers = useCallback(async () => {
     if (!map) return;
+
+    // 매출(revenue) 모드일 때만 빌딩 마커 표시
+    if (overlayMode !== 'revenue') {
+      clearMarkers();
+      return;
+    }
 
     const level = map.getLevel();
     if (level > 3) {
@@ -132,7 +140,7 @@ export const useBuildingMarkers = (
     } catch (err) {
       console.error('Building Marker Fetch Error:', err);
     }
-  }, [map, selectedCategory, clearMarkers]);
+  }, [map, selectedCategory, overlayMode, clearMarkers]);
 
   useEffect(() => {
     if (!map) return;

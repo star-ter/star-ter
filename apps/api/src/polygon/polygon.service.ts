@@ -1,12 +1,16 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { BuildingPolygonResponse } from './dto/building-polygon-dto';
 import { AdminPolygonResponse } from './dto/admin-polygon-dto';
+import { BuildingPolygonResponse } from './dto/building-polygon-dto';
 import { CommercialPolygonResponse } from './dto/commercial-polygon-dto';
 import { RawCommercialArea } from './dto/raw-commercial-area.dto';
 import { RawCommercialBuilding } from './dto/raw-commercial-building.dto';
 
 const LATEST_QUARTER = '20253';
+
+type IndustryFilter =
+  | { svc_induty_cd: { in: string[] } }
+  | Record<string, never>;
 
 @Injectable()
 export class PolygonService {
@@ -19,67 +23,70 @@ export class PolygonService {
     closing: Map<string, number>;
   } | null = null;
 
+  private buildIndustryFilter(
+    industryCode?: string,
+    industryCodes?: string,
+  ): IndustryFilter {
+    if (industryCodes) {
+      const codes = industryCodes.split(',').filter(Boolean);
+      if (codes.length > 0) {
+        return { svc_induty_cd: { in: codes } };
+      }
+    }
+    if (industryCode) {
+      return { svc_induty_cd: { in: [industryCode] } };
+    }
+    return {};
+  }
+
+  private buildRankMap(
+    rows: { trdar_cd: string | null }[],
+  ): Map<string, number> {
+    const map = new Map<string, number>();
+    rows.forEach((row, index) => {
+      if (row.trdar_cd) map.set(row.trdar_cd, index + 1);
+    });
+    return map;
+  }
+
   private async ensureGlobalRanks() {
     if (this.globalRankCache) return;
 
-    const quarter = LATEST_QUARTER;
-
-    const revenueTop = await this.prisma.salesCommercial.groupBy({
-      by: ['trdar_cd'],
-      where: { stdr_yyqu_cd: quarter },
-      _sum: { thsmon_selng_amt: true },
-      orderBy: {
-        _sum: {
-          thsmon_selng_amt: 'desc',
-        },
-      },
-      take: 3,
-    });
-
-    const popTop = await this.prisma.residentPopulationCommercial.findMany({
-      where: { stdr_yyqu_cd: quarter },
-      orderBy: { tot_repop_co: 'desc' },
-      take: 3,
-      select: { trdar_cd: true },
-    });
-
-    const openTop = await this.prisma.storeCommercial.groupBy({
-      by: ['trdar_cd'],
-      where: { stdr_yyqu_cd: quarter },
-      _sum: { opbiz_stor_co: true },
-      orderBy: {
-        _sum: {
-          opbiz_stor_co: 'desc',
-        },
-      },
-      take: 3,
-    });
-
-    const closeTop = await this.prisma.storeCommercial.groupBy({
-      by: ['trdar_cd'],
-      where: { stdr_yyqu_cd: quarter },
-      _sum: { clsbiz_stor_co: true },
-      orderBy: {
-        _sum: {
-          clsbiz_stor_co: 'asc',
-        },
-      },
-      take: 3,
-    });
-
-    const buildMap = (rows: { trdar_cd: string | null }[]) => {
-      const map = new Map<string, number>();
-      rows.forEach((r, i) => {
-        if (r.trdar_cd) map.set(r.trdar_cd, i + 1);
-      });
-      return map;
-    };
+    const [revenueTop, popTop, openTop, closeTop] = await Promise.all([
+      this.prisma.salesCommercial.groupBy({
+        by: ['trdar_cd'],
+        where: { stdr_yyqu_cd: LATEST_QUARTER },
+        _sum: { thsmon_selng_amt: true },
+        orderBy: { _sum: { thsmon_selng_amt: 'desc' } },
+        take: 3,
+      }),
+      this.prisma.residentPopulationCommercial.findMany({
+        where: { stdr_yyqu_cd: LATEST_QUARTER },
+        orderBy: { tot_repop_co: 'desc' },
+        take: 3,
+        select: { trdar_cd: true },
+      }),
+      this.prisma.storeCommercial.groupBy({
+        by: ['trdar_cd'],
+        where: { stdr_yyqu_cd: LATEST_QUARTER },
+        _sum: { opbiz_stor_co: true },
+        orderBy: { _sum: { opbiz_stor_co: 'desc' } },
+        take: 3,
+      }),
+      this.prisma.storeCommercial.groupBy({
+        by: ['trdar_cd'],
+        where: { stdr_yyqu_cd: LATEST_QUARTER },
+        _sum: { clsbiz_stor_co: true },
+        orderBy: { _sum: { clsbiz_stor_co: 'asc' } },
+        take: 3,
+      }),
+    ]);
 
     this.globalRankCache = {
-      revenue: buildMap(revenueTop),
-      population: buildMap(popTop),
-      opening: buildMap(openTop),
-      closing: buildMap(closeTop),
+      revenue: this.buildRankMap(revenueTop),
+      population: this.buildRankMap(popTop),
+      opening: this.buildRankMap(openTop),
+      closing: this.buildRankMap(closeTop),
     };
   }
 
@@ -116,48 +123,47 @@ export class PolygonService {
     );
 
     if (trdarCds.length > 0) {
-      const sales = await this.prisma.salesCommercial.groupBy({
-        by: ['trdar_cd'],
-        where: {
-          trdar_cd: { in: trdarCds },
-          stdr_yyqu_cd: LATEST_QUARTER,
-          ...(industryFilter ? { svc_induty_cd: industryFilter } : {}),
-        },
-        _sum: { thsmon_selng_amt: true },
-      });
-      sales.forEach((s) => {
-        if (s.trdar_cd) {
-          revenueMap.set(s.trdar_cd, Number(s._sum.thsmon_selng_amt || 0));
-        }
-      });
+      const [sales, pop, stores] = await Promise.all([
+        this.prisma.salesCommercial.groupBy({
+          by: ['trdar_cd'],
+          where: {
+            trdar_cd: { in: trdarCds },
+            stdr_yyqu_cd: LATEST_QUARTER,
+            ...industryFilter,
+          },
+          _sum: { thsmon_selng_amt: true },
+        }),
+        this.prisma.residentPopulationCommercial.findMany({
+          where: { trdar_cd: { in: trdarCds }, stdr_yyqu_cd: LATEST_QUARTER },
+          select: { trdar_cd: true, tot_repop_co: true },
+        }),
+        this.prisma.storeCommercial.groupBy({
+          by: ['trdar_cd'],
+          where: {
+            trdar_cd: { in: trdarCds },
+            stdr_yyqu_cd: LATEST_QUARTER,
+            ...industryFilter,
+          },
+          _sum: { opbiz_stor_co: true, clsbiz_stor_co: true },
+        }),
+      ]);
 
-      const pop = await this.prisma.residentPopulationCommercial.findMany({
-        where: {
-          trdar_cd: { in: trdarCds },
-          stdr_yyqu_cd: LATEST_QUARTER,
-        },
-        select: { trdar_cd: true, tot_repop_co: true },
+      sales.forEach((s) => {
+        if (s.trdar_cd)
+          revenueMap.set(s.trdar_cd, Number(s._sum?.thsmon_selng_amt || 0));
       });
       pop.forEach((p) => populationMap.set(p.trdar_cd, p.tot_repop_co));
-
-      const openings = await this.prisma.storeCommercial.groupBy({
-        by: ['trdar_cd'],
-        where: {
-          trdar_cd: { in: trdarCds },
-          stdr_yyqu_cd: LATEST_QUARTER,
-        },
-        _sum: { opbiz_stor_co: true, clsbiz_stor_co: true },
-      });
-      openings.forEach((s) => {
+      stores.forEach((s) => {
         if (s.trdar_cd) {
-          openingStoresMap.set(s.trdar_cd, s._sum.opbiz_stor_co || 0);
-          closingStoresMap.set(s.trdar_cd, s._sum.clsbiz_stor_co || 0);
+          openingStoresMap.set(s.trdar_cd, s._sum?.opbiz_stor_co || 0);
+          closingStoresMap.set(s.trdar_cd, s._sum?.clsbiz_stor_co || 0);
         }
       });
     }
 
     const { revenue, population, opening, closing } = this.globalRankCache!;
-    const applyRevenueRank = !industryFilter;
+    const hasIndustryFilter = Object.keys(industryFilter).length > 0;
+    const applyRevenueRank = !hasIndustryFilter;
 
     return results.map(
       (row) =>
@@ -202,108 +208,121 @@ export class PolygonService {
     industryCode?: string,
     industryCodes?: string,
   ): Promise<AdminPolygonResponse[]> {
-    const revenueMap = new Map<string, number>();
-    const populationMap = new Map<string, number>();
-    const openingStoresMap = new Map<string, number>();
-    const closingStoresMap = new Map<string, number>();
     const industryFilter = this.buildIndustryFilter(
       industryCode,
       industryCodes,
     );
 
-    let polygons: AdminPolygonResponse[] = [];
-
     if (type === 'dong') {
-      polygons =
-        (await this.prisma.adminAreaDong.findMany()) as unknown as AdminPolygonResponse[];
+      return this.fetchDongData(industryFilter);
+    }
+    return this.fetchGuData(industryFilter);
+  }
 
-      const sales = await this.prisma.salesDong.groupBy({
+  private async fetchDongData(
+    industryFilter: IndustryFilter,
+  ): Promise<AdminPolygonResponse[]> {
+    const polygons =
+      (await this.prisma.adminAreaDong.findMany()) as unknown as AdminPolygonResponse[];
+
+    const [sales, pop, stores] = await Promise.all([
+      this.prisma.salesDong.groupBy({
         by: ['adstrd_cd'],
         where: {
           stdr_yyqu_cd: LATEST_QUARTER,
-          ...(industryFilter ? { svc_induty_cd: industryFilter } : {}),
+          ...industryFilter,
         },
         _sum: { thsmon_selng_amt: true },
-      });
-      sales.forEach(
-        (s) =>
-          s.adstrd_cd &&
-          revenueMap.set(s.adstrd_cd, Number(s._sum.thsmon_selng_amt || 0)),
-      );
-
-      const pop = await this.prisma.residentPopulationDong.findMany({
+      }),
+      this.prisma.residentPopulationDong.findMany({
         where: { stdr_yyqu_cd: LATEST_QUARTER },
         select: { adstrd_cd: true, tot_repop_co: true },
-      });
-      pop.forEach((p) => populationMap.set(p.adstrd_cd, p.tot_repop_co));
-
-      const openings = await this.prisma.storeDong.groupBy({
+      }),
+      this.prisma.storeDong.groupBy({
         by: ['adstrd_cd'],
-        where: { stdr_yyqu_cd: LATEST_QUARTER },
+        where: { stdr_yyqu_cd: LATEST_QUARTER, ...industryFilter },
         _sum: { opbiz_stor_co: true, clsbiz_stor_co: true },
-      });
-      openings.forEach(
-        (s) =>
-          s.adstrd_cd &&
-          (openingStoresMap.set(s.adstrd_cd, s._sum.opbiz_stor_co || 0),
-          closingStoresMap.set(s.adstrd_cd, s._sum.clsbiz_stor_co || 0)),
-      );
+      }),
+    ]);
 
-      return polygons.map((p) => ({
-        ...p,
-        revenue: p.adstrd_cd ? revenueMap.get(p.adstrd_cd) || 0 : 0,
-        residentPopulation: p.adstrd_cd
-          ? populationMap.get(p.adstrd_cd) || 0
-          : 0,
-        openingStores: p.adstrd_cd ? openingStoresMap.get(p.adstrd_cd) || 0 : 0,
-        closingStores: p.adstrd_cd ? closingStoresMap.get(p.adstrd_cd) || 0 : 0,
-      }));
-    } else {
-      polygons =
-        (await this.prisma.adminAreaGu.findMany()) as unknown as AdminPolygonResponse[];
+    const revenueMap = new Map<string, number>();
+    const populationMap = new Map<string, number>();
+    const openingMap = new Map<string, number>();
+    const closingMap = new Map<string, number>();
 
-      const sales = await this.prisma.salesGu.groupBy({
+    sales.forEach(
+      (s) =>
+        s.adstrd_cd &&
+        revenueMap.set(s.adstrd_cd, Number(s._sum?.thsmon_selng_amt || 0)),
+    );
+    pop.forEach((p) => populationMap.set(p.adstrd_cd, p.tot_repop_co));
+    stores.forEach((s) => {
+      if (s.adstrd_cd) {
+        openingMap.set(s.adstrd_cd, s._sum?.opbiz_stor_co || 0);
+        closingMap.set(s.adstrd_cd, s._sum?.clsbiz_stor_co || 0);
+      }
+    });
+
+    return polygons.map((p) => ({
+      ...p,
+      revenue: revenueMap.get(p.adstrd_cd ?? '') || 0,
+      residentPopulation: populationMap.get(p.adstrd_cd ?? '') || 0,
+      openingStores: openingMap.get(p.adstrd_cd ?? '') || 0,
+      closingStores: closingMap.get(p.adstrd_cd ?? '') || 0,
+    }));
+  }
+
+  private async fetchGuData(
+    industryFilter: IndustryFilter,
+  ): Promise<AdminPolygonResponse[]> {
+    const polygons =
+      (await this.prisma.adminAreaGu.findMany()) as unknown as AdminPolygonResponse[];
+
+    const [sales, pop, stores] = await Promise.all([
+      this.prisma.salesGu.groupBy({
         by: ['signgu_cd'],
         where: {
           stdr_yyqu_cd: LATEST_QUARTER,
-          ...(industryFilter ? { svc_induty_cd: industryFilter } : {}),
+          ...industryFilter,
         },
         _sum: { thsmon_selng_amt: true },
-      });
-      sales.forEach(
-        (s) =>
-          s.signgu_cd &&
-          revenueMap.set(s.signgu_cd, Number(s._sum.thsmon_selng_amt || 0)),
-      );
-
-      const pop = await this.prisma.residentPopulationGu.findMany({
+      }),
+      this.prisma.residentPopulationGu.findMany({
         where: { stdr_yyqu_cd: LATEST_QUARTER },
         select: { signgu_cd: true, tot_repop_co: true },
-      });
-      pop.forEach((p) => populationMap.set(p.signgu_cd, p.tot_repop_co));
-
-      const openings = await this.prisma.storeGu.groupBy({
+      }),
+      this.prisma.storeGu.groupBy({
         by: ['signgu_cd'],
-        where: { stdr_yyqu_cd: LATEST_QUARTER },
+        where: { stdr_yyqu_cd: LATEST_QUARTER, ...industryFilter },
         _sum: { opbiz_stor_co: true, clsbiz_stor_co: true },
-      });
-      openings.forEach(
-        (s) =>
-          s.signgu_cd &&
-          (openingStoresMap.set(s.signgu_cd, s._sum.opbiz_stor_co || 0),
-          closingStoresMap.set(s.signgu_cd, s._sum.clsbiz_stor_co || 0)),
-      );
+      }),
+    ]);
 
-      return polygons.map((p) => ({
-        ...p,
-        revenue: p.signgu_cd ? revenueMap.get(p.signgu_cd) || 0 : 0,
-        residentPopulation: p.signgu_cd
-          ? populationMap.get(p.signgu_cd) || 0
-          : 0,
-        openingStores: p.signgu_cd ? openingStoresMap.get(p.signgu_cd) || 0 : 0,
-        closingStores: p.signgu_cd ? closingStoresMap.get(p.signgu_cd) || 0 : 0,
-      }));
-    }
+    const revenueMap = new Map<string, number>();
+    const populationMap = new Map<string, number>();
+    const openingMap = new Map<string, number>();
+    const closingMap = new Map<string, number>();
+
+    sales.forEach(
+      (s) =>
+        s.signgu_cd &&
+        revenueMap.set(s.signgu_cd, Number(s._sum?.thsmon_selng_amt || 0)),
+    );
+    pop.forEach((p) => populationMap.set(p.signgu_cd, p.tot_repop_co));
+    stores.forEach((s) => {
+      if (s.signgu_cd) {
+        openingMap.set(s.signgu_cd, s._sum?.opbiz_stor_co || 0);
+        closingMap.set(s.signgu_cd, s._sum?.clsbiz_stor_co || 0);
+      }
+    });
+
+    return polygons.map((p) => ({
+      ...p,
+      revenue: revenueMap.get(p.signgu_cd ?? '') || 0,
+      residentPopulation: populationMap.get(p.signgu_cd ?? '') || 0,
+      openingStores: openingMap.get(p.signgu_cd ?? '') || 0,
+      closingStores: closingMap.get(p.signgu_cd ?? '') || 0,
+    }));
   }
 
   async getCommercialBuildingPolygons(
@@ -352,26 +371,5 @@ export class PolygonService {
     if (!result) return null;
 
     return result as unknown as AdminPolygonResponse;
-  }
-
-  private buildIndustryFilter(
-    industryCode?: string,
-    industryCodes?: string,
-  ):
-    | string
-    | {
-        in: string[];
-      }
-    | null {
-    if (industryCodes) {
-      const codes = industryCodes.split(',').filter(Boolean);
-      if (codes.length > 0) {
-        return { in: codes };
-      }
-    }
-    if (industryCode) {
-      return industryCode;
-    }
-    return null;
   }
 }

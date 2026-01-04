@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 
 import Kakaomap from '@/components/kakaomap';
 import MapOverlay from '@/components/map-overlay/MapOverlay';
@@ -19,7 +19,6 @@ export default function MapPage() {
     dataB: comparisonDataB,
   } = useComparisonStore();
 
-  // Location State now holds both Name and Code
   const [locationA, setLocationA] = useState<{ name: string; code?: string }>({
     name: '',
   });
@@ -35,19 +34,19 @@ export default function MapPage() {
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [reportRequest, setReportRequest] = useState<ReportRequest | null>(null);
 
-  // 유동인구 상태 통합
   const population = usePopulationVisual();
 
-  useEffect(() => {
+  // 업종 선택 핸들러 - 선택 시 세부 코드 초기화
+  const handleSelectCategory = useCallback((category: IndustryCategory | null) => {
+    setSelectedCategory(category);
     setSelectedSubCode(null);
-  }, [selectedCategory?.code]);
+  }, []);
 
   // 비교 마커 첫번째인지 두번째인지 판단
   function handlePickMode(target: 'A' | 'B') {
     console.log('선택모드 시작합니다.');
     setPickTarget(target);
   }
-  // 지도를 클릭 (Updated to accept object)
   function mapClick(data: { name: string; code?: string }) {
     if (pickTarget === 'A') {
       setLocationA(data);
@@ -60,16 +59,11 @@ export default function MapPage() {
     }
   }
 
-  // Handle Comparison Trigger (Manual via MapBox)
   function handleCompareRequest(data?: CompareRequest) {
-    // If data comes from search (codes + names), use them.
-    // Otherwise fallback to locationA string (which might be name or code, usually name from Map)
 
-    // Code: The ID used for API fetching
     const codeA = data?.targetA || locationA.code || locationA.name || '지역 A';
     const codeB = data?.targetB || locationB.code || locationB.name || '지역 B';
 
-    // Name: The display title
     const titleA = data?.targetNameA || locationA.name || '지역 A';
     const titleB = data?.targetNameB || locationB.name || '지역 B';
 
@@ -100,11 +94,9 @@ export default function MapPage() {
 
   return (
     <div className="relative h-screen w-screen overflow-hidden">
-      {/* Comparison Overlay */}
       <ComparisonOverlay
         isVisible={isComparisonVisible}
         onClose={closeComparison}
-        // Fallbacks to avoid null errors if specific data isn't set yet
         dataA={
           comparisonDataA || {
             title: '정보 없음',
@@ -138,7 +130,7 @@ export default function MapPage() {
           population={population}
           selectedCategory={selectedCategory}
           selectedSubCategoryCode={selectedSubCode}
-          onClearCategory={() => setSelectedCategory(null)}
+          onClearCategory={() => handleSelectCategory(null)}
           disableInfoBar={!!pickTarget}
         />
       </div>
@@ -151,7 +143,7 @@ export default function MapPage() {
           handlePickMode={handlePickMode}
           population={population}
           onCompare={handleCompareRequest}
-          onSelectCategory={setSelectedCategory}
+          onSelectCategory={handleSelectCategory}
           selectedCategory={selectedCategory}
           selectedSubCode={selectedSubCode}
           onSelectSubCode={setSelectedSubCode}

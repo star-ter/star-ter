@@ -8,6 +8,7 @@ export const useMapStore = create<MapStore>((set) => ({
   isMoving: false,
   isMapIdle: true,
   overlayMode: 'revenue',
+  selectedIndustryCodes: null,
   markers: [],
 
   setCenter: (coords) => set({ center: coords }),
@@ -16,6 +17,7 @@ export const useMapStore = create<MapStore>((set) => ({
   setIsMoving: (moving) => set({ isMoving: moving }),
   setIsMapIdle: (idle) => set({ isMapIdle: idle }),
   setOverlayMode: (mode) => set({ overlayMode: mode }),
+  setSelectedIndustryCodes: (codes) => set({ selectedIndustryCodes: codes }),
 
   moveToLocation: (coords, location, zoom = 3, centered = false) => {
     set({

@@ -2,6 +2,7 @@ import {
   SalesAggregate,
   StoreAggregate,
   PopulationAggregate,
+  WorkingPopulationAggregate,
   StoreCategoryGroup,
   SalesTrendGroup,
   AnalysisResponse,
@@ -34,6 +35,7 @@ export class AnalysisMapper {
     salesAgg: SalesAggregate,
     storeAgg: StoreAggregate,
     popAgg: PopulationAggregate,
+    workingPopAgg: WorkingPopulationAggregate,
     storeGroups: StoreCategoryGroup[],
     trendGroups: SalesTrendGroup[],
     meta: {
@@ -47,6 +49,7 @@ export class AnalysisMapper {
     const s = salesAgg._sum;
     const st = storeAgg._sum;
     const p = popAgg._sum;
+    const wp = workingPopAgg._sum;
 
     const totalSales = BigInt(s.thsmon_selng_amt || 0);
 
@@ -103,6 +106,21 @@ export class AnalysisMapper {
               a50: (p.agrde_50_repop_co as number) || 0,
               a60: (p.agrde_60_above_repop_co as number) || 0,
             },
+            working: wp.tot_wrc_popltn_co
+              ? {
+                  total: (wp.tot_wrc_popltn_co as number) || 0,
+                  male: (wp.ml_wrc_popltn_co as number) || 0,
+                  female: (wp.fml_wrc_popltn_co as number) || 0,
+                  age: {
+                    a10: (wp.agrde_10_wrc_popltn_co as number) || 0,
+                    a20: (wp.agrde_20_wrc_popltn_co as number) || 0,
+                    a30: (wp.agrde_30_wrc_popltn_co as number) || 0,
+                    a40: (wp.agrde_40_wrc_popltn_co as number) || 0,
+                    a50: (wp.agrde_50_wrc_popltn_co as number) || 0,
+                    a60: (wp.agrde_60_above_wrc_popltn_co as number) || 0,
+                  },
+                }
+              : undefined,
           }
         : null,
     };

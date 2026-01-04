@@ -31,15 +31,16 @@ export default function Kakaomap({
   population,
   selectedCategory = null,
   selectedSubCategoryCode = null,
+  onClearCategory,
   disableInfoBar = false,
 }: KakaomapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<KakaoMarker[]>([]);
 
   const { map } = useKakaoMap(mapRef);
-  const { selectedArea, selectArea, clearSelection, setInfoBarOpen } =
+  const { selectedArea, selectArea, clearSelection, setSelectedArea } =
     useSidebarStore();
-  const { center, zoom, markers, setZoom, setCenter, clearMarkers } =
+  const { center, zoom, markers, setZoom, setCenter, clearMarkers, setSelectedIndustryCodes } =
     useMapStore();
 
   usePolygonData(
@@ -65,10 +66,10 @@ export default function Kakaomap({
   const prevCategoryRef = useRef(selectedCategory);
   useEffect(() => {
     if (selectedCategory && selectedCategory !== prevCategoryRef.current) {
-      clearSelection();
+      setSelectedArea(null);
     }
     prevCategoryRef.current = selectedCategory;
-  }, [selectedCategory, clearSelection, setInfoBarOpen]);
+  }, [selectedCategory, setSelectedArea]);
 
   useEffect(() => {
     if (!map) return;
@@ -104,7 +105,6 @@ export default function Kakaomap({
           zIndex: 3,
         }) as unknown as KakaoMarker;
       } else {
-        /* Standard Marker - Regular */
         marker = new window.kakao.maps.Marker({
           position,
           map,
@@ -178,6 +178,10 @@ export default function Kakaomap({
 
   const handleClose = () => {
     clearSelection();
+    if (onClearCategory) {
+      onClearCategory();
+    }
+    setSelectedIndustryCodes(null);
   };
 
   useEffect(() => {
@@ -233,9 +237,6 @@ export default function Kakaomap({
     };
 
     const handleDragEnd = () => {
-      // 드래그가 끝나도 관성 이동이 있을 수 있으므로 바로 true로 설정하지 않음.
-      // center_changed에서 처리됨.
-      // 다만 관성이 없는 미세한 이동의 경우를 대비해 debounce 호출
       setIdleDebounced();
     };
 
@@ -283,8 +284,6 @@ export default function Kakaomap({
         className="w-full h-100 bg-gray-100"
         style={{ width: '100vw', height: '100vh' }}
       />
-
-      {/* 유동인구 인포바 */}
       {population.showLayer && (
         <div className="absolute right-100 bottom-1 z-50">
           <PopulationBar />

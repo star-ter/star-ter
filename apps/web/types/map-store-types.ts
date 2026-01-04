@@ -1,3 +1,5 @@
+export type OverlayMode = 'revenue' | 'population' | 'opening' | 'shutting';
+
 export interface MapCoordinates {
   lat: number;
   lng: number;
@@ -16,7 +18,8 @@ export interface MapStore {
   searchedLocation: string | null;
   isMoving: boolean;
   isMapIdle: boolean;
-  overlayMode: 'revenue' | 'population' | 'opening' | 'shutting';
+  overlayMode: OverlayMode;
+  selectedIndustryCodes: string[] | null;
   markers: MapMarker[];
 
   setCenter: (coords: MapCoordinates) => void;
@@ -24,9 +27,8 @@ export interface MapStore {
   setSearchedLocation: (location: string | null) => void;
   setIsMoving: (moving: boolean) => void;
   setIsMapIdle: (idle: boolean) => void;
-  setOverlayMode: (
-    mode: 'revenue' | 'population' | 'opening' | 'shutting',
-  ) => void;
+  setOverlayMode: (mode: OverlayMode) => void;
+  setSelectedIndustryCodes: (codes: string[] | null) => void;
 
   moveToLocation: (
     coords: MapCoordinates,

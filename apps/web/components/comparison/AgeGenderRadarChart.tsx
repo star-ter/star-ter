@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react';
 import {
   Radar,
   RadarChart,
@@ -9,13 +10,44 @@ import {
 } from 'recharts';
 import { PopulationData } from '../../types/analysis-types';
 
+type ColorTheme = 'blue' | 'emerald';
+
 interface AgeGenderRadarChartProps {
   populationData: PopulationData | null;
+  colorTheme?: ColorTheme;
 }
+
+const themeColors = {
+  blue: {
+    male: '#3b82f6',
+    female: '#ef4444',
+    highlight: 'text-blue-600',
+    bg: 'bg-blue-50',
+  },
+  emerald: {
+    male: '#10b981',
+    female: '#f59e0b',
+    highlight: 'text-emerald-600',
+    bg: 'bg-emerald-50',
+  },
+};
 
 export default function AgeGenderRadarChart({
   populationData,
+  colorTheme = 'blue',
 }: AgeGenderRadarChartProps) {
+  const colors = themeColors[colorTheme];
+  const [animationComplete, setAnimationComplete] = useState(false);
+  const prevDataRef = useRef(populationData);
+
+  useEffect(() => {
+    if (prevDataRef.current !== populationData) {
+      prevDataRef.current = populationData;
+    }
+    const timer = setTimeout(() => setAnimationComplete(true), 1000);
+    return () => clearTimeout(timer);
+  }, [populationData]);
+
   if (!populationData) return null;
 
   const ages = ['10대', '20대', '30대', '40대', '50대', '60대 이상'];
@@ -52,7 +84,7 @@ export default function AgeGenderRadarChart({
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 min-h-0">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%" debounce={0}>
           <RadarChart cx="50%" cy="52%" outerRadius="80%" data={chartData}>
             <PolarGrid stroke="#e5e7eb" />
             <PolarAngleAxis
@@ -69,18 +101,22 @@ export default function AgeGenderRadarChart({
             <Radar
               name="남성"
               dataKey="male"
-              stroke="#3b82f6"
+              stroke={colors.male}
               strokeWidth={2}
-              fill="#3b82f6"
+              fill={colors.male}
               fillOpacity={0.2}
+              isAnimationActive={!animationComplete}
+              animationDuration={800}
             />
             <Radar
               name="여성"
               dataKey="female"
-              stroke="#ef4444"
+              stroke={colors.female}
               strokeWidth={2}
-              fill="#ef4444"
+              fill={colors.female}
               fillOpacity={0.2}
+              isAnimationActive={!animationComplete}
+              animationDuration={800}
             />
             <Legend
               verticalAlign="top"
@@ -96,9 +132,9 @@ export default function AgeGenderRadarChart({
           </RadarChart>
         </ResponsiveContainer>
       </div>
-      <div className="mt-1 bg-blue-50 rounded-lg py-2 px-3 text-center">
+      <div className={`mt-1 ${colors.bg} rounded-lg py-2 px-3 text-center`}>
         <span className="text-sm text-gray-800 tracking-tight">
-          <span className="font-bold text-blue-600">{maxGroup.label}</span>{' '}
+          <span className={`font-bold ${colors.highlight}`}>{maxGroup.label}</span>{' '}
           비율이 가장 높아요.
         </span>
       </div>

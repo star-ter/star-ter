@@ -41,6 +41,12 @@ export interface PopulationData {
   male: number;
   female: number;
   age: PopulationAgeItem;
+  working?: {
+    total: number;
+    male: number;
+    female: number;
+    age: PopulationAgeItem;
+  };
 }
 
 export interface AnalysisData {
@@ -67,6 +73,12 @@ export interface AnalysisData {
     male: number;
     female: number;
     age: PopulationAgeItem;
+    working?: {
+      total: number;
+      male: number;
+      female: number;
+      age: PopulationAgeItem;
+    };
   } | null;
 }
 

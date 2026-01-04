@@ -34,10 +34,11 @@ export const usePolygonData = (
   const customOverlaysRef = useRef<KakaoCustomOverlay[]>([]);
   const onPolygonClickRef = useRef(onPolygonClick);
   const visitedCommercialRef = useRef<Set<string>>(new Set());
-  const allCommercialFeaturesRef = useRef<CommercialApiResponse[]>([]); // Store accumulated features
+  const allCommercialFeaturesRef = useRef<CommercialApiResponse[]>([]);
 
   const industryParams = useMemo(() => {
-    if (overlayMode !== 'revenue') return null;
+    // 매출, 개업, 폐업 모드에서 업종 필터 적용 (인구 모드는 업종 필터 없음)
+    if (overlayMode === 'population') return null;
     if (selectedSubCategoryCode) {
       return { industryCode: selectedSubCategoryCode };
     }
@@ -85,8 +86,8 @@ export const usePolygonData = (
             bookmarksSet,
           );
         }
-      } catch (err) {
-        console.error('Combined Boundary Fetch Error:', err);
+      } catch {
+        return;
       }
     },
     [overlayMode, bookmarksSet, industryParams],
@@ -124,8 +125,8 @@ export const usePolygonData = (
             bookmarksSet,
           );
         }
-      } catch (err) {
-        console.error('Building API Fetch Error:', err);
+      } catch {
+        return;
       }
     },
     [overlayMode, bookmarksSet],
@@ -147,14 +148,14 @@ export const usePolygonData = (
         maxx: ne.getLng().toString(),
         maxy: ne.getLat().toString(),
       });
+      if (industryParams?.industryCode) {
+        query.set('industryCode', industryParams.industryCode);
+      }
+      if (industryParams?.industryCodes) {
+        query.set('industryCodes', industryParams.industryCodes);
+      }
 
       try {
-        if (industryParams?.industryCode) {
-          query.set('industryCode', industryParams.industryCode);
-        }
-        if (industryParams?.industryCodes) {
-          query.set('industryCodes', industryParams.industryCodes);
-        }
         const url = `${API_ENDPOINTS.POLYGON_COMMERCIAL}?${query}`;
         const response = await fetch(url);
         const data: unknown = await response.json();
@@ -220,8 +221,8 @@ export const usePolygonData = (
             );
           }
         }
-      } catch (err) {
-        console.error('Commercial API Fetch Error:', err);
+      } catch {
+        return;
       }
     },
     [overlayMode, bookmarksSet, industryParams],
