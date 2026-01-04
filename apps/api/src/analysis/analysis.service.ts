@@ -6,6 +6,7 @@ import {
   AnalysisError,
   ResolvedRegion,
   RegionSearchResult,
+  IndustrySearchResult,
 } from './dto/analysis.types';
 
 @Injectable()
@@ -97,10 +98,10 @@ export class AnalysisService {
     return this.searchAll(trimmed, guMap);
   }
 
-  async searchIndustries(query: string) {
+  async searchIndustries(query: string): Promise<IndustrySearchResult[]> {
     if (!query) return [];
     const results = await this.repository.searchIndustry(query);
-    return results.map((r: any) => ({
+    return results.map((r) => ({
       code: r.svc_induty_cd,
       name: r.svc_induty_cd_nm,
     }));
@@ -244,31 +245,18 @@ export class AnalysisService {
     trimmed: string,
     results: RegionSearchResult[],
   ): Promise<RegionSearchResult[]> {
-    const guMatches = await this.repository.findGuByName(trimmed, false);
-    guMatches.forEach((g) => {
-      const cityName = this.getCityName(g.signgu_cd);
+    const commMatches = await this.repository.findCommercialByName(
+      trimmed,
+      false,
+    );
+    commMatches.forEach((c) => {
       results.push({
-        type: 'GU',
-        code: g.signgu_cd,
-        name: g.signgu_nm,
-        fullName: `${cityName} ${g.signgu_nm}`.trim(),
+        type: 'COMMERCIAL',
+        code: c.trdar_cd,
+        name: c.trdar_cd_nm,
+        fullName: `${c.signgu_cd_nm || ''} ${c.trdar_cd_nm}`.trim(),
       });
     });
-
-    if (results.length === 0) {
-      const commMatches = await this.repository.findCommercialByName(
-        trimmed,
-        false,
-      );
-      commMatches.forEach((c) => {
-        results.push({
-          type: 'COMMERCIAL',
-          code: c.trdar_cd,
-          name: c.trdar_cd_nm,
-          fullName: `${c.signgu_cd_nm || ''} ${c.trdar_cd_nm}`.trim(),
-        });
-      });
-    }
 
     return results;
   }

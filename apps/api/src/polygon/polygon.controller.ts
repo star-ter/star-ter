@@ -17,11 +17,13 @@ export class PolygonController {
   @Get('admin')
   getAdminPolygon(
     @Query('low_search') lowSearch: number,
+    @Query('industryCode') industryCode?: string,
     @Query('industryCodes') industryCodes?: string,
   ): Promise<AdminPolygonResponse[]> {
     return this.polygonService.getAdminPolygonByLowSearch(
       lowSearch,
-      this.parseIndustryCodes(industryCodes),
+      industryCode,
+      industryCodes,
     );
   }
 
@@ -48,6 +50,7 @@ export class PolygonController {
     @Query('miny') miny: string,
     @Query('maxx') maxx: string,
     @Query('maxy') maxy: string,
+    @Query('industryCode') industryCode?: string,
     @Query('industryCodes') industryCodes?: string,
   ): Promise<CommercialPolygonResponse[]> {
     return this.polygonService.getCommercialPolygon(
@@ -55,7 +58,8 @@ export class PolygonController {
       miny,
       maxx,
       maxy,
-      this.parseIndustryCodes(industryCodes),
+      industryCode,
+      industryCodes,
     );
   }
 

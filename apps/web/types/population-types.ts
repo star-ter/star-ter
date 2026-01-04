@@ -14,10 +14,10 @@ export interface TimeSlotPopulation {
   age_60s_plus_total: number;
 
   // Granular gender-age fields
-  M00: number; M10: number; M15: number; M20: number; M25: number; M30: number; M35: number;
-  M40: number; M45: number; M50: number; M55: number; M60: number; M65: number; M70: number;
-  F00: number; F10: number; F15: number; F20: number; F25: number; F30: number; F35: number;
-  F40: number; F45: number; F50: number; F55: number; F60: number; F65: number; F70: number;
+  m00: number; m10: number; m15: number; m20: number; m25: number; m30: number; m35: number;
+  m40: number; m45: number; m50: number; m55: number; m60: number; m65: number; m70: number;
+  f00: number; f10: number; f15: number; f20: number; f25: number; f30: number; f35: number;
+  f40: number; f45: number; f50: number; f55: number; f60: number; f65: number; f70: number;
 }
 
 export interface GeoJsonGeometry {

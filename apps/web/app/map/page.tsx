@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import Kakaomap from '@/components/kakaomap';
 import MapOverlay from '@/components/map-overlay/MapOverlay';
@@ -10,7 +10,7 @@ import { useComparisonStore } from '@/stores/useComparisonStore';
 import ReportOverlay from '@/components/report-overlay/ReportOverlay';
 import { IndustryCategory, CompareRequest, ReportRequest } from '@/types/bottom-menu-types';
 
-export default function Home() {
+export default function MapPage() {
   const {
     isVisible: isComparisonVisible,
     closeComparison,
@@ -28,12 +28,19 @@ export default function Home() {
   const [pickTarget, setPickTarget] = useState('');
   const [selectedCategory, setSelectedCategory] =
     useState<IndustryCategory | null>(null);
+  const [selectedSubCode, setSelectedSubCode] = useState<string | null>(null);
 
+  // Report Overlay State
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [reportRequest, setReportRequest] = useState<ReportRequest | null>(null);
 
   const population = usePopulationVisual();
 
+  useEffect(() => {
+    setSelectedSubCode(null);
+  }, [selectedCategory?.code]);
+
+  // 비교 마커 첫번째인지 두번째인지 판단
   function handlePickMode(target: 'A' | 'B') {
     console.log('선택모드 시작합니다.');
     setPickTarget(target);
@@ -107,6 +114,8 @@ export default function Home() {
           }
         }
       />
+
+      {/* Report Overlay */}
       <ReportOverlay 
         isVisible={isReportOpen} 
         onClose={() => setIsReportOpen(false)}
@@ -118,6 +127,7 @@ export default function Home() {
           polygonClick={mapClick}
           population={population}
           selectedCategory={selectedCategory}
+          selectedSubCategoryCode={selectedSubCode}
           onClearCategory={() => setSelectedCategory(null)}
           disableInfoBar={!!pickTarget}
         />
@@ -133,6 +143,8 @@ export default function Home() {
           onCompare={handleCompareRequest}
           onSelectCategory={setSelectedCategory}
           selectedCategory={selectedCategory}
+          selectedSubCode={selectedSubCode}
+          onSelectSubCode={setSelectedSubCode}
           onCreateReport={handleCreateReport}
           isReportOpen={isReportOpen}
           onToggleReport={setIsReportOpen}

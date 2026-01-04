@@ -21,6 +21,7 @@ interface KakaomapProps {
   polygonClick?: (data: PolygonClickData) => void;
   population: ReturnType<typeof usePopulationVisual>;
   selectedCategory?: IndustryCategory | null;
+  selectedSubCategoryCode?: string | null;
   onClearCategory?: () => void;
   disableInfoBar?: boolean;
 }
@@ -29,7 +30,7 @@ export default function Kakaomap({
   polygonClick,
   population,
   selectedCategory = null,
-  onClearCategory,
+  selectedSubCategoryCode = null,
   disableInfoBar = false,
 }: KakaomapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
@@ -41,17 +42,22 @@ export default function Kakaomap({
   const { center, zoom, markers, setZoom, setCenter, clearMarkers, setSelectedIndustryCodes } =
     useMapStore();
 
-  usePolygonData(map, (data: InfoBarData) => {
-    if (!disableInfoBar) {
-      selectArea(data);
-    }
-    if (polygonClick) {
-      const label =
-        data.buld_nm || data.adm_nm || data.commercialName || 'Unknown';
-      const code = data.adm_cd || data.commercialCode;
-      polygonClick({ name: label, code: code });
-    }
-  });
+  usePolygonData(
+    map,
+    (data: InfoBarData) => {
+      if (!disableInfoBar) {
+        selectArea(data);
+      }
+      if (polygonClick) {
+        const label =
+          data.buld_nm || data.adm_nm || data.commercialName || 'Unknown';
+        const code = data.adm_cd || data.commercialCode;
+        polygonClick({ name: label, code: code });
+      }
+    },
+    selectedCategory,
+    selectedSubCategoryCode,
+  );
 
   useBuildingMarkers(map, selectedCategory ?? null);
   useSeoulBoundary(map);
@@ -180,9 +186,13 @@ export default function Kakaomap({
   useEffect(() => {
     if (!map) return;
 
-    setZoom(map.getLevel());
-    const initialCenter = map.getCenter();
-    setCenter({ lat: initialCenter.getLat(), lng: initialCenter.getLng() });
+    // Only set initial store state if it's empty (first load)
+    // Otherwise, let the store drive the map (persistence)
+    if (!center) {
+      const initialCenter = map.getCenter();
+      setCenter({ lat: initialCenter.getLat(), lng: initialCenter.getLng() });
+      setZoom(map.getLevel());
+    }
 
     const timerRef = { current: null as NodeJS.Timeout | null };
 
@@ -258,13 +268,12 @@ export default function Kakaomap({
       window.kakao.maps.event.removeListener(map, 'dragend', handleDragEnd);
       window.kakao.maps.event.removeListener(map, 'dragstart', handleDragStart);
     };
-  }, [map, setZoom, setCenter, clearMarkers]);
+  });
 
   return (
     <div className="relative w-full h-full">
       <InfoBar
         data={selectedArea}
-        selectedCategory={selectedCategory}
         onClose={handleClose}
       />
 

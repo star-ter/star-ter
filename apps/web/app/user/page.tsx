@@ -2,15 +2,28 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { User as UserIcon, LogOut, ArrowLeft } from 'lucide-react';
+import {
+  User as UserIcon,
+  LogOut,
+  ArrowLeft,
+  Star,
+  Trash2,
+} from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 
 import { useAuth } from '@/hooks/useAuth';
+import { useBookmark } from '@/hooks/useBookmark';
+import { useModalStore } from '@/stores/useModalStore';
 
 export default function UserPage() {
   const router = useRouter();
   const { isLoggedIn } = useAuth();
+  const {
+    bookmarks,
+    removeBookmark,
+    loading: bookmarksLoading,
+  } = useBookmark();
   const [mounted, setMounted] = useState(false);
   const [profile, setProfile] = useState<{
     nickname: string;
@@ -65,6 +78,21 @@ export default function UserPage() {
     localStorage.removeItem('accessToken');
     toast.success('로그아웃 되었습니다.');
     window.location.href = '/map';
+  };
+
+  const { openModal } = useModalStore();
+
+  const handleRemoveBookmark = (commercialCode: string) => {
+    openModal({
+      type: 'confirm',
+      title: '즐겨찾기 삭제',
+      content: '정말로 이 상권을 즐겨찾기에서 삭제하시겠습니까?',
+      confirmText: '삭제',
+      cancelText: '취소',
+      onConfirm: async () => {
+        await removeBookmark(commercialCode);
+      },
+    });
   };
 
   if (!mounted || !isLoggedIn) {
@@ -123,6 +151,55 @@ export default function UserPage() {
               </button>
             </div>
           </div>
+        </div>
+
+        {/* Bookmarks Section */}
+        <div className="bg-white rounded-2xl p-8 shadow-sm ring-1 ring-gray-200">
+          <div className="flex items-center gap-2 mb-6">
+            <Star className="h-6 w-6 text-yellow-500 fill-yellow-500" />
+            <h2 className="text-xl font-bold text-gray-900">
+              내 즐겨찾기 상권
+            </h2>
+          </div>
+
+          {bookmarksLoading ? (
+            <div className="flex justify-center py-4">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
+            </div>
+          ) : bookmarks.length > 0 ? (
+            <div className="space-y-3">
+              {bookmarks.map((bookmark) => (
+                <div
+                  key={bookmark.id}
+                  className="flex items-center justify-between p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
+                >
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-gray-900">
+                      {bookmark.commercialName}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {new Date(bookmark.createdAt).toLocaleDateString()} 추가됨
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() =>
+                        handleRemoveBookmark(bookmark.commercialCode)
+                      }
+                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-white rounded-lg transition-colors"
+                      title="삭제"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              즐겨찾기한 상권이 없습니다.
+            </div>
+          )}
         </div>
       </div>
     </div>

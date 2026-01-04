@@ -1,4 +1,4 @@
-import LandingHeader from './LandingHeader';
+import LandingHeader from '../header/LandingHeader';
 import HeroSection from './HeroSection';
 import FeaturesSection from './FeaturesSection';
 import HowItWorksSection from './HowItWorksSection';

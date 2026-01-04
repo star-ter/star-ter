@@ -7,17 +7,20 @@ import PillButton from './PillButton';
 import PopulationContents from './modal/PopulationContents';
 import IndustryContents from './modal/IndustryContents';
 import CompareContents from './modal/CompareContents';
+import CalculateRentContents from './modal/CalculateRentModal/CalculateRentContents';
 import ReportInputView from './modal/ReportInputView';
 import {
   IndustryCategory,
   CompareRequest,
-  ReportRequest
+  ReportRequest,
 } from '../../types/bottom-menu-types';
 import { IndustryData } from '../../mocks/industry';
 import { useSidebarStore } from '../../stores/useSidebarStore';
 import { useMapStore } from '../../stores/useMapStore';
+import { useModalStore } from '../../stores/useModalStore';
 
-type ActiveType = 'population' | 'industry' | 'compare' | 'report';
+type ActiveType =
+  'population' | 'industry' | 'compare' | 'report' | 'calculateRent';
 
 import { usePopulationVisual } from '../../hooks/usePopulationVisual';
 interface BottomMenuProps {
@@ -53,7 +56,7 @@ export default function BottomMenuBox({
 
   function modalClose() {
     if (active === 'report' && onToggleReport) {
-        onToggleReport(false);
+      onToggleReport(false);
     }
     setActive('none');
   }
@@ -90,6 +93,7 @@ export default function BottomMenuBox({
     { label: '업종', value: 'industry' },
     { label: '비교', value: 'compare' },
     { label: '보고서', value: 'report' },
+    { label: '임대료 계산', value: 'calculateRent' },
     { label: '초기화', value: 'none' },
   ];
 
@@ -130,13 +134,17 @@ export default function BottomMenuBox({
         return (
           <ReportInputView
             onCreateReport={(data) => {
-                if (onCreateReport) onCreateReport(data);
-                setActive('none');
-                if (onToggleReport) onToggleReport(true);
+              if (onCreateReport) onCreateReport(data);
+              // Close local modal and de-highlight the button
+              setActive('none');
+              // Trigger overlay open
+              if (onToggleReport) onToggleReport(true);
             }}
-            initialRegion={undefined} 
+            initialRegion={undefined}
           />
         );
+      case 'calculateRent':
+        return <CalculateRentContents onClose={modalClose} />;
       default:
         return null;
     }
@@ -145,7 +153,7 @@ export default function BottomMenuBox({
   const content = renderContent();
 
   return (
-    <section className="w-full flex flex-col items-center mb-[24px]">
+    <section className="w-full flex flex-col items-center mb-8">
       {content && <ModalCard>{content}</ModalCard>}
       <div className="flex items-center justify-center gap-4 rounded-2xl bg-white/80 px-4 py-3 shadow-md ring-1 ring-black/5">
         {items.map(({ label, value }) => (
@@ -166,30 +174,59 @@ export default function BottomMenuBox({
 
               if (active === value) {
                 if (value === 'report' && isReportOpen && onToggleReport) {
-                    onToggleReport(false);
+                  onToggleReport(false);
                 }
                 modalClose();
                 return;
               }
 
+              // 보고서 클릭 처리
               if (value === 'report') {
-                 setInfoBarOpen(false);
-                 setIsOpen(false);
-                 setActive('report');
-                 setLocationA({ name: '' });
-                 setLocationB({ name: '' });
-                 return;
+                const token = localStorage.getItem('accessToken');
+                if (!token) {
+                  useModalStore.getState().openModal({
+                    type: 'confirm',
+                    title: '로그인 필요',
+                    content: (
+                      <div className="text-center py-4">
+                        <p className="mb-2 text-gray-700">
+                          보고서 기능은 로그인이 필요한 서비스입니다.
+                        </p>
+                        <p className="text-base font-bold text-gray-900">
+                          로그인 페이지로 이동하시겠습니까?
+                        </p>
+                      </div>
+                    ),
+                    confirmText: '로그인하기',
+                    onConfirm: () => {
+                      window.location.href = '/login';
+                    },
+                  });
+                  return;
+                }
+                // If we have result, just show it (toggle on)?
+                // Or always start new input?
+                // User expects "New Report" usually.
+                // If isReportOpen is true, maybe just focus it.
+                // If false, open Input.
+                setActive('report');
+                setLocationA({ name: '' });
+                setLocationB({ name: '' });
+                return;
               }
 
               setActive(value as ActiveType);
               if (onToggleReport) onToggleReport(false);
-              
+
               setLocationA({ name: '' });
               setLocationB({ name: '' });
 
               if (value === 'compare') {
-                setInfoBarOpen(false); 
+                setInfoBarOpen(false);
                 setIsOpen(false);
+              }
+
+              if (value === 'calculateRent') {
               }
             }}
           />

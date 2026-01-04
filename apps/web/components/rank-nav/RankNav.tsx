@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { geocodeAddress } from '@/services/geocoding/geocoding.service';
 import { useMapStore } from '@/stores/useMapStore';
 import { IndustryCategory } from '../../types/bottom-menu-types';
+import RankNavHeader from './RankNavHeader';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -25,6 +26,8 @@ type RankNavProps = {
   parentGuCode?: string;
   parentGuName?: string;
   selectedCategory?: IndustryCategory;
+  selectedSubCode?: string | null;
+  onSubCodeChange?: (code: string | null) => void;
 };
 
 const changeLabelMap: Record<string, string> = {
@@ -39,17 +42,13 @@ export default function RankNav({
   parentGuCode,
   parentGuName,
   selectedCategory,
+  selectedSubCode,
 }: RankNavProps) {
   const { moveToLocation } = useMapStore();
   const [isMoving, setIsMoving] = useState(false);
   const [items, setItems] = useState<RankItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedSubCode, setSelectedSubCode] = useState<string | null>(null);
-
-  useEffect(() => {
-    setSelectedSubCode(null);
-  }, [selectedCategory?.code]);
 
   const handleSelect = async (name: string) => {
     if (isMoving) return;
@@ -137,109 +136,12 @@ export default function RankNav({
   };
 
   return (
-    <aside className="w-[330px] ml-4 z-300 rounded-2xl bg-white/90 p-3.5 shadow-lg ring-1 ring-black/5 backdrop-blur pointer-events-auto">
-      <header className="flex flex-col gap-2 mb-2">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">
-              {selectedCategory ? `${selectedCategory.name} ` : ''}
-              {level === 'dong' && parentGuName
-                ? `${parentGuName} 매출 순위`
-                : level === 'dong'
-                  ? '동 매출 순위'
-                  : '서울시 매출 순위'}
-            </h2>
-            <p className="text-xs text-gray-500">
-              {level === 'dong' && parentGuName
-                ? `${parentGuName} 기준`
-                : level === 'dong'
-                  ? '현재 구 기준'
-                  : '서울시 기준'}{' '}
-              분기 매출
-            </p>
-          </div>
-
-          {/* Info Tooltip */}
-          <div className="relative group p-1">
-            <svg
-              className="w-5 h-5 text-gray-400 cursor-help hover:text-gray-600 transition-colors"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-
-            <div className="absolute right-0 top-full mt-2 w-64 bg-gray-900/90 backdrop-blur-sm text-white text-xs rounded-xl p-3 shadow-xl z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 translate-y-2 group-hover:translate-y-0">
-              <h4 className="font-bold mb-2 text-gray-200 pb-1 border-b border-gray-700">
-                상권 유형 안내
-              </h4>
-              <div className="space-y-2">
-                <div className="flex gap-2">
-                  <span className="text-blue-300 font-semibold min-w-16">
-                    뜨는 상권
-                  </span>
-                  <span className="text-gray-300">
-                    개업은 많고 폐업은 적어 성장하는 지역
-                  </span>
-                </div>
-                <div className="flex gap-2">
-                  <span className="text-amber-400 font-semibold min-w-16">
-                    변동 상권
-                  </span>
-                  <span className="text-gray-300">
-                    개업과 폐업이 모두 많아 변화가 심한 지역
-                  </span>
-                </div>
-                <div className="flex gap-2">
-                  <span className="text-gray-400 font-semibold min-w-16">
-                    정체 상권
-                  </span>
-                  <span className="text-gray-300">
-                    개업과 폐업이 모두 적어 변화가 없는 지역
-                  </span>
-                </div>
-                <div className="flex gap-2">
-                  <span className="text-red-400 font-semibold min-w-16">
-                    위험 상권
-                  </span>
-                  <span className="text-gray-300">
-                    개업은 적고 폐업이 많아 쇠퇴하는 지역
-                  </span>
-                </div>
-              </div>
-              {/* Arrow */}
-              <div className="absolute top-0 right-2 -mt-1 w-2 h-2 bg-gray-900/90 rotate-45 transform"></div>
-            </div>
-          </div>
-        </div>
-
-        {/* Sub Category Selector */}
-        {selectedCategory?.children && selectedCategory.children.length > 0 && (
-          <div className="mb-2">
-            <select
-              value={selectedSubCode || ''}
-              onChange={(e) => {
-                const val = e.target.value;
-                setSelectedSubCode(val === '' ? null : val);
-              }}
-              className="w-full rounded-xl border-gray-200 bg-gray-50 py-2 pl-3 pr-8 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500 transition-colors cursor-pointer hover:bg-white border"
-            >
-              <option value="">전체 ({selectedCategory.name})</option>
-              {selectedCategory.children.map((child) => (
-                <option key={child.code} value={child.code}>
-                  {child.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-      </header>
+    <aside className="w-[330px] z-300 rounded-2xl bg-white/90 p-3.5 shadow-lg ring-1 ring-black/5 backdrop-blur pointer-events-auto">
+      <RankNavHeader
+        level={level}
+        areaName={parentGuName}
+        categoryName={selectedCategory?.name}
+      />
 
       <div className="space-y-2">
         {isLoading ? (

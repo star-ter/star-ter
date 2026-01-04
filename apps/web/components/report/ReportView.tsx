@@ -18,7 +18,7 @@ interface ReportViewProps {
 
 export const ReportView = ({ data }: ReportViewProps) => {
   return (
-    <div className="flex flex-col gap-10 bg-gray-100 items-center justify-center min-h-screen py-10 print:py-0 print:bg-white print:block">
+    <div className="flex flex-col gap-10 bg-gray-100 items-center min-h-screen py-10 print:py-0 print:bg-white print:block">
       <ReportContainer>
         <ReportHeader 
           category={data.meta.category} 
@@ -50,7 +50,7 @@ export const ReportView = ({ data }: ReportViewProps) => {
               period: data.meta.period,
             }}
           />
-          <div className="grid grid-cols-2 gap-4 h-[350px]">
+          <div className="grid grid-cols-2 gap-4 h-350px">
              <HourlyFlow summary={data.hourlyFlow.summary} data={data.hourlyFlow.data} />
              <WeeklyCharacteristics data={data.weeklyCharacteristics} />
           </div>

@@ -23,7 +23,7 @@ const AGE_GROUPS = [
   '65',
   '70',
 ] as const;
-const GENDERS = ['M', 'F'] as const;
+const GENDERS = ['m', 'f'] as const;
 const GRANULAR_FIELDS = GENDERS.flatMap((g) =>
   AGE_GROUPS.map((a) => `${g}${a}`),
 );
@@ -63,7 +63,7 @@ export class FloatingPopulationRepository {
   ): Promise<TimeSegmentedPopulationFeature[]> {
     // 28개 기초 필드 SUM 구문 생성
     const granularSums = GRANULAR_FIELDS.map(
-      (f) => `SUM(p."${f}") as ${f.toLowerCase()}`,
+      (f) => `SUM(p."${f}") as ${f}`,
     ).join(', ');
 
     const query = `
@@ -95,7 +95,7 @@ export class FloatingPopulationRepository {
             'ts', s.ts,
             'ap', s.ap,
             'sp', s.sp,
-            ${GRANULAR_FIELDS.map((f) => `'${f.toLowerCase()}', s.${f.toLowerCase()}`).join(',\n')}
+            ${GRANULAR_FIELDS.map((f) => `'${f}', s.${f}`).join(',\n')}
           ) ORDER BY s.ts
         ) FILTER (WHERE s.ts IS NOT NULL) as slots
       FROM viewport_grids g
@@ -121,9 +121,9 @@ export class FloatingPopulationRepository {
           let maleTotal = 0;
           let femaleTotal = 0;
           GRANULAR_FIELDS.forEach((f) => {
-            const val = Number(t[f.toLowerCase()]) || 0;
+            const val = Number(t[f]) || 0;
             (slot as unknown as Record<string, number>)[f] = val;
-            if (f.startsWith('M')) {
+            if (f.startsWith('m')) {
               maleTotal += val;
             } else {
               femaleTotal += val;

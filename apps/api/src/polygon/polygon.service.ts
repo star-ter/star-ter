@@ -8,7 +8,7 @@ import { RawCommercialBuilding } from './dto/raw-commercial-building.dto';
 
 const LATEST_QUARTER = '20253';
 
-type IndustryFilter = { svc_induty_cd: { in: string[] } } | object;
+type IndustryFilter = { svc_induty_cd: { in: string[] } } | Record<string, never>;
 
 @Injectable()
 export class PolygonService {
@@ -21,8 +21,20 @@ export class PolygonService {
     closing: Map<string, number>;
   } | null = null;
 
-  private buildIndustryFilter(codes?: string[]): IndustryFilter {
-    return codes?.length ? { svc_induty_cd: { in: codes } } : {};
+  private buildIndustryFilter(
+    industryCode?: string,
+    industryCodes?: string,
+  ): IndustryFilter {
+    if (industryCodes) {
+      const codes = industryCodes.split(',').filter(Boolean);
+      if (codes.length > 0) {
+        return { svc_induty_cd: { in: codes } };
+      }
+    }
+    if (industryCode) {
+      return { svc_induty_cd: { in: [industryCode] } };
+    }
+    return {};
   }
 
   private buildRankMap(
@@ -81,7 +93,8 @@ export class PolygonService {
     miny: string,
     maxx: string,
     maxy: string,
-    industryCodes?: string[],
+    industryCode?: string,
+    industryCodes?: string,
   ): Promise<CommercialPolygonResponse[]> {
     await this.ensureGlobalRanks();
 
@@ -102,10 +115,12 @@ export class PolygonService {
     const populationMap = new Map<string, number>();
     const openingStoresMap = new Map<string, number>();
     const closingStoresMap = new Map<string, number>();
+    const industryFilter = this.buildIndustryFilter(
+      industryCode,
+      industryCodes,
+    );
 
     if (trdarCds.length > 0) {
-      const industryFilter = this.buildIndustryFilter(industryCodes);
-
       const [sales, pop, stores] = await Promise.all([
         this.prisma.salesCommercial.groupBy({
           by: ['trdar_cd'],
@@ -133,18 +148,20 @@ export class PolygonService {
 
       sales.forEach((s) => {
         if (s.trdar_cd)
-          revenueMap.set(s.trdar_cd, Number(s._sum.thsmon_selng_amt || 0));
+          revenueMap.set(s.trdar_cd, Number(s._sum?.thsmon_selng_amt || 0));
       });
       pop.forEach((p) => populationMap.set(p.trdar_cd, p.tot_repop_co));
       stores.forEach((s) => {
         if (s.trdar_cd) {
-          openingStoresMap.set(s.trdar_cd, s._sum.opbiz_stor_co || 0);
-          closingStoresMap.set(s.trdar_cd, s._sum.clsbiz_stor_co || 0);
+          openingStoresMap.set(s.trdar_cd, s._sum?.opbiz_stor_co || 0);
+          closingStoresMap.set(s.trdar_cd, s._sum?.clsbiz_stor_co || 0);
         }
       });
     }
 
     const { revenue, population, opening, closing } = this.globalRankCache!;
+    const hasIndustryFilter = Object.keys(industryFilter).length > 0;
+    const applyRevenueRank = !hasIndustryFilter;
 
     return results.map(
       (row) =>
@@ -160,7 +177,7 @@ export class PolygonService {
           residentPopulation: populationMap.get(row.trdar_cd) || 0,
           openingStores: openingStoresMap.get(row.trdar_cd) || 0,
           closingStores: closingStoresMap.get(row.trdar_cd) || 0,
-          rankRevenue: revenue.get(row.trdar_cd),
+          rankRevenue: applyRevenueRank ? revenue.get(row.trdar_cd) : undefined,
           rankPopulation: population.get(row.trdar_cd),
           rankOpening: opening.get(row.trdar_cd),
           rankClosing: closing.get(row.trdar_cd),
@@ -174,17 +191,25 @@ export class PolygonService {
 
   async getAdminPolygonByLowSearch(
     lowSearch: number,
-    industryCodes?: string[],
+    industryCode?: string,
+    industryCodes?: string,
   ): Promise<AdminPolygonResponse[]> {
-    const type = lowSearch === 2 ? 'dong' : 'gu';
-    return this.fetchAdminData(type, industryCodes);
+    if (lowSearch === 2) {
+      return this.fetchAdminData('dong', industryCode, industryCodes);
+    } else {
+      return this.fetchAdminData('gu', industryCode, industryCodes);
+    }
   }
 
   private async fetchAdminData(
     type: 'gu' | 'dong',
-    industryCodes?: string[],
+    industryCode?: string,
+    industryCodes?: string,
   ): Promise<AdminPolygonResponse[]> {
-    const industryFilter = this.buildIndustryFilter(industryCodes);
+    const industryFilter = this.buildIndustryFilter(
+      industryCode,
+      industryCodes,
+    );
 
     if (type === 'dong') {
       return this.fetchDongData(industryFilter);
@@ -201,7 +226,10 @@ export class PolygonService {
     const [sales, pop, stores] = await Promise.all([
       this.prisma.salesDong.groupBy({
         by: ['adstrd_cd'],
-        where: { stdr_yyqu_cd: LATEST_QUARTER, ...industryFilter },
+        where: {
+          stdr_yyqu_cd: LATEST_QUARTER,
+          ...industryFilter,
+        },
         _sum: { thsmon_selng_amt: true },
       }),
       this.prisma.residentPopulationDong.findMany({
@@ -223,13 +251,13 @@ export class PolygonService {
     sales.forEach(
       (s) =>
         s.adstrd_cd &&
-        revenueMap.set(s.adstrd_cd, Number(s._sum.thsmon_selng_amt || 0)),
+        revenueMap.set(s.adstrd_cd, Number(s._sum?.thsmon_selng_amt || 0)),
     );
     pop.forEach((p) => populationMap.set(p.adstrd_cd, p.tot_repop_co));
     stores.forEach((s) => {
       if (s.adstrd_cd) {
-        openingMap.set(s.adstrd_cd, s._sum.opbiz_stor_co || 0);
-        closingMap.set(s.adstrd_cd, s._sum.clsbiz_stor_co || 0);
+        openingMap.set(s.adstrd_cd, s._sum?.opbiz_stor_co || 0);
+        closingMap.set(s.adstrd_cd, s._sum?.clsbiz_stor_co || 0);
       }
     });
 
@@ -251,7 +279,10 @@ export class PolygonService {
     const [sales, pop, stores] = await Promise.all([
       this.prisma.salesGu.groupBy({
         by: ['signgu_cd'],
-        where: { stdr_yyqu_cd: LATEST_QUARTER, ...industryFilter },
+        where: {
+          stdr_yyqu_cd: LATEST_QUARTER,
+          ...industryFilter,
+        },
         _sum: { thsmon_selng_amt: true },
       }),
       this.prisma.residentPopulationGu.findMany({
@@ -273,13 +304,13 @@ export class PolygonService {
     sales.forEach(
       (s) =>
         s.signgu_cd &&
-        revenueMap.set(s.signgu_cd, Number(s._sum.thsmon_selng_amt || 0)),
+        revenueMap.set(s.signgu_cd, Number(s._sum?.thsmon_selng_amt || 0)),
     );
     pop.forEach((p) => populationMap.set(p.signgu_cd, p.tot_repop_co));
     stores.forEach((s) => {
       if (s.signgu_cd) {
-        openingMap.set(s.signgu_cd, s._sum.opbiz_stor_co || 0);
-        closingMap.set(s.signgu_cd, s._sum.clsbiz_stor_co || 0);
+        openingMap.set(s.signgu_cd, s._sum?.opbiz_stor_co || 0);
+        closingMap.set(s.signgu_cd, s._sum?.clsbiz_stor_co || 0);
       }
     });
 

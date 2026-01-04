@@ -202,6 +202,7 @@ function createMarkerContent(
   ranking: number | undefined,
   mode: OverlayMode,
   isHotSpot: boolean,
+  isBookmarked: boolean,
 ): HTMLElement {
   const shortName = getShortName(feature) + getValueTag(feature, mode);
 
@@ -213,6 +214,29 @@ function createMarkerContent(
   let zIndexStyle = '';
 
   let hotSpotIcon = '';
+  // Star icon logic
+  const starIcon = isBookmarked
+    ? `<div style="
+        position: absolute; 
+        top: -8px; 
+        right: -8px; 
+        z-index: 20; 
+        background: white; 
+        border: 1px solid #fbbf24;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      ">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#fbbf24" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+        </svg>
+      </div>`
+    : '';
+
   if (isHotSpot) {
     // Star icon logic removed as per user request
     hotSpotIcon = '';
@@ -236,6 +260,7 @@ function createMarkerContent(
     <div style="position: relative; ${zIndexStyle}">
       ${iconMarker}
       ${hotSpotIcon}
+      ${starIcon}
       <div style="text-align: center; white-space: nowrap; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.15); cursor: pointer; transition: all 0.2s; ${boxStyle} font-size: 13px;">
         ${shortName}
       </div>
@@ -256,6 +281,7 @@ export function drawPolygons(
   mode: OverlayMode = 'revenue',
   level?: 'gu' | 'dong' | 'commercial' | 'sido',
   shouldDrawMarkers: boolean = true,
+  bookmarks?: Set<string>,
 ) {
   if (shouldClear) {
     polygonsRef.current.forEach((poly) => poly.setMap(null));
@@ -265,7 +291,6 @@ export function drawPolygons(
       customOverlaysRef.current = [];
     }
   }
-
 
   features.forEach((feature) => {
     const { polygons, ...props } = feature;
@@ -392,7 +417,7 @@ export function drawPolygons(
         hoverStyle = { ...normalStyle }; // 호버 시에도 유지
       }
 
-    const polygon = new window.kakao.maps.Polygon({
+      const polygon = new window.kakao.maps.Polygon({
         path: path,
         ...normalStyle,
       });
@@ -418,6 +443,8 @@ export function drawPolygons(
           y: finalY,
           polygons: polygons,
           level: level,
+          mode: mode,
+          bookmarks: bookmarks,
         } as unknown as InfoBarData);
       });
     });
@@ -436,10 +463,10 @@ export function drawPolygons(
       onPolygonClick,
       mode,
       level,
+      bookmarks,
     );
   }
 }
-
 function getCenterOfFeature(feature: MapFeature): KakaoLatLng | null {
   if (centerCache.has(feature)) {
     return centerCache.get(feature)!;
@@ -453,45 +480,45 @@ function getCenterOfFeature(feature: MapFeature): KakaoLatLng | null {
   }
 
   if (polygons && Array.isArray(polygons) && polygons.length > 0) {
-      let rings: number[][][] = [];
-      const first = polygons[0];
+    let rings: number[][][] = [];
+    const first = polygons[0];
 
-      let isLevel4 = false;
-      let isLevel2 = false;
+    let isLevel4 = false;
+    let isLevel2 = false;
 
-      if (Array.isArray(first)) {
-        const second = first[0];
-        if (Array.isArray(second)) {
-          const third = second[0];
-          if (Array.isArray(third)) {
-            isLevel4 = true;
-          }
-        } else if (typeof second === 'number') {
-          isLevel2 = true;
+    if (Array.isArray(first)) {
+      const second = first[0];
+      if (Array.isArray(second)) {
+        const third = second[0];
+        if (Array.isArray(third)) {
+          isLevel4 = true;
         }
+      } else if (typeof second === 'number') {
+        isLevel2 = true;
       }
+    }
 
-      if (isLevel4) {
-        (polygons as number[][][][]).forEach((poly) => {
-          if (Array.isArray(poly)) {
-            poly.forEach((ring) => rings.push(ring));
-          }
-        });
-      } else if (isLevel2) {
-        rings.push(polygons as unknown as number[][]);
-      } else {
-        rings = polygons as number[][][];
-      }
-      if (rings.length > 0) {
-        try {
-          const [lng, lat] = polylabel([rings[0]], 1.0);
-          const pos = convertCoord(lng, lat);
-          centerCache.set(feature, pos);
-          return pos;
-        } catch {
-          // console.error('Polylabel failed', err);
+    if (isLevel4) {
+      (polygons as number[][][][]).forEach((poly) => {
+        if (Array.isArray(poly)) {
+          poly.forEach((ring) => rings.push(ring));
         }
+      });
+    } else if (isLevel2) {
+      rings.push(polygons as unknown as number[][]);
+    } else {
+      rings = polygons as number[][][];
+    }
+    if (rings.length > 0) {
+      try {
+        const [lng, lat] = polylabel([rings[0]], 1.0);
+        const pos = convertCoord(lng, lat);
+        centerCache.set(feature, pos);
+        return pos;
+      } catch {
+        // console.error('Polylabel failed', err);
       }
+    }
   }
   return null;
 }
@@ -503,7 +530,8 @@ export function drawMarkers(
   onPolygonClick: (data: InfoBarData) => void,
   mode: OverlayMode,
   level?: 'gu' | 'dong' | 'commercial' | 'sido',
-) {
+  bookmarks?: Set<string>,
+): void {
   customOverlaysRef.current.forEach((overlay) => overlay.setMap(null));
   customOverlaysRef.current = [];
 
@@ -522,15 +550,24 @@ export function drawMarkers(
       'closingStores' in feature &&
       (feature.openingStores || 0) > (feature.closingStores || 0);
 
+    let checkId = '';
+    if ('commercialCode' in feature && feature.commercialCode) {
+      checkId = feature.commercialCode;
+    } else if ('adm_cd' in feature && feature.adm_cd) {
+      checkId = String(feature.adm_cd);
+    }
+
+    const isMarked = bookmarks?.has(checkId);
+
     const contentEl = createMarkerContent(
       feature,
       isTop3,
       ranking,
       mode,
       isHotSpot,
+      !!isMarked,
     );
 
- 
     const { polygons, ...props } = feature;
 
     contentEl.onclick = () => {

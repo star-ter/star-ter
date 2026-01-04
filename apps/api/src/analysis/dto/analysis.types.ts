@@ -194,3 +194,8 @@ export interface SalesTrendGroup {
   stdr_yyqu_cd: string;
   _sum: Record<string, bigint | null>;
 }
+
+export interface IndustrySearchResult {
+  code: string;
+  name: string;
+}

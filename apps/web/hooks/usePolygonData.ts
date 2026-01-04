@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, useMemo } from 'react';
 import {
   KakaoMap,
   AdminArea,
@@ -11,21 +11,46 @@ import {
 import { drawPolygons, drawMarkers } from '../utils/kakao-draw-utils';
 import { useMapStore } from '../stores/useMapStore';
 import { API_ENDPOINTS } from '../config/api';
+import { useBookmark } from './useBookmark';
+import { IndustryCategory } from '../types/bottom-menu-types';
 
 export const usePolygonData = (
   map: KakaoMap | null,
   onPolygonClick: (data: InfoBarData) => void,
+  selectedCategory?: IndustryCategory | null,
+  selectedSubCategoryCode?: string | null,
 ) => {
-  const { overlayMode, selectedIndustryCodes } = useMapStore();
+  const { overlayMode } = useMapStore();
+  const { bookmarks } = useBookmark();
+
+  const bookmarksSet = useMemo(() => {
+    return new Set(bookmarks.map((b) => b.commercialCode));
+  }, [bookmarks]);
 
   const lastLevelGroupRef = useRef<string | null>(null);
   const lastOverlayModeRef = useRef<string>('revenue');
-  const lastIndustryCodesRef = useRef<string[] | null>(null);
+  const lastIndustryKeyRef = useRef<string>('');
   const polygonsRef = useRef<KakaoPolygon[]>([]);
   const customOverlaysRef = useRef<KakaoCustomOverlay[]>([]);
   const onPolygonClickRef = useRef(onPolygonClick);
   const visitedCommercialRef = useRef<Set<string>>(new Set());
   const allCommercialFeaturesRef = useRef<CommercialApiResponse[]>([]);
+
+  const industryParams = useMemo(() => {
+    if (overlayMode !== 'revenue') return null;
+    if (selectedSubCategoryCode) {
+      return { industryCode: selectedSubCategoryCode };
+    }
+    if (!selectedCategory) return null;
+    if (selectedCategory.children && selectedCategory.children.length > 0) {
+      const codes = selectedCategory.children.map((c) => c.code).join(',');
+      return { industryCodes: codes };
+    }
+    return { industryCode: selectedCategory.code };
+  }, [overlayMode, selectedCategory, selectedSubCategoryCode]);
+
+  const industryKey =
+    industryParams?.industryCodes || industryParams?.industryCode || '';
 
   useEffect(() => {
     onPolygonClickRef.current = onPolygonClick;
@@ -34,11 +59,15 @@ export const usePolygonData = (
   const fetchCombinedBoundary = useCallback(
     async (mapInstance: KakaoMap, lowSearch: number) => {
       try {
-        let url = `${API_ENDPOINTS.POLYGON_ADMIN}?low_search=${lowSearch}`;
-        if (selectedIndustryCodes && selectedIndustryCodes.length > 0) {
-          url += `&industryCodes=${selectedIndustryCodes.join(',')}`;
+        const url = new URL(API_ENDPOINTS.POLYGON_ADMIN);
+        url.searchParams.set('low_search', String(lowSearch));
+        if (industryParams?.industryCode) {
+          url.searchParams.set('industryCode', industryParams.industryCode);
         }
-        const response = await fetch(url);
+        if (industryParams?.industryCodes) {
+          url.searchParams.set('industryCodes', industryParams.industryCodes);
+        }
+        const response = await fetch(url.toString());
         const data: unknown = await response.json();
 
         if (Array.isArray(data)) {
@@ -52,13 +81,15 @@ export const usePolygonData = (
             true,
             overlayMode,
             lowSearch === 1 ? 'gu' : 'dong',
+            true,
+            bookmarksSet,
           );
         }
       } catch {
         return;
       }
     },
-    [overlayMode, selectedIndustryCodes],
+    [overlayMode, bookmarksSet, industryParams],
   );
 
   const fetchBuildingData = useCallback(
@@ -89,14 +120,15 @@ export const usePolygonData = (
             true,
             overlayMode,
             undefined,
-            false,
+            false, // 건물 마커 그리지 않음
+            bookmarksSet,
           );
         }
       } catch {
         return;
       }
     },
-    [overlayMode],
+    [overlayMode, bookmarksSet],
   );
 
   const fetchCommercialData = useCallback(
@@ -115,8 +147,11 @@ export const usePolygonData = (
         maxx: ne.getLng().toString(),
         maxy: ne.getLat().toString(),
       });
-      if (selectedIndustryCodes && selectedIndustryCodes.length > 0) {
-        query.set('industryCodes', selectedIndustryCodes.join(','));
+      if (industryParams?.industryCode) {
+        query.set('industryCode', industryParams.industryCode);
+      }
+      if (industryParams?.industryCodes) {
+        query.set('industryCodes', industryParams.industryCodes);
       }
 
       try {
@@ -164,6 +199,7 @@ export const usePolygonData = (
               overlayMode,
               'commercial',
               false,
+              bookmarksSet,
             );
 
             allCommercialFeaturesRef.current = [
@@ -180,6 +216,7 @@ export const usePolygonData = (
               (clickedData) => onPolygonClickRef.current(clickedData),
               overlayMode,
               'commercial',
+              bookmarksSet,
             );
           }
         }
@@ -187,7 +224,7 @@ export const usePolygonData = (
         return;
       }
     },
-    [overlayMode, selectedIndustryCodes],
+    [overlayMode, bookmarksSet, industryParams],
   );
 
   const refreshLayer = useCallback(
@@ -202,13 +239,13 @@ export const usePolygonData = (
 
       const modeChanged = overlayMode !== lastOverlayModeRef.current;
       const groupChanged = currentGroup !== lastLevelGroupRef.current;
-      const industryChanged = JSON.stringify(selectedIndustryCodes) !== JSON.stringify(lastIndustryCodesRef.current);
+      const industryChanged = industryKey !== lastIndustryKeyRef.current;
       const shouldClear = groupChanged || modeChanged || industryChanged;
 
       if (shouldClear) {
         visitedCommercialRef.current.clear();
         lastOverlayModeRef.current = overlayMode;
-        lastIndustryCodesRef.current = selectedIndustryCodes;
+        lastIndustryKeyRef.current = industryKey;
       }
       lastLevelGroupRef.current = currentGroup;
 
@@ -227,7 +264,7 @@ export const usePolygonData = (
       fetchBuildingData,
       fetchCommercialData,
       overlayMode,
-      selectedIndustryCodes,
+      industryKey,
     ],
   );
 
@@ -255,5 +292,5 @@ export const usePolygonData = (
         debouncedRefresh,
       );
     };
-  }, [map, refreshLayer, overlayMode, selectedIndustryCodes]);
+  }, [map, refreshLayer, overlayMode]);
 };
