@@ -37,7 +37,8 @@ export const usePolygonData = (
   const allCommercialFeaturesRef = useRef<CommercialApiResponse[]>([]);
 
   const industryParams = useMemo(() => {
-    if (overlayMode !== 'revenue') return null;
+    // 매출, 개업, 폐업 모드에서 업종 필터 적용 (인구 모드는 업종 필터 없음)
+    if (overlayMode === 'population') return null;
     if (selectedSubCategoryCode) {
       return { industryCode: selectedSubCategoryCode };
     }
