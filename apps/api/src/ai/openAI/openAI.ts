@@ -4,7 +4,7 @@ import { ResponseInput, Tool } from 'openai/resources/responses/responses.js';
 import { TOOLS } from './constant/tools';
 import { FINAL_RESPONSE_SCHEMA_FOR_ACTION } from './constant/schemas';
 import { RECOMMEND_TABLES } from './constant/tables';
-
+/* DEPRECATED(openAI.service.ts로 대체됨) -> DI 도입 */
 // Singleton OpenAI client
 class OpenAIClient {
   private static client: OpenAI;
