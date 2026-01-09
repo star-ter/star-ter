@@ -1,14 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
 import { Sidebar } from "./Sidebar";
+import { useAppStore } from "@/store/use-app-store";
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const { isSidebarOpen, setSidebarOpen } = useAppStore();
 
   const activeMenu = useMemo(() => {
     if (!pathname) return "home";
@@ -27,7 +28,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           if (id === "meetings") router.push("/locations/detail");
         }}
         isOpen={isSidebarOpen}
-        onToggle={setIsSidebarOpen}
+        onToggle={setSidebarOpen}
       />
       <div
         className={`flex-1 h-screen overflow-y-auto transition-all duration-300 ease-in-out ${

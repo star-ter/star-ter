@@ -7,7 +7,7 @@ import {
   Plus,
   X,
   Settings,
-  Menu,
+  ChevronRight,
 } from "lucide-react";
 import { motion, AnimatePresence, Variants } from "motion/react";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
@@ -44,10 +44,10 @@ export function Sidebar({ activeMenu, onMenuClick, isOpen, onToggle }: SidebarPr
       {!isOpen && (
         <button
           onClick={() => onToggle(true)}
-          className="fixed left-6 top-6 z-50 p-3 bg-white rounded-xl shadow-lg border border-gray-100 text-gray-600 hover:text-gray-900 transition-all hover:scale-105"
+          className="fixed left-0 top-1/2 -translate-y-1/2 z-50 p-1.5 bg-white rounded-r-xl shadow-md border border-gray-200 border-l-0 text-slate-500 hover:text-slate-900 hover:px-2 transition-all duration-300 group"
           aria-label="Open sidebar"
         >
-          <Menu className="w-5 h-5" />
+          <ChevronRight className="w-5 h-5 group-hover:scale-110 transition-transform" />
         </button>
       )}
 

@@ -102,6 +102,8 @@ type AppState = {
   setSelectedIndustry: (industry: Industry | null) => void;
   setSelectedLocation: (location: Partial<Location> | null) => void;
   setSelectedProperty: (property: Partial<Property> | null) => void;
+  isSidebarOpen: boolean;
+  setSidebarOpen: (isOpen: boolean) => void;
   reset: () => void;
 };
 
@@ -116,6 +118,8 @@ export const useAppStore = create<AppState>((set) => ({
     set({ selectedLocation: location ? normalizeLocation(location) : null }),
   setSelectedProperty: (property) =>
     set({ selectedProperty: property ? normalizeProperty(property) : null }),
+  isSidebarOpen: true,
+  setSidebarOpen: (isOpen) => set({ isSidebarOpen: isOpen }),
   reset: () =>
     set({
       userData: null,

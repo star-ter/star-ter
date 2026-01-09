@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, X, MapPin, TrendingUp, Users, DollarSign, Activity, Star, Coffee, Utensils, ShoppingBag } from "lucide-react";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { useAppStore } from "@/store/use-app-store";
 
 interface LocationRankItem {
   id: string;
@@ -749,8 +750,22 @@ export function LocationSearchPage({
   onSelectLocation: (loc: LocationRankItem) => void;
 }) {
   const [selectedLocation, setSelectedLocation] = useState<LocationRankItem | null>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const isSidebarOpen = useAppStore((state) => state.isSidebarOpen);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Categorize data
+  useEffect(() => {
+    const handleScroll = () => {
+      if (scrollContainerRef.current) {
+        setIsScrolled(scrollContainerRef.current.scrollTop > 50);
+      }
+    };
+    const element = scrollContainerRef.current;
+    if (element) {
+      element.addEventListener('scroll', handleScroll);
+      return () => element.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
   const hotLocations = rankData.filter((i) => i.statusType === "hot");
   const stableLocations = rankData.filter((i) => i.statusType === "stable");
   const variableLocations = rankData.filter((i) => i.statusType === "variable");
@@ -784,36 +799,151 @@ export function LocationSearchPage({
         />
       )}
 
-      {/* Header Section */}
-      <div className={`flex-shrink-0 px-8 py-6 bg-white border-b border-gray-200 z-10 transition-all duration-300 ${selectedLocation ? 'blur-sm scale-[0.98]' : ''}`}>
+      {/* Header Section (Dynamic) */}
+      <div 
+        className={`fixed top-0 right-0 z-50 px-8 py-5 transition-all duration-300 ${
+          isSidebarOpen ? 'left-[350px]' : 'left-0'
+        } ${
+          isScrolled 
+            ? 'bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm' 
+            : 'bg-transparent border-b border-transparent shadow-none'
+        } ${selectedLocation ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             {onBack && (
               <button
                 onClick={onBack}
-                className="p-2 rounded-full border border-gray-200 text-slate-500 hover:text-slate-900 hover:border-gray-400 transition-all"
+                className={`p-2 rounded-full border transition-all ${
+                  isScrolled
+                    ? 'border-gray-200 text-slate-500 hover:text-slate-900 hover:border-gray-400'
+                    : 'border-white/20 text-white/70 hover:text-white hover:border-white/50 backdrop-blur-sm'
+                }`}
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
             )}
-            <h1 className="text-3xl font-black text-slate-900 tracking-tighter uppercase italic">
-              Star<span className="text-blue-600">Ter</span>
+            <h1 className={`text-3xl font-black tracking-tighter uppercase italic cursor-pointer transition-colors ${
+              isScrolled ? 'text-slate-900' : 'text-white drop-shadow-lg'
+            }`}>
+              Star<span className={isScrolled ? "text-blue-600" : "text-red-600"}>Ter</span>
             </h1>
+            
+            {/* Nav Links */}
+            <div className={`hidden md:flex items-center gap-6 ml-8 text-sm font-medium transition-colors ${
+              isScrolled ? 'text-slate-500' : 'text-white/80'
+            }`}>
+              <span className={`cursor-pointer transition-colors ${isScrolled ? 'hover:text-slate-900' : 'hover:text-white'}`}>홈</span>
+              <span className={`cursor-pointer transition-colors ${isScrolled ? 'hover:text-slate-900' : 'hover:text-white'}`}>명동 찾기</span>
+              <span className={`font-bold cursor-pointer ${isScrolled ? 'text-slate-900' : 'text-white'}`}>상권 찾기</span>
+              <span className={`cursor-pointer transition-colors ${isScrolled ? 'hover:text-slate-900' : 'hover:text-white'}`}>저장 목록</span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="px-4 py-2 border border-gray-200 rounded-full text-xs font-bold text-slate-500 tracking-widest uppercase bg-gray-50">
+          <div className="flex items-center gap-4">
+            <div className={`hidden md:flex items-center rounded-full px-3 py-1.5 transition-colors ${
+               isScrolled 
+                 ? 'bg-gray-100 border border-gray-200' 
+                 : 'bg-black/40 border border-white/20 backdrop-blur-md'
+            }`}>
+               <Star className={`w-3 h-3 mr-2 ${isScrolled ? 'text-slate-400' : 'text-white'}`} />
+               <input 
+                 type="text" 
+                 placeholder="AI에게 상권 질문하기..." 
+                 className={`bg-transparent border-none outline-none text-xs w-40 transition-colors ${
+                   isScrolled ? 'text-slate-600 placeholder-slate-400' : 'text-white placeholder-white/50'
+                 }`}
+               />
+            </div>
+            <div className={`px-4 py-2 border rounded-full text-xs font-bold tracking-widest uppercase transition-colors cursor-pointer ${
+              isScrolled
+                ? 'border-gray-200 text-slate-500 bg-gray-50 hover:bg-gray-100'
+                : 'border-white/20 text-white/90 bg-white/5 backdrop-blur-md hover:bg-white/10'
+            }`}>
               Seoul, KR
             </div>
-            <div className="px-3 py-2 bg-blue-600 rounded-full text-white hover:bg-blue-500 transition-colors cursor-pointer shadow-lg shadow-blue-500/30">
-              <CheckCircle2 className="w-4 h-4" />
-            </div>
+            
+             <button className="w-8 h-8 rounded bg-blue-600 flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/30">
+                <Users className="w-4 h-4" />
+             </button>
           </div>
         </div>
       </div>
 
-      {/* Netflix-style Content */}
-      <div className={`flex-1 overflow-y-auto no-scrollbar pb-10 transition-all duration-300 ${selectedLocation ? 'blur-sm scale-[0.99] grayscale-[0.5]' : ''}`}>
+      {/* Netflix-style Content (Scrollable with Custom Scrollbar) */}
+      <div 
+        ref={scrollContainerRef}
+        className={`flex-1 overflow-y-auto pb-10 transition-all duration-300 ${selectedLocation ? 'blur-sm scale-[0.99] grayscale-[0.5]' : ''}`}
+        style={{
+           // Custom Scrollbar Logic
+           scrollbarWidth: 'thin',
+           scrollbarColor: 'rgba(156, 163, 175, 0.5) transparent',
+        }}
+      >
+        <style jsx global>{`
+          /* Webkit Scrollbar Styling */
+          ::-webkit-scrollbar {
+            width: 8px;
+            background: transparent;
+          }
+          ::-webkit-scrollbar-thumb {
+            background-color: rgba(156, 163, 175, 0); /* Default transparent */
+            border-radius: 4px;
+            transition: background-color 0.3s;
+          }
+          /* Show on hover or when scrolling (requires hovering the container mostly) */
+          :hover::-webkit-scrollbar-thumb {
+            background-color: rgba(156, 163, 175, 0.5);
+          }
+        `}</style>
+        
+        {/* Hero Section (Banner Style) */}
+        <div className="relative w-full h-[1080px] mb-8 group">
+            <div className="absolute inset-0 bg-slate-900">
+                <ImageWithFallback
+                    src="/assets/seoul_night_hero.jpg"
+                    alt="Hero Background"
+                    className="w-full h-full object-cover opacity-80"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            </div>
+
+            <div className="relative z-10 h-full flex flex-col justify-center px-8 md:px-16">
+                <div className="flex items-center gap-3 mb-4 animate-in slide-in-from-bottom-5 fade-in duration-700">
+                   <div className="flex items-center bg-blue-600 text-white px-2 py-0.5 rounded-sm shadow-lg">
+                      <span className="text-[10px] font-black tracking-widest uppercase">STARTER</span>
+                   </div>
+                   <span className="text-white/90 text-sm font-bold tracking-wider uppercase border-l-2 border-white/20 pl-3 drop-shadow-md">
+                     2025 상권 리포트
+                   </span>
+                </div>
+
+                <h1 className="text-4xl md:text-6xl font-black text-white leading-tight mb-4 drop-shadow-2xl max-w-4xl tracking-tight">
+                    서울의 밤,<br/>
+                    데이터가 흐르는 곳
+                </h1>
+
+                <p className="text-lg text-white/90 font-medium leading-relaxed max-w-xl mb-8 drop-shadow-md text-shadow-sm">
+                    AI가 분석한 서울 주요 상권의 24시간을 확인하세요<br/>
+                    유동인구 패턴부터 소비 트렌드까지, 성공 창업을 위한 모든 데이터
+                </p>
+
+                <div className="flex items-center gap-4">
+                    <button className="px-6 py-3 bg-white/20 hover:bg-white/30 text-white rounded font-bold flex items-center gap-2 backdrop-blur-xs transition-colors border border-white/20 active:scale-95 transform duration-200">
+                        <TrendingUp className="w-5 h-5 text-blue-600" />
+                        리포트 재생
+                    </button>
+                    <button 
+                      onClick={() => handleCardClick(rankData[0])}
+                      className="px-6 py-3 bg-white/20 hover:bg-white/30 text-white rounded font-bold flex items-center gap-2 backdrop-blur-xs transition-colors border border-white/20 active:scale-95 transform duration-200"
+                    >
+                        <Activity className="w-5 h-5 text-blue-600" />
+                        상세 정보
+                    </button>
+                </div>
+            </div>
+        </div>
+
         {categories.map((category) => (
           <CategoryRow 
             key={category.title} 
