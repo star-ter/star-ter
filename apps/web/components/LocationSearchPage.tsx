@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { ArrowLeft, CheckCircle2, ChevronDown, Heart, Info } from "lucide-react";
-import { motion } from "motion/react";
+import { useRef } from "react";
+import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 
 interface LocationRankItem {
@@ -31,7 +30,7 @@ const rankData: LocationRankItem[] = [
     ratio: { a: 45, b: 55 },
     status: "뜨는 상권",
     statusType: "hot",
-    imageUrl: "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?q=80&w=100&h=100&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?q=80&w=800&auto=format&fit=crop",
   },
   {
     id: "2",
@@ -44,7 +43,7 @@ const rankData: LocationRankItem[] = [
     ratio: { a: 48, b: 52 },
     status: "안정 상권",
     statusType: "stable",
-    imageUrl: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?q=80&w=100&h=100&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?q=80&w=800&auto=format&fit=crop",
   },
   {
     id: "3",
@@ -57,7 +56,7 @@ const rankData: LocationRankItem[] = [
     ratio: { a: 42, b: 58 },
     status: "뜨는 상권",
     statusType: "hot",
-    imageUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=100&h=100&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=800&auto=format&fit=crop",
   },
   {
     id: "4",
@@ -70,7 +69,7 @@ const rankData: LocationRankItem[] = [
     ratio: { a: 60, b: 40 },
     status: "변동 상권",
     statusType: "variable",
-    imageUrl: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=100&h=100&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=800&auto=format&fit=crop",
   },
   {
     id: "5",
@@ -83,7 +82,7 @@ const rankData: LocationRankItem[] = [
     ratio: { a: 35, b: 65 },
     status: "안정 상권",
     statusType: "stable",
-    imageUrl: "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?q=80&w=100&h=100&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?q=80&w=800&auto=format&fit=crop",
   },
   {
     id: "6",
@@ -96,7 +95,7 @@ const rankData: LocationRankItem[] = [
     ratio: { a: 30, b: 70 },
     status: "뜨는 상권",
     statusType: "hot",
-    imageUrl: "https://images.unsplash.com/photo-1543007630-9710e4a00a20?q=80&w=100&h=100&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1543007630-9710e4a00a20?q=80&w=800&auto=format&fit=crop",
   },
   {
     id: "7",
@@ -109,7 +108,7 @@ const rankData: LocationRankItem[] = [
     ratio: { a: 30, b: 70 },
     status: "뜨는 상권",
     statusType: "hot",
-    imageUrl: "https://images.unsplash.com/photo-1543007630-9710e4a00a20?q=80&w=100&h=100&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1543007630-9710e4a00a20?q=80&w=800&auto=format&fit=crop",
   },
   {
     id: "8",
@@ -122,7 +121,7 @@ const rankData: LocationRankItem[] = [
     ratio: { a: 30, b: 70 },
     status: "뜨는 상권",
     statusType: "hot",
-    imageUrl: "https://images.unsplash.com/photo-1543007630-9710e4a00a20?q=80&w=100&h=100&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1543007630-9710e4a00a20?q=80&w=800&auto=format&fit=crop",
   },
   {
     id: "9",
@@ -135,7 +134,7 @@ const rankData: LocationRankItem[] = [
     ratio: { a: 30, b: 70 },
     status: "뜨는 상권",
     statusType: "hot",
-    imageUrl: "https://images.unsplash.com/photo-1543007630-9710e4a00a20?q=80&w=100&h=100&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1543007630-9710e4a00a20?q=80&w=800&auto=format&fit=crop",
   },
   {
     id: "10",
@@ -148,7 +147,7 @@ const rankData: LocationRankItem[] = [
     ratio: { a: 30, b: 70 },
     status: "뜨는 상권",
     statusType: "hot",
-    imageUrl: "https://images.unsplash.com/photo-1543007630-9710e4a00a20?q=80&w=100&h=100&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1543007630-9710e4a00a20?q=80&w=800&auto=format&fit=crop",
   },
   {
     id: "11",
@@ -161,7 +160,7 @@ const rankData: LocationRankItem[] = [
     ratio: { a: 30, b: 70 },
     status: "뜨는 상권",
     statusType: "hot",
-    imageUrl: "https://images.unsplash.com/photo-1543007630-9710e4a00a20?q=80&w=100&h=100&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1543007630-9710e4a00a20?q=80&w=800&auto=format&fit=crop",
   },
   {
     id: "12",
@@ -174,7 +173,7 @@ const rankData: LocationRankItem[] = [
     ratio: { a: 30, b: 70 },
     status: "뜨는 상권",
     statusType: "hot",
-    imageUrl: "https://images.unsplash.com/photo-1543007630-9710e4a00a20?q=80&w=100&h=100&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1543007630-9710e4a00a20?q=80&w=800&auto=format&fit=crop",
   },
   {
     id: "13",
@@ -187,9 +186,118 @@ const rankData: LocationRankItem[] = [
     ratio: { a: 30, b: 70 },
     status: "뜨는 상권",
     statusType: "hot",
-    imageUrl: "https://images.unsplash.com/photo-1543007630-9710e4a00a20?q=80&w=100&h=100&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1543007630-9710e4a00a20?q=80&w=800&auto=format&fit=crop",
   },
 ];
+
+function CategoryRow({ 
+  title, 
+  data, 
+  onSelectLocation 
+}: { 
+  title: string; 
+  data: LocationRankItem[]; 
+  onSelectLocation: (loc: LocationRankItem) => void;
+}) {
+  const rowRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: "left" | "right") => {
+    if (rowRef.current) {
+      const { scrollLeft, clientWidth } = rowRef.current;
+      const scrollTo = direction === "left" 
+        ? scrollLeft - clientWidth / 2 
+        : scrollLeft + clientWidth / 2;
+      
+      rowRef.current.scrollTo({ left: scrollTo, behavior: "smooth" });
+    }
+  };
+
+  return (
+    <div className="mt-8 group/row">
+      <h2 className="px-8 text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+        {title}
+        <span className="text-sm font-normal text-slate-400 cursor-pointer hover:text-slate-600">View all</span>
+        <ChevronRight className="w-4 h-4 text-slate-400 opacity-0 group-hover/row:opacity-100 transition-opacity" />
+      </h2>
+      
+      <div className="relative group">
+        {/* Left Arrow */}
+        <button 
+          onClick={() => scroll("left")}
+          className="absolute left-0 top-0 bottom-4 z-20 w-11 bg-black/50 hover:bg-black/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-white backdrop-blur-sm rounded-r-lg"
+        >
+          <ChevronLeft className="w-8 h-8" />
+        </button>
+
+        {/* Content Row - Hide Scrollbar */}
+        <div 
+          ref={rowRef}
+          className="flex gap-1 overflow-x-auto px-8 pb-4 scrollbar-hide scroll-smooth"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }} // Ensure scrollbar is hidden in all browsers
+        >
+          {data.map((item) => (
+            <button
+              key={`${title}-${item.id}`}
+              onClick={() => onSelectLocation(item)}
+              className="group/card relative flex-none w-[280px] aspect-[4/5] overflow-hidden bg-white cursor-pointer first:rounded-l-lg last:rounded-r-lg"
+            >
+              {/* Image Layer */}
+              <div className="absolute inset-0 transition-transform duration-700 group-hover/card:scale-105">
+                <ImageWithFallback
+                  src={item.imageUrl}
+                  alt={item.name}
+                  className="w-full h-full object-cover filter grayscale group-hover/card:grayscale-0 transition-all duration-500"
+                />
+              </div>
+
+              {/* Overlay Gradient */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover/card:opacity-70 transition-opacity duration-500" />
+
+              {/* Top Badge */}
+              <div className="absolute top-4 left-4">
+                <div className="px-3 py-1 border border-white/40 rounded-full backdrop-blur-md bg-white/10">
+                  <span className="text-[10px] font-bold text-white tracking-[0.2em]">
+                    RANK {item.rank.toString().padStart(2, "0")}
+                  </span>
+                </div>
+              </div>
+
+              {/* Bottom Content */}
+              <div className="absolute bottom-4 left-4 right-4 text-left">
+                <div className="flex items-center gap-2 mb-2 opacity-0 group-hover/card:opacity-100 transform translate-y-4 group-hover/card:translate-y-0 transition-all duration-500 font-medium">
+                  <div className="flex items-center gap-1 text-xs text-blue-300 tracking-wider uppercase">
+                    {item.statusType === "hot" && "Trending"}
+                    {item.statusType === "stable" && "Steady"}
+                    {item.statusType === "variable" && "Volatile"}
+                    {item.growthRate > 0 ? `+${item.growthRate}%` : `${item.growthRate}%`}
+                  </div>
+                </div>
+
+                <h2 className="text-2xl font-black text-white uppercase tracking-tighter leading-none italic mb-1 drop-shadow-sm">
+                  {item.name.split(" ")[0]}
+                </h2>
+                <p className="text-xs font-bold text-white/70 uppercase tracking-widest group-hover/card:text-white transition-colors">
+                  {item.district.split("·")[0]}
+                </p>
+              </div>
+
+              {/* Hover Line */}
+              <div className="absolute bottom-4 right-4 w-8 h-[2px] bg-blue-500 transform scale-x-0 group-hover/card:scale-x-100 transition-transform duration-500 origin-left" />
+            </button>
+          ))}
+        </div>
+
+        {/* Right Arrow */}
+        <button 
+          onClick={() => scroll("right")}
+          className="absolute right-0 top-0 bottom-4 z-20 w-11 bg-black/50 hover:bg-black/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-white backdrop-blur-sm rounded-l-lg"
+        >
+          <ChevronRight className="w-8 h-8" />
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export function LocationSearchPage({
   onBack,
@@ -198,170 +306,59 @@ export function LocationSearchPage({
   onBack?: () => void;
   onSelectLocation: (loc: LocationRankItem) => void;
 }) {
-  const [activeTab, setActiveTab] = useState("실시간 상권 차트");
-  const [subTab, setSubTab] = useState("매출 성장 순");
+  // Categorize data
+  const hotLocations = rankData.filter((i) => i.statusType === "hot");
+  const stableLocations = rankData.filter((i) => i.statusType === "stable");
+  const variableLocations = rankData.filter((i) => i.statusType === "variable");
+  const allLocations = rankData;
 
-  const tabs = ["실시간 상권 차트", "지금 뜨는 카테고리", "지역별 소비 동향"];
-  const subTabs = [
-    "전체",
-    "매출 성장 순",
-    "유동인구 순",
-    "평균 매출 순",
-    "신규 입점 순",
-    "폐업률 낮은 순",
-    "MZ 선호 순",
+  const categories = [
+    { title: "인기 상권", data: hotLocations },
+    { title: "요즘 뜨는 상권", data: stableLocations },
+    { title: "2030 저격 상권", data: variableLocations },
+    { title: "직장 인구 폭발 상권", data: allLocations },
   ];
 
   return (
-    <div className="flex flex-1 flex-col h-screen bg-[#f7f7f8] py-4 pr-4 overflow-hidden">
-      {onBack && (
-        <div className="px-4 pb-3">
-          <button
-            onClick={onBack}
-            className="flex items-center gap-2 text-slate-500 hover:text-slate-900 text-sm font-semibold"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            뒤로
-          </button>
-        </div>
-      )}
-
-      <div className="flex-1 flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="px-10 border-b border-gray-100 flex-shrink-0">
-          <div className="flex gap-8">
-            {tabs.map((tab) => (
+    <div className="flex flex-1 flex-col h-screen bg-[#f7f7f8] overflow-hidden">
+      {/* Header Section */}
+      <div className="flex-shrink-0 px-8 py-6 bg-white border-b border-gray-200 z-10">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            {onBack && (
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`relative py-5 text-lg font-bold transition-all ${
-                  activeTab === tab ? "text-slate-900" : "text-slate-400 hover:text-slate-600"
-                }`}
+                onClick={onBack}
+                className="p-2 rounded-full border border-gray-200 text-slate-500 hover:text-slate-900 hover:border-gray-400 transition-all"
               >
-                {tab}
-                {activeTab === tab && (
-                  <motion.div
-                    layoutId="activeTabUnderline"
-                    className="absolute bottom-0 left-0 right-0 h-[3px] bg-slate-900 rounded-full"
-                  />
-                )}
+                <ArrowLeft className="w-5 h-5" />
               </button>
-            ))}
+            )}
+            <h1 className="text-3xl font-black text-slate-900 tracking-tighter uppercase italic">
+              Star<span className="text-blue-600">Ter</span>
+            </h1>
           </div>
-        </div>
 
-        <div className="px-10 py-4 flex items-center justify-between flex-shrink-0 border-b border-gray-50">
-          <div className="flex items-center gap-2">
-            <div className="flex bg-gray-100 p-1 rounded-xl">
-              <button className="px-4 py-2 text-sm font-bold text-slate-700 flex items-center gap-1 hover:bg-white rounded-lg transition-all shadow-sm">
-                서울 전체 <ChevronDown className="w-4 h-4" />
-              </button>
+          <div className="flex items-center gap-3">
+            <div className="px-4 py-2 border border-gray-200 rounded-full text-xs font-bold text-slate-500 tracking-widest uppercase bg-gray-50">
+              Seoul, KR
             </div>
-            <div className="flex bg-gray-100 p-1 rounded-xl gap-1">
-              {subTabs.slice(1, 7).map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setSubTab(tab)}
-                  className={`px-4 py-2 text-sm font-bold rounded-lg transition-all ${
-                    subTab === tab ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
+            <div className="px-3 py-2 bg-blue-600 rounded-full text-white hover:bg-blue-500 transition-colors cursor-pointer shadow-lg shadow-blue-500/30">
+              <CheckCircle2 className="w-4 h-4" />
             </div>
-            <button className="ml-2 p-2 bg-gray-100 rounded-xl text-slate-500 hover:text-slate-700 transition-colors">
-              <div className="flex items-center gap-1 px-2 py-0.5 text-sm font-bold">
-                실시간 업데이트 <ChevronDown className="w-4 h-4" />
-              </div>
-            </button>
-          </div>
-
-          <button className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-full text-sm font-bold hover:bg-blue-100 transition-colors">
-            <CheckCircle2 className="w-4 h-4" />
-            포화 상권 제외하기
-          </button>
-        </div>
-
-        <div className="px-10 py-3 flex items-center text-[13px] font-bold text-slate-400 flex-shrink-0">
-          <div className="w-[400px]">순위 · 상권명 / 카테고리</div>
-          <div className="flex-1 text-right pr-20">평균 매출(월)</div>
-          <div className="w-[180px] text-center">전월 대비</div>
-          <div className="w-[200px] text-right pr-10">분기 총 매출</div>
-          <div className="w-[220px] flex items-center justify-end gap-1">
-            소비자 성별 비율 (남/여) <Info className="w-3.5 h-3.5" />
           </div>
         </div>
+      </div>
 
-        <div className="flex-1 overflow-y-auto px-6 pb-10 no-scrollbar">
-          {rankData.map((item) => (
-            <button
-              key={`${item.id}-${item.rank}-${item.name}`}
-              onClick={() => onSelectLocation(item)}
-              className="w-full px-4 py-4 flex items-center hover:bg-slate-50/80 rounded-2xl transition-all group"
-            >
-              <div className="w-[400px] flex items-center gap-4">
-                <Heart className="w-5 h-5 text-slate-300 hover:text-red-500 transition-colors" />
-                <span className="w-6 text-lg font-bold text-slate-400 group-hover:text-slate-900 transition-colors">
-                  {item.rank}
-                </span>
-                <div className="relative">
-                  <div className="w-12 h-12 rounded-full overflow-hidden border border-gray-100 bg-gray-50">
-                    <ImageWithFallback src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center border border-gray-100 shadow-sm">
-                    <span className="text-[10px]">📍</span>
-                  </div>
-                </div>
-                <div className="text-left">
-                  <div className="text-[15px] font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-                    {item.name}
-                  </div>
-                  <div className="text-[12px] font-medium text-slate-400">{item.district}</div>
-                </div>
-              </div>
-
-              <div className="flex-1 text-right pr-20 text-[15px] font-bold text-slate-900">{item.revenue}</div>
-
-              <div className="w-[180px] flex justify-center">
-                <div
-                  className={`px-4 py-1.5 rounded-lg text-sm font-black min-w-[80px] ${
-                    item.growthRate > 0 ? "bg-red-50 text-red-500" : "bg-blue-50 text-blue-500"
-                  }`}
-                >
-                  {item.growthRate > 0 ? "+" : ""}
-                  {item.growthRate.toFixed(2)}%
-                </div>
-              </div>
-
-              <div className="w-[200px] text-right pr-10 text-[15px] font-bold text-slate-900">
-                {item.totalRevenue}
-              </div>
-
-              <div className="w-[220px] flex flex-col items-end gap-1">
-                <div className="flex w-full h-1.5 rounded-full overflow-hidden bg-gray-100">
-                  <div
-                    className="h-full bg-blue-500 transition-all duration-1000"
-                    style={{ width: `${item.ratio.a}%` }}
-                  />
-                  <div
-                    className="h-full bg-red-500 transition-all duration-1000"
-                    style={{ width: `${item.ratio.b}%` }}
-                  />
-                </div>
-                <div className="flex justify-between w-full text-[11px] font-black text-slate-400">
-                  <span className="text-blue-500">{item.ratio.a}</span>
-                  <span className="text-red-500">{item.ratio.b}</span>
-                </div>
-              </div>
-            </button>
-          ))}
-
-          <div className="mt-8 mb-10 flex justify-center">
-            <button className="px-8 py-3 bg-gray-50 text-slate-500 rounded-xl text-sm font-bold hover:bg-gray-100 transition-all">
-              더 보기
-            </button>
-          </div>
-        </div>
+      {/* Netflix-style Content */}
+      <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
+        {categories.map((category) => (
+          <CategoryRow 
+            key={category.title} 
+            title={category.title} 
+            data={category.data} 
+            onSelectLocation={onSelectLocation} 
+          />
+        ))}
       </div>
     </div>
   );
