@@ -106,6 +106,27 @@ export class OpenAiService {
     });
   }
 
+  /**
+   * 스트리밍 방식으로 최종 분석 결과를 생성합니다.
+   * `stream: true` 옵션을 사용하여 AsyncIterable을 반환합니다.
+   * 각 이벤트는 OpenAI의 SSE 형식으로 전달됩니다.
+   */
+  async analyzeResultsStream(input: ResponseInput) {
+    return this.client.responses.create({
+      model: 'gpt-5.2',
+      input: input,
+      //temperature: 0.1,
+      reasoning: {
+        effort: 'none',
+      },
+      stream: true, // 스트리밍 활성화
+      text: {
+        format: FINAL_RESPONSE_SCHEMA_FOR_ACTION,
+      },
+      instructions: PROMPT_ANALYZE_RESULTS,
+    });
+  }
+
   async getTablesByMessage(message: string) {
     return this.client.responses.create({
       model: 'gpt-4.1-mini',

@@ -91,6 +91,73 @@ export class AiService {
   }
 
   /**
+   * 스트리밍 방식으로 AI 응답을 처리합니다.
+   * 도구 호출까지는 서버에서 완료한 뒤, 최종 분석 결과만 스트리밍합니다.
+   *
+   * @returns AsyncIterable<string> - 텍스트 청크를 순차적으로 반환
+   */
+  async *getAIMessageWithHistoryStream(
+    message: string,
+    history: Array<{ role: 'user' | 'assistant'; content: string }>,
+  ): AsyncGenerator<string> {
+    const recentHistory = history.slice(-this.MAX_HISTORY_LENGTH);
+    const formattedHistory: ResponseInputItem[] = recentHistory.map((h) => ({
+      role: h.role,
+      content: h.content,
+    }));
+
+    // 1단계: 카테고리/지역 분석 및 도구 호출 (서버에서 완료)
+    const [categories, areaList] = await Promise.all([
+      this.getCategories(message),
+      this.buildAreaList(message),
+    ]);
+
+    const input: ResponseInputItem[] = [
+      ...formattedHistory,
+      { role: 'user', content: message },
+    ];
+
+    const toolCallResponse = await this.openAiService.toolCallAi(
+      input,
+      categories,
+      areaList,
+    );
+    input.push(...toolCallResponse.output);
+
+    for (const toolCall of toolCallResponse.output) {
+      if (toolCall.type !== 'function_call') continue;
+      const toolResult = await this.aiToolsService.run(
+        toolCall.name,
+        toolCall.arguments,
+      );
+      if (toolResult === undefined) continue;
+
+      input.push({
+        type: 'function_call_output',
+        call_id: toolCall.call_id,
+        output: JSON.stringify(toolResult, safeBigIntStringify),
+      });
+    }
+
+    // 2단계: 최종 분석 결과 스트리밍
+    const stream = await this.openAiService.analyzeResultsStream(input);
+
+    for await (const event of stream) {
+      // OpenAI 스트림 이벤트에서 텍스트 델타 추출
+      if (
+        event.type === 'response.output_text.delta' &&
+        'delta' in event &&
+        typeof event.delta === 'string'
+      ) {
+        yield event.delta; // 클라이언트에 청크 전송
+      }
+    }
+
+    // 3단계: 스트림 종료 후 areaList 정보를 마지막에 메타데이터로 전송 (좌표 패칭용)
+    yield `\n[AREA_LIST]:${JSON.stringify(areaList.map((a) => ({ areaName: a?.areaName, lat: a?.lat, lng: a?.lng })))}`;
+  }
+
+  /**
    * AI가 생성한 좌표(Hallucination 가능성 있음)를 DB에서 조회한 신뢰할 수 있는 좌표로 보정합니다.
    */
   private patchCoordinates(actions: any[], areaList: any[]) {
