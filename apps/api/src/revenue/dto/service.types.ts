@@ -105,7 +105,7 @@ export interface RevenueRankingRow {
 }
 
 /**
- * 동적 Prisma 모델 타입
+ * 동적 Prisma 모델 타입 (Service용)
  */
 export interface PrismaModel {
   findMany(args: {
@@ -123,5 +123,147 @@ export interface PrismaModel {
     _sum?: Record<string, boolean>;
     orderBy?: Record<string, unknown>;
     take?: number;
-  }): Promise<Record<string, Record<string, unknown>>[]>;
+  }): Promise<RevenueRankingRow[]>;
+}
+
+/**
+ * Repository 전용 Prisma 모델 타입 (aggregate 메서드 포함)
+ */
+export interface RepositoryPrismaModel {
+  findMany(args: {
+    where?: Record<string, unknown>;
+    select?: Record<string, boolean>;
+    orderBy?: Record<string, 'asc' | 'desc'>;
+    take?: number;
+  }): Promise<Record<string, unknown>[]>;
+  findFirst(args: {
+    where?: Record<string, unknown>;
+    select?: Record<string, boolean>;
+    orderBy?: Record<string, 'asc' | 'desc'>;
+  }): Promise<Record<string, unknown> | null>;
+  aggregate(args: {
+    where?: Record<string, unknown>;
+    _sum?: Record<string, boolean>;
+  }): Promise<DemographicsAggregateResult>;
+  groupBy(args: {
+    by: string[];
+    where?: Record<string, unknown>;
+    _sum?: Record<string, boolean>;
+    orderBy?: Record<string, 'asc' | 'desc'>;
+    take?: number;
+  }): Promise<GrowthRow[]>;
+}
+
+// ============================================
+// Raw Query 결과 타입
+// ============================================
+
+/**
+ * 성장률 랭킹 Raw Query 결과
+ */
+export interface GrowthRankingRawRow {
+  code: string;
+  name: string;
+  current_amt: bigint | number;
+  prev_amt: bigint | number;
+  change_type: string | null;
+  growth_rate: number;
+}
+
+/**
+ * 평균 매출 랭킹 Raw Query 결과
+ */
+export interface AvgSalesRankingRawRow {
+  code: string;
+  name: string;
+  total_amt: bigint | number;
+  store_count: bigint | number;
+  prev_amt: bigint | number;
+  change_type: string | null;
+  avg_sales: bigint | number;
+  growth_rate: number;
+  male_ratio: number;
+}
+
+/**
+ * Top Sectors (Bar Chart) 결과 타입
+ */
+export interface TopSectorRow {
+  svc_induty_cd_nm: string;
+  thsmon_selng_amt: number | bigint;
+}
+
+/**
+ * Growth (Area Chart) 결과 타입
+ */
+export interface GrowthRow {
+  stdr_yyqu_cd: string;
+  _sum: {
+    thsmon_selng_amt: number | bigint;
+  };
+}
+
+/**
+ * Top Stores 결과 타입
+ */
+export interface TopStoreRow {
+  svc_induty_cd_nm: string;
+  stor_co: number | bigint;
+}
+
+/**
+ * Area 결과 타입
+ */
+export interface AreaRow {
+  relm_ar: number | bigint;
+}
+
+/**
+ * Revenue 그룹화 결과 (prevMap 용)
+ */
+export interface RevenuePrevGroupRow {
+  [key: string]: unknown;
+  _sum?: {
+    thsmon_selng_amt?: number | bigint | null;
+  };
+}
+
+/**
+ * Revenue Ranking Item with fluctuation
+ */
+export interface RevenueRankingItem {
+  code: string;
+  name: string;
+  amount: number;
+  count: number;
+  changeType?: string;
+  fluctuationRate?: number;
+}
+
+/**
+ * Demographics 집계 결과 타입
+ */
+export interface DemographicsAggregateResult {
+  _sum: {
+    ml_selng_amt: number | bigint | null;
+    fml_selng_amt: number | bigint | null;
+    agrde_10_selng_amt: number | bigint | null;
+    agrde_20_selng_amt: number | bigint | null;
+    agrde_30_selng_amt: number | bigint | null;
+    agrde_40_selng_amt: number | bigint | null;
+    agrde_50_selng_amt: number | bigint | null;
+    agrde_60_above_selng_amt: number | bigint | null;
+  };
+}
+
+/**
+ * FootTraffic 결과 타입
+ */
+export interface FootTrafficRow {
+  tmzon_00_06_flpop_co: number | bigint | null;
+  tmzon_06_11_flpop_co: number | bigint | null;
+  tmzon_11_14_flpop_co: number | bigint | null;
+  tmzon_14_17_flpop_co: number | bigint | null;
+  tmzon_17_21_flpop_co: number | bigint | null;
+  tmzon_21_24_flpop_co: number | bigint | null;
 }

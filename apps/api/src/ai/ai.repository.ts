@@ -38,9 +38,31 @@ export class AiRepository {
         area_code AS "areaCode",
         embedding <=> ${vectorLiteral}::vector AS distance
       FROM area_vector_table
+      WHERE area_level = 'commercial'
       ORDER BY embedding <=> ${vectorLiteral}::vector
       LIMIT ${limit}
     `;
+    return rows;
+  }
+
+  // Fallback: pg_trgm 유사도 기반 텍스트 검색 (벡터 검색 신뢰도 낮을 때 사용)
+  async areaSearchByText(
+    query: string,
+    limit: number,
+  ): Promise<AreaVectorDto[]> {
+    const rows = await this.prisma.$queryRaw<AreaVectorDto[]>`
+      SELECT
+        area_name AS "areaName",
+        area_level AS "areaLevel",
+        area_code AS "areaCode",
+        similarity(area_name, ${query}) AS distance
+      FROM area_vector_table
+      WHERE area_level = 'commercial'
+        AND similarity(area_name, ${query}) > 0.3
+      ORDER BY similarity(area_name, ${query}) DESC
+      LIMIT ${limit}
+    `;
+    console.log(`[DEBUG] pg_trgm search for "${query}":`, rows);
     return rows;
   }
 

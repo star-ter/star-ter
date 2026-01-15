@@ -120,6 +120,7 @@ export interface KakaoMap {
   getBounds: () => KakaoBounds;
   setBounds: (bounds: KakaoBounds) => void;
   getProjection: () => KakaoMapProjection;
+  relayout: () => void;
 }
 
 // ============================================================

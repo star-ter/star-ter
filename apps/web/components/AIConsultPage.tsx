@@ -199,7 +199,7 @@ export function AIConsultPage({ location, onBack, onFindAlternative, onViewRealE
                       <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-800 rounded-full flex items-center justify-center">
                         <Sparkles className="w-4 h-4 text-white" />
                       </div>
-                      <span className="text-sm font-medium">Starter AI</span>
+                      <span className="text-sm font-medium">지리응답 AI</span>
                     </div>
                   )}
                   <div

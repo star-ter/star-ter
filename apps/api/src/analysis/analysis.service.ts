@@ -1,17 +1,35 @@
 import { Injectable } from '@nestjs/common';
 import { AnalysisRepository } from './analysis.repository';
+import { UsersService } from '../user/user.service';
 import { AnalysisMapper } from './analysis.mapper';
+import {
+  LocationRecommendService,
+  ScoringSalesInput,
+} from '../location-recommend/location-recommend.service';
+import { RecommendRequestDto } from '../location-recommend/dto/recommend-request.dto';
+import { RegionData } from '../location-recommend/repositories/region.repository';
 import {
   AnalysisResponse,
   AnalysisError,
-  ResolvedRegion,
   RegionSearchResult,
   IndustrySearchResult,
+  ResolvedRegion,
 } from './dto/analysis.types';
+
+const INTERIOR_COST_PER_PY = 2000000; // 평당 200만원
+const AVG_STORE_SIZE = 15; // 15평
+
+interface UserPreferences extends RecommendRequestDto {
+  completed: boolean;
+}
 
 @Injectable()
 export class AnalysisService {
-  constructor(private readonly repository: AnalysisRepository) {}
+  constructor(
+    private readonly repository: AnalysisRepository,
+    private readonly usersService: UsersService,
+    private readonly locationRecommendService: LocationRecommendService,
+  ) {}
 
   async getAnalysis(
     regionCode: string,
@@ -73,6 +91,201 @@ export class AnalysisService {
         quartersToFetch: quarters,
       },
     );
+  }
+
+  async getRevenueAndCost(trdarCd: string, userId: string | undefined) {
+    let preferredIndustry: string | undefined = undefined;
+    let userPreferences: UserPreferences | null = null;
+
+    if (userId) {
+      const userInfo = await this.usersService.getOnboarding(userId);
+      if (userInfo?.industryCode) {
+        preferredIndustry = userInfo.industryCode;
+      }
+      userPreferences = userInfo as unknown as UserPreferences;
+    }
+
+    let appliedIndustryName = '전체 업종';
+    if (preferredIndustry) {
+      const name = await this.repository.getIndustryName(preferredIndustry);
+      if (name) {
+        appliedIndustryName = name;
+      }
+    }
+
+    const quarters = await this.repository.getAvailableQuarters('COMMERCIAL', [
+      trdarCd,
+    ]);
+
+    const latestQuarter =
+      quarters.length > 0 ? quarters[quarters.length - 1] : '20253';
+
+    const salesData = await this.repository.getSalesByIndustry(
+      latestQuarter,
+      trdarCd,
+      preferredIndustry, // Use user's preferred industry
+    );
+
+    let estimatedRevenue = 0;
+    const appliedIndustry =
+      userId && preferredIndustry ? preferredIndustry : 'all';
+
+    if (salesData.length > 0) {
+      const totalRevenue = Number(salesData[0].total_revenue);
+      const storeCount = Number(salesData[0].store_count);
+      if (storeCount > 0) {
+        estimatedRevenue = Math.floor(totalRevenue / storeCount / 3);
+      }
+    }
+
+    // 창업 비용 (임대료 등) 조회
+    const rentData = await this.repository.getRentData(trdarCd);
+
+    // 보증금 (없으면 DB 평균값 or 기본값 5,000만)
+    const deposit = rentData?.avg_deposit
+      ? Math.floor(rentData.avg_deposit)
+      : 50000000;
+
+    // 월세 (단위: 천원 -> 원)
+    const monthlyRent = rentData?.avg_monthly_rent
+      ? Math.floor(rentData.avg_monthly_rent * 1000)
+      : 0;
+
+    // 권리금 (없으면 0)
+    const premium = rentData?.avg_premium
+      ? Math.floor(rentData.avg_premium)
+      : 0;
+
+    // 인테리어 비용
+    const interiorCost = INTERIOR_COST_PER_PY * AVG_STORE_SIZE;
+
+    // 총 창업 비용
+    const totalStartupCost = deposit + premium + interiorCost;
+
+    // 경쟁 업체 수
+    const competitorCount = await this.repository.getStoreCount(
+      latestQuarter,
+      trdarCd,
+      preferredIndustry,
+    );
+
+    let matchingScore = 0;
+    if (userPreferences?.completed) {
+      try {
+        const benchmarks = await this.repository.getScoringBenchmarks(
+          latestQuarter,
+          preferredIndustry,
+        );
+        const regionScoreData = await this.repository.getRegionScoreData(
+          latestQuarter,
+          trdarCd,
+        );
+        const salesAgg = await this.repository.aggregateSales(
+          'COMMERCIAL',
+          [trdarCd],
+          latestQuarter,
+        );
+
+        const formattedSalesData: ScoringSalesInput = {
+          thsmon_selng_amt: Number(salesAgg._sum.thsmon_selng_amt || 0),
+          agrde_10_selng_amt: Number(salesAgg._sum.agrde_10_selng_amt || 0),
+          agrde_20_selng_amt: Number(salesAgg._sum.agrde_20_selng_amt || 0),
+          agrde_30_selng_amt: Number(salesAgg._sum.agrde_30_selng_amt || 0),
+          agrde_40_selng_amt: Number(salesAgg._sum.agrde_40_selng_amt || 0),
+          agrde_50_selng_amt: Number(salesAgg._sum.agrde_50_selng_amt || 0),
+          agrde_60_above_selng_amt: Number(
+            salesAgg._sum.agrde_60_above_selng_amt || 0,
+          ),
+          tmzon_00_06_selng_amt: Number(
+            salesAgg._sum.tmzon_00_06_selng_amt || 0,
+          ),
+          tmzon_06_11_selng_amt: Number(
+            salesAgg._sum.tmzon_06_11_selng_amt || 0,
+          ),
+          tmzon_11_14_selng_amt: Number(
+            salesAgg._sum.tmzon_11_14_selng_amt || 0,
+          ),
+          tmzon_14_17_selng_amt: Number(
+            salesAgg._sum.tmzon_14_17_selng_amt || 0,
+          ),
+          tmzon_17_21_selng_amt: Number(
+            salesAgg._sum.tmzon_17_21_selng_amt || 0,
+          ),
+          tmzon_21_24_selng_amt: Number(
+            salesAgg._sum.tmzon_21_24_selng_amt || 0,
+          ),
+        };
+
+        const formattedRegionData: RegionData = {
+          trdar_cd: trdarCd,
+          tot_flpop_co: Number(regionScoreData.tot_flpop_co || 0),
+          agrde_20_flpop_co: Number(regionScoreData.agrde_20_flpop_co || 0),
+          tot_repop_co: regionScoreData.tot_repop_co || 0,
+          tot_wrc_popltn_co: regionScoreData.tot_wrc_popltn_co || 0,
+          apt_hshld_co: regionScoreData.apt_hshld_co || 0,
+          univ_co: regionScoreData.univ_co || 0,
+          subway_statn_co: regionScoreData.subway_statn_co || 0,
+          viatr_fclty_co: regionScoreData.viatr_fclty_co || 0,
+          stayng_fclty_co: regionScoreData.stayng_fclty_co || 0,
+        };
+
+        const formattedRentData = {
+          avg_deposit: rentData?.avg_deposit ?? 0,
+          avg_rent: rentData?.avg_monthly_rent ?? 0,
+        };
+
+        const myTotalSales = Number(salesData[0]?.total_revenue || 0);
+        const areaSize = await this.repository.getAreaSize(trdarCd);
+        const myDensity = competitorCount / (areaSize || 1);
+        const industryData = {
+          sales: myTotalSales,
+          density: myDensity,
+        };
+
+        matchingScore =
+          this.locationRecommendService.calculateRecommendationScore(
+            formattedSalesData,
+            formattedRegionData,
+            formattedRentData,
+            {
+              maxFootTraffic: benchmarks.maxFootTraffic,
+              avgIndustrySales: benchmarks.avgIndustrySales,
+              avgDensity: benchmarks.avgDensity,
+            },
+            userPreferences,
+            industryData,
+          );
+      } catch (e) {
+        console.error('Scoring error detailed:', e);
+        if (e instanceof Error) {
+          console.error('Stack:', e.stack);
+        }
+        matchingScore = 0;
+      }
+    } else {
+      console.log(
+        'User preferences not completed or missing:',
+        userPreferences,
+      );
+    }
+    console.log('Final Matching Score:', matchingScore);
+
+    return {
+      estimatedRevenue,
+      startupCost: {
+        total: totalStartupCost,
+        deposit,
+        monthlyRent,
+        marketing: 0,
+        interior: interiorCost,
+        etc: 0,
+      },
+      competitorCount,
+      avgMonthlyRent: monthlyRent,
+      matchingScore,
+      appliedIndustry,
+      appliedIndustryName,
+    };
   }
 
   async searchRegions(query: string): Promise<RegionSearchResult[]> {

@@ -5,6 +5,7 @@ export type RecommendParams = {
   region: string;
   operatingTime: string;
   capital: string;
+  industryCode?: string | null; // 업종 코드 (예: CS100010) - 선택사항
 };
 
 export type ScoredLocation = {
@@ -16,6 +17,7 @@ export type ScoredLocation = {
     region: number;
     time: number;
     rent: number;
+    industry: number | null; // 업종 미선택시 null
   };
 };
 

@@ -8,10 +8,13 @@ import { formatToKoreaCurrency, formatArea, formatFloor } from './utils';
  */
 interface RealEstateContentProps {
   items: RealEstateItem[];
-  onItemClick?: (item: RealEstateItem) => void;  // 매물 클릭 시 호출될 콜백 함수
+  onItemClick?: (item: RealEstateItem) => void; // 매물 클릭 시 호출될 콜백 함수
 }
 
-export function RealEstateContent({ items, onItemClick }: RealEstateContentProps) {
+export function RealEstateContent({
+  items,
+  onItemClick,
+}: RealEstateContentProps) {
   // 【조건부 렌더링 개념】
   // 데이터가 비어있을 때 사용자에게 알려주는 UI 표시
   if (!items || items.length === 0) {
@@ -30,139 +33,153 @@ export function RealEstateContent({ items, onItemClick }: RealEstateContentProps
 
   // 【통계 계산】
   // reduce()를 사용해 배열의 평균값 계산
-  const avgDeposit = items.reduce((sum, item) => sum + (item.deposit ?? 0), 0) / items.length;
-  const avgRent = items.reduce((sum, item) => sum + (item.monthlyrent ?? 0), 0) / items.length;
-  const avgPremium = items.reduce((sum, item) => sum + (item.premium ?? 0), 0) / items.length;
-  const avgSize = items.reduce((sum, item) => sum + (item.size ?? 0), 0) / items.length;
+  const avgDeposit =
+    items.reduce((sum, item) => sum + (item.deposit ?? 0), 0) / items.length;
+  const avgRent =
+    items.reduce((sum, item) => sum + (item.monthlyrent ?? 0), 0) /
+    items.length;
+  const avgPremium =
+    items.reduce((sum, item) => sum + (item.premium ?? 0), 0) / items.length;
+  const avgSize =
+    items.reduce((sum, item) => sum + (item.size ?? 0), 0) / items.length;
 
   return (
     <div className="space-y-8">
-      <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-200">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">주변 부동산 정보</h2>
-        <div className="space-y-6">
-          {/* 평균 통계 카드 */}
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="p-6 bg-gray-50 rounded-xl">
-              <p className="text-sm text-gray-600 mb-2">평균 보증금</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {formatToKoreaCurrency(avgDeposit)}원
-              </p>
-            </div>
-            <div className="p-6 bg-gray-50 rounded-xl">
-              <p className="text-sm text-gray-600 mb-2">평균 월세</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {formatToKoreaCurrency(avgRent)}원
-              </p>
-            </div>
-            <div className="p-6 bg-gray-50 rounded-xl">
-              <p className="text-sm text-gray-600 mb-2">평균 권리금</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {formatToKoreaCurrency(avgPremium)}원
-              </p>
-            </div>
-            <div className="p-6 bg-gray-50 rounded-xl">
-              <p className="text-sm text-gray-600 mb-2">평균 면적</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {formatArea(avgSize)}
-              </p>
-            </div>
+      <div className="grid gap-4">
+        <h2 className="text-h2 font-bold text-gray-900">주변 부동산 정보</h2>
+        {/* 평균 통계 카드 */}
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="p-6 bg-gray-50 rounded-xl">
+            <p className="text-caption text-gray-600 mb-2">평균 보증금</p>
+            <p className="text-h3 font-bold text-gray-900">
+              {formatToKoreaCurrency(avgDeposit)}원
+            </p>
           </div>
+          <div className="p-6 bg-gray-50 rounded-xl">
+            <p className="text-caption text-gray-600 mb-2">평균 월세</p>
+            <p className="text-h3 font-bold text-gray-900">
+              {formatToKoreaCurrency(avgRent)}원
+            </p>
+          </div>
+          <div className="p-6 bg-gray-50 rounded-xl">
+            <p className="text-caption text-gray-600 mb-2">평균 권리금</p>
+            <p className="text-h3 font-bold text-gray-900">
+              {formatToKoreaCurrency(avgPremium)}원
+            </p>
+          </div>
+          <div className="p-6 bg-gray-50 rounded-xl">
+            <p className="text-caption text-gray-600 mb-2">평균 면적</p>
+            <p className="text-h3 font-bold text-gray-900">
+              {formatArea(avgSize)}
+            </p>
+          </div>
+        </div>
+      </div>
 
-          {/* 매물 목록 */}
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-4">
-              인근 매물 정보 ({items.length}개)
-            </h3>
-            <div className="space-y-3">
-              {/* 
+      {/* 매물 목록 */}
+      <div className="grid gap-4">
+        <h2 className="text-h2 font-bold text-gray-900">
+          인근 매물 정보 ({items.length}개)
+        </h2>
+        {/* 
                 【map() 함수 개념】
                 배열의 각 요소(item)를 JSX 요소로 변환
                 - key: React가 리스트 항목을 효율적으로 관리하기 위해 필요한 고유 식별자
                 - 각 item 객체의 속성을 사용해 UI 렌더링
               */}
-              {items.map((item) => (
-                <div
-                  key={item.id}
-                  onClick={() => onItemClick?.(item)}
-                  className="p-4 border border-gray-200 rounded-xl hover:border-blue-300 hover:bg-blue-50/50 transition-colors cursor-pointer"
-                >
-                  {/* 이미지 + 정보를 가로로 배치 */}
-                  <div className="flex items-start gap-4">
-                    {/* 미리보기 이미지 */}
-                    <div className="w-32 h-32 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 ">
-                      {item.previewphotourl ? (
-                        <Image 
-                          src={item.previewphotourl} 
-                          alt="매물 사진" 
-                          width={500}
-                          height={500}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                          </svg>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* 매물 정보 영역 */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-2xl font-bold text-gray-900">
-                          {formatToKoreaCurrency(item.deposit)} /  
-                          {" " + formatToKoreaCurrency(item.monthlyrent)}
-                        </span>
-                        <span
-                          className={`text-md px-2 py-1 rounded ${
-                            item.ismoveindate
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-gray-100 text-gray-600'
-                          }`}
-                        >
-                          {item.ismoveindate ? '즉시입주' : '협의필요'}
-                        </span>
-                      </div>
-                      
-                      <div className="text-lg text-gray-900 space-y-1">
-                        <p className="truncate">
-                          {item.title || item.name || item.roadaddress || '매물 정보'}
-                        </p>
-                        
-                        <p>
-                          {formatArea(item.size)} ·  
-                          {" " + formatFloor(item.floor, item.groundfloor)}
-                          {item.premium && item.premium > 0 && (
-                            <span> · 권리금 {formatToKoreaCurrency(item.premium)}</span>
-                          )}
-                          {item.maintenancefee && item.maintenancefee > 0 && (
-                            <span className="text-gray-900">
-                              · 관리비 {formatToKoreaCurrency(item.maintenancefee)}
-                            </span>
-                          )}                   
-                        </p>
-                        
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {item.nearsubwaystation && (
-                            <span className="text-sm font-semibold px-2 py-1 bg-blue-50 text-blue-600 rounded">
-                              {item.nearsubwaystation}
-                            </span>
-                          )}
-                          {item.businessmiddlecodename && (
-                            <span className="text-sm font-semibold px-2 py-1 bg-purple-50 text-purple-600 rounded">
-                              {item.businessmiddlecodename}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+        {items.map((item) => (
+          <div
+            key={item.id}
+            onClick={() => onItemClick?.(item)}
+            className="p-4 border border-gray-200 rounded-xl hover:border-blue-300 hover:bg-blue-50/50 transition-colors cursor-pointer"
+          >
+            {/* 이미지 + 정보를 가로로 배치 */}
+            <div className="flex items-start gap-4">
+              {/* 미리보기 이미지 */}
+              <div className="w-32 h-32 rounded-lg overflow-hidden shrink-0 bg-gray-100 ">
+                {item.previewphotourl ? (
+                  <Image
+                    src={item.previewphotourl}
+                    alt="매물 사진"
+                    width={500}
+                    height={500}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <svg
+                      className="w-10 h-10 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                      />
+                    </svg>
+                  </div>
+                )}
+              </div>
+
+              {/* 매물 정보 영역 */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-h3 font-bold text-gray-900">
+                    {formatToKoreaCurrency(item.deposit)} /
+                    {' ' + formatToKoreaCurrency(item.monthlyrent)}
+                  </span>
+                  <span
+                    className={`text-caption px-2 py-1 rounded ${
+                      item.ismoveindate
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-gray-100 text-gray-600'
+                    }`}
+                  >
+                    {item.ismoveindate ? '즉시입주' : '협의필요'}
+                  </span>
+                </div>
+
+                <div className="text-caption text-gray-900 space-y-1">
+                  <p className="truncate">
+                    {item.title || item.name || item.roadaddress || '매물 정보'}
+                  </p>
+
+                  <p>
+                    {formatArea(item.size)} ·
+                    {' ' + formatFloor(item.floor, item.groundfloor)}
+                    {item.premium && item.premium > 0 && (
+                      <span>
+                        {' '}
+                        · 권리금 {formatToKoreaCurrency(item.premium)}
+                      </span>
+                    )}
+                    {item.maintenancefee && item.maintenancefee > 0 && (
+                      <span className="text-gray-900">
+                        · 관리비 {formatToKoreaCurrency(item.maintenancefee)}
+                      </span>
+                    )}
+                  </p>
+
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {item.nearsubwaystation && (
+                      <span className="text-caption font-strong px-2 py-1 bg-blue-50 text-blue-600 rounded">
+                        {item.nearsubwaystation}
+                      </span>
+                    )}
+                    {item.businessmiddlecodename && (
+                      <span className="text-caption font-strong px-2 py-1 bg-purple-50 text-purple-600 rounded">
+                        {item.businessmiddlecodename}
+                      </span>
+                    )}
                   </div>
                 </div>
-              ))}
+              </div>
             </div>
           </div>
-        </div>
+        ))}
       </div>
     </div>
   );

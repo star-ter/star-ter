@@ -123,4 +123,17 @@ export class PopulationRepository {
 
     return result;
   }
+  // 서울시 전체 유동인구 최대값 조회 (절대평가 점수 산출용)
+  async getGlobalMaxFootTraffic(quarter: string): Promise<number> {
+    const result = await this.prisma.$queryRaw<{ max_flpop: bigint }[]>`
+      SELECT MAX(sub.sum_flpop) as max_flpop
+      FROM (
+        SELECT SUM(tot_flpop_co) as sum_flpop
+        FROM "foot_traffic_commercial"
+        WHERE stdr_yyqu_cd = ${quarter}
+        GROUP BY trdar_cd
+      ) sub
+    `;
+    return Number(result[0]?.max_flpop || 2000000);
+  }
 }

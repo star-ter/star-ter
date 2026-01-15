@@ -61,7 +61,7 @@ export function ProfilePopup({
     ? `${API_BASE_URL}/image/${encodeURIComponent(profileImageKey)}`
     : fallbackImage;
   const popupPositionClass = isSidebarOpen
-    ? 'bottom-28 left-6 w-[calc(350px-3rem)]'
+    ? 'bottom-24 left-6 w-[calc(350px-3rem)]'
     : 'bottom-20 left-6 w-[calc(350px-3rem)]';
 
   useEffect(() => {
@@ -141,28 +141,28 @@ export function ProfilePopup({
                 type="text"
                 value={nickname}
                 onChange={(e) => onNicknameChange(e.target.value)}
-                className="w-full text-lg font-black text-slate-900 bg-transparent border-none focus:ring-0 p-0 mb-0.5"
+                className="w-full text-h5 font-bold text-slate-900 bg-transparent border-none focus:ring-0 p-0"
                 placeholder="닉네임 입력"
               />
               <button
                 type="button"
                 onClick={onSaveProfile}
                 disabled={isSavingProfile || nickname.trim().length === 0}
-                className="text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors disabled:opacity-60"
+                className="text-caption font-medium text-slate-500 hover:text-slate-900 transition-colors disabled:opacity-60"
               >
                 {isSavingProfile ? '저장 중...' : '프로필 저장'}
               </button>
             </div>
           </div>
           {profileError && (
-            <p className="mt-3 text-xs text-red-500">{profileError}</p>
+            <p className="mt-3 text-tiny text-red-500">{profileError}</p>
           )}
         </div>
 
         <div className="p-2">
           {settingsGroups.map((group) => (
             <div key={group.title} className="mb-2">
-              <p className="px-3 py-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              <p className="px-3 py-2 text-tiny font-medium text-slate-400 uppercase tracking-wider">
                 {group.title}
               </p>
               {group.items.map((item) => (
@@ -175,7 +175,7 @@ export function ProfilePopup({
                     <div className="w-8 h-8 rounded-lg bg-white border border-gray-100 flex items-center justify-center text-slate-400 group-hover:text-blue-600 shadow-sm">
                       <item.icon className="w-4 h-4" />
                     </div>
-                    <span className="text-sm font-bold text-slate-700">
+                    <span className="text-caption font-strong text-slate-700">
                       {item.label}
                     </span>
                   </div>
@@ -190,13 +190,13 @@ export function ProfilePopup({
           <button
             onClick={onLogout}
             disabled={isLoggingOut}
-            className="w-full flex items-center justify-center gap-2 py-3 text-sm font-bold text-red-500 hover:bg-white hover:shadow-sm rounded-xl transition-all disabled:opacity-60"
+            className="w-full flex items-center justify-center gap-2 py-3 text-caption font-bold text-red-500 hover:bg-white hover:shadow-sm rounded-xl transition-all disabled:opacity-60"
           >
             <LogOut className="w-4 h-4" />
             {isLoggingOut ? '로그아웃 중...' : '로그아웃'}
           </button>
           {logoutError && (
-            <p className="px-2 pt-2 text-xs text-red-500">{logoutError}</p>
+            <p className="px-2 pt-2 text-caption text-red-500">{logoutError}</p>
           )}
         </div>
       </motion.div>

@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class RecommendRequestDto {
   @IsString()
@@ -16,4 +16,8 @@ export class RecommendRequestDto {
   @IsString()
   @IsNotEmpty()
   capital: string;
+
+  @IsString()
+  @IsOptional()
+  industryCode?: string; // 업종 코드 (예: CS100010) - 선택사항
 }

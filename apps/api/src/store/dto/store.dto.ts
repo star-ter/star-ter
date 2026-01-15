@@ -6,6 +6,7 @@ import {
   IsString,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { Prisma, PrismaClient } from '../../../generated/prisma/client';
 
 export const storeLevels = [
   'city',
@@ -142,4 +143,93 @@ export class ClosureRateRankingResponseDto {
   level: string;
   quarter: string;
   items: ClosureRateRankingItemDto[];
+}
+
+// ============================================
+// 내부 서비스 타입 (Prisma 관련)
+// ============================================
+
+/**
+ * Prisma Store 모델에서 조회되는 Row 타입
+ * (storeCity, storeGu, storeDong, storeBackarea, storeCommercial 공통)
+ */
+export interface StoreStatsRow {
+  stdr_yyqu_cd: string;
+  svc_induty_cd: string;
+  svc_induty_cd_nm: string;
+  stor_co: number | bigint | null;
+  similr_induty_stor_co: number | bigint | null;
+  frc_stor_co: number | bigint | null;
+  opbiz_rt: number | null;
+  opbiz_stor_co: number | bigint | null;
+  clsbiz_rt: number | null;
+  clsbiz_stor_co: number | bigint | null;
+}
+
+/**
+ * 최신 분기 조회 결과 타입
+ */
+export interface LatestQuarterRow {
+  stdr_yyqu_cd: string;
+}
+
+/**
+ * 폐업률 랭킹 Raw Query 결과 타입
+ */
+export interface ClosureRateRankingRawRow {
+  code: string;
+  name: string;
+  currentStoreCount: bigint | number;
+  previousStoreCount: bigint | number;
+  closedStoreCount: bigint | number;
+  closureRate: number;
+}
+
+/**
+ * Store 모델 Prisma Delegate 타입 (findMany, findFirst 메서드 포함)
+ */
+export type StorePrismaDelegate = {
+  findMany: <T extends Prisma.Args<unknown, 'findMany'>>(
+    args: T,
+  ) => Promise<StoreStatsRow[]>;
+  findFirst: <T extends Prisma.Args<unknown, 'findFirst'>>(
+    args: T,
+  ) => Promise<LatestQuarterRow | null>;
+};
+
+/**
+ * Store 모델 이름 타입
+ */
+export type StoreModelName =
+  | 'storeCity'
+  | 'storeGu'
+  | 'storeDong'
+  | 'storeBackarea'
+  | 'storeCommercial';
+
+/**
+ * 모델 설정 타입
+ */
+export interface ModelConfig {
+  codeField: string;
+  nameField: string;
+  modelName: StoreModelName;
+}
+
+/**
+ * Prisma 클라이언트에서 Store 모델 delegate를 타입 안전하게 가져오는 헬퍼 함수
+ */
+export function getStoreDelegate(
+  prisma: PrismaClient,
+  modelName: StoreModelName,
+): StorePrismaDelegate {
+  const delegates: Record<StoreModelName, StorePrismaDelegate> = {
+    storeCity: prisma.storeCity as unknown as StorePrismaDelegate,
+    storeGu: prisma.storeGu as unknown as StorePrismaDelegate,
+    storeDong: prisma.storeDong as unknown as StorePrismaDelegate,
+    storeBackarea: prisma.storeBackarea as unknown as StorePrismaDelegate,
+    storeCommercial: prisma.storeCommercial as unknown as StorePrismaDelegate,
+  };
+
+  return delegates[modelName];
 }

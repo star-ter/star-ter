@@ -1,8 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RevenueRepository } from './revenue.repository';
@@ -21,6 +16,10 @@ import {
   RevenueRow,
   RevenueRankingRow,
   PrismaModel,
+  GrowthRankingRawRow,
+  AvgSalesRankingRawRow,
+  RevenuePrevGroupRow,
+  RevenueRankingItem,
 } from './dto/service.types';
 
 @Injectable()
@@ -158,7 +157,7 @@ export class RevenueService {
       amount: Number(row._sum.thsmon_selng_amt || 0),
       count: Number(row._sum.thsmon_selng_co || 0),
       changeType: undefined as string | undefined,
-    }));
+    })) as RevenueRankingItem[];
 
     if (level === 'gu' || level === 'dong') {
       const codes = items.map((item) => item.code);
@@ -305,7 +304,7 @@ export class RevenueService {
         item.changeType = changeMap.get(item.code);
       });
 
-      const prevWhere: Record<string, any> = {
+      const prevWhere: Record<string, unknown> = {
         stdr_yyqu_cd: prevQ,
         [modelConfig.codeField]: { in: codes },
       };
@@ -316,23 +315,24 @@ export class RevenueService {
         prevWhere.svc_induty_cd = industryCode;
       }
 
-      const prevGroupByArgs: any = {
+      const prevGroupByArgs = {
         by: [modelConfig.codeField],
         where: prevWhere,
         _sum: { thsmon_selng_amt: true },
       };
 
       try {
-        const prevRows = await client.groupBy(prevGroupByArgs);
+        const prevRows = (await client.groupBy(
+          prevGroupByArgs,
+        )) as RevenuePrevGroupRow[];
         const prevMap = new Map<string, number>();
         prevRows.forEach((row) => {
-          const codeVal = row[modelConfig.codeField] as unknown as string;
-          const sumVal = (row._sum as Record<string, unknown> | undefined)
-            ?.thsmon_selng_amt;
+          const codeVal = row[modelConfig.codeField] as string;
+          const sumVal = row._sum?.thsmon_selng_amt;
           prevMap.set(codeVal, Number(sumVal || 0));
         });
 
-        items.forEach((item: any) => {
+        items.forEach((item) => {
           const prevAmount = prevMap.get(item.code) || 0;
           if (prevAmount > 0) {
             item.fluctuationRate = Number(
@@ -366,7 +366,7 @@ export class RevenueService {
       quarter ||
       (await this.revenueRepository.getLatestQuarter(modelConfig.modelName));
 
-    const whereBase: Record<string, any> = {
+    const whereBase: Record<string, unknown> = {
       stdr_yyqu_cd: resolvedQuarter,
       [modelConfig.codeField]: code,
     };
@@ -401,7 +401,7 @@ export class RevenueService {
     ]);
 
     // 3. 결과 가공: Top Sectors (Bar Chart)
-    const sectors = (topSectors as any[]).map((s) => ({
+    const sectors = topSectors.map((s) => ({
       name: s.svc_induty_cd_nm,
       value: Number(s.thsmon_selng_amt || 0),
     }));
@@ -450,7 +450,7 @@ export class RevenueService {
     }
 
     // 6. 결과 가공: Growth (Area Chart)
-    const growthMetrics = (growth as any[])
+    const growthMetrics = growth
       .map((g) => ({
         period: g.stdr_yyqu_cd,
         amount: Number(g._sum.thsmon_selng_amt || 0),
@@ -462,8 +462,8 @@ export class RevenueService {
     let saturation: AnalyticsSaturationDto[] = [];
 
     if (topStores && areaData) {
-      const areaSize = Number((areaData as any)?.relm_ar || 1);
-      saturation = (topStores as any[]).map((store) => {
+      const areaSize = Number(areaData?.relm_ar || 1);
+      saturation = topStores.map((store) => {
         const count = Number(store.stor_co || 0);
         const density = count / areaSize;
 
@@ -529,7 +529,9 @@ export class RevenueService {
       throw new BadRequestException(`Invalid level: ${level}`);
     }
 
-    const client = (this.prisma as any)[modelConfig.modelName] as PrismaModel;
+    const client = (this.prisma as unknown as Record<string, PrismaModel>)[
+      modelConfig.modelName
+    ];
     const currentQ = await this.getLatestQuarter(client, modelConfig.modelName);
     const prevQ = this.getPreviousQuarter(currentQ);
 
@@ -589,7 +591,8 @@ export class RevenueService {
     `;
 
     try {
-      const results: any[] = await this.prisma.$queryRawUnsafe(query);
+      const results =
+        await this.prisma.$queryRawUnsafe<GrowthRankingRawRow[]>(query);
 
       const items = results.map((row) => ({
         code: row.code,
@@ -630,7 +633,9 @@ export class RevenueService {
     const storeTable = `store_${level}`;
     const changeTable = `commercial_change_${level}`;
 
-    const client = (this.prisma as any)[modelName] as PrismaModel;
+    const client = (this.prisma as unknown as Record<string, PrismaModel>)[
+      modelName
+    ];
     const currentQ = await this.getLatestQuarter(client, modelName);
     const prevQ = this.getPreviousQuarter(currentQ);
 
@@ -725,7 +730,8 @@ export class RevenueService {
     `;
 
     try {
-      const results: any[] = await this.prisma.$queryRawUnsafe(query);
+      const results =
+        await this.prisma.$queryRawUnsafe<AvgSalesRankingRawRow[]>(query);
 
       const items = results.map((row) => ({
         code: row.code,

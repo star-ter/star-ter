@@ -12,8 +12,6 @@ export class AiToolsService {
     switch (toolName) {
       case 'get_store':
         return this.toolsRepository.getCommercialSummary(args);
-      case 'get_foot_traffic':
-        return this.toolsRepository.getFootTrafficSummary(args);
       case 'get_resident_population':
         return this.toolsRepository.getResidentPopulationSummary(args);
       case 'get_working_population':
@@ -24,8 +22,6 @@ export class AiToolsService {
         return this.toolsRepository.getStoreTopIndustries(args);
       case 'get_income_consumption':
         return this.toolsRepository.getIncomeConsumptionSummary(args);
-      case 'get_commercial_change':
-        return this.toolsRepository.getCommercialChangeSummary(args);
       case 'compare_commercial_areas':
         return this.toolsRepository.compareCommercialAreas(args);
       case 'get_industry_commercial_summary':
@@ -35,7 +31,29 @@ export class AiToolsService {
       case 'compare_commercial_by_industry':
         return this.toolsRepository.compareCommercialByIndustry(args);
       case 'recommend_real_estate':
-        return this.toolsRepository.getRecommendRealEstate(args);
+        return this.toolsRepository.recommendRealEstate(args);
+      case 'get_foot_traffic_timeseries':
+        return this.toolsRepository.getFootTrafficTimeSeries(args);
+      case 'get_foot_traffic_detail':
+        return this.toolsRepository.getFootTrafficDetail(args);
+      case 'get_competition_analysis':
+        return this.toolsRepository.getCompetitionAnalysis(args);
+      case 'get_commercial_risk':
+        return this.toolsRepository.getCommercialRisk(args);
+      case 'estimate_revenue_and_cost':
+        return this.toolsRepository.estimateRevenueAndCost(args);
+      case 'calc_break_even':
+        return this.toolsRepository.calcBreakEven(args);
+      case 'predict_survival_rate':
+        return this.toolsRepository.predictSurvivalRate(args);
+      case 'get_funding_programs':
+        return this.toolsRepository.getFundingPrograms(args);
+      case 'request_report_generation':
+        return this.toolsRepository.requestReportGeneration(args);
+      case 'calc_break_even_with_listing':
+        return this.toolsRepository.calcBreakEvenWithListing(args);
+      case 'find_similar_commercial_areas':
+        return this.toolsRepository.findSimilarCommercialAreas(args);
       default:
         return undefined;
     }

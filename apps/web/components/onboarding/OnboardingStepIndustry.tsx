@@ -19,10 +19,10 @@ export function OnboardingStepIndustry({
   return (
     <div className="space-y-12">
       <div>
-        <h1 className="text-5xl font-semibold text-gray-900 mb-4">
+        <h1 className="text-4xl font-bold text-gray-900 mb-2">
           어떤 업종을 고려하고 계신가요?
         </h1>
-        <p className="text-gray-600 text-xl">
+        <p className="text-gray-500 text-lg">
           대분류를 선택한 뒤 소분류를 골라주세요
         </p>
       </div>

@@ -69,67 +69,86 @@ export function TrafficContent({ footTraffic }: TrafficContentProps) {
 
   return (
     <div className="space-y-8">
-      {/* =====================================================
+      <div className="grid gap-4">
+        <h2 className="text-h2 font-bold text-slate-900">유동인구 분석 결과</h2>
+        {/* =====================================================
           상단 요약 카드 3개
           - 일일 유동인구
           - 피크 시간대
           - 성별 비율
           ===================================================== */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* 카드 1: 일일 유동인구 */}
-        <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
-              <Users className="w-4 h-4 text-blue-950" />
-            </div>
-            <span className="text-lg text-blue-900 font-bold">일일 유동인구</span>
-          </div>
-          <p className="text-3xl font-bold text-blue-950">
-            {formatPopulation(footTraffic.dailyTotal)}
-          </p>
-        </div>
-
-        {/* 카드 2: 피크 시간대 */}
-        <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
-              <Clock className="w-4 h-4 text-blue-950" />
-            </div>
-            <span className="text-lg text-blue-900 font-bold">피크 시간대</span>
-          </div>
-          <p className="text-3xl font-bold text-blue-950">
-            {footTraffic.peakTimeSlot}
-          </p>
-        </div>
-
-        {/* 카드 3: 성별 비율 */}
-        <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
-              <Calendar className="w-4 h-4 text-blue-950" />
-            </div>
-            <span className="text-lg text-blue-900 font-bold">성별 비율</span>
-          </div>
-          {/* 성별 비율 바 */}
-          <div className="flex items-center gap-3">
-            <div className="flex-1">
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-blue-600 font-bold text-lg">남성</span>
-                <span className="text-rose-500 font-bold text-lg">여성</span>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* 카드 1: 일일 유동인구 */}
+          <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
+                <Users className="w-4 h-4 text-blue-950" />
               </div>
-              <div className="h-3 bg-gray-100 rounded-full overflow-hidden flex">
-                <div
-                  className="h-full bg-blue-500 transition-all duration-700"
-                  style={{ width: `${footTraffic.genderRatio.male}%` }}
-                />
-                <div
-                  className="h-full bg-rose-400 transition-all duration-700"
-                  style={{ width: `${footTraffic.genderRatio.female}%` }}
-                />
+              <span className="text-body text-blue-900 font-bold">
+                일일 유동인구
+              </span>
+            </div>
+            <p className="text-h2 font-bold text-blue-950">
+              {formatPopulation(footTraffic.dailyTotal)}
+            </p>
+            <div className="flex justify-between text-caption text-gray-500 mt-1 font-strong">
+              <span>설명이 들어가면 좋지 않을까?</span>
+            </div>
+          </div>
+
+          {/* 카드 2: 피크 시간대 */}
+          <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
+                <Clock className="w-4 h-4 text-blue-950" />
               </div>
-              <div className="flex justify-between text-md text-blue-950 mt-1 font-semibold">
-                <span>{footTraffic.genderRatio.male}%</span>
-                <span>{footTraffic.genderRatio.female}%</span>
+              <span className="text-body text-blue-900 font-bold">
+                피크 시간대
+              </span>
+            </div>
+            <p className="text-h2 font-bold text-blue-950">
+              {footTraffic.peakTimeSlot}
+            </p>
+            <div className="flex justify-between text-caption text-gray-500 mt-1 font-strong">
+              <span>설명이 들어가면 좋지 않을까?</span>
+            </div>
+          </div>
+
+          {/* 카드 3: 성별 비율 */}
+          <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
+                <Calendar className="w-4 h-4 text-blue-950" />
+              </div>
+              <span className="text-body text-blue-900 font-bold">
+                성별 비율
+              </span>
+            </div>
+            {/* 성별 비율 바 */}
+            <div className="flex items-center gap-3">
+              <div className="flex-1">
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-blue-600 font-medium text-caption">
+                    남성
+                  </span>
+                  <span className="text-rose-500 font-medium text-caption">
+                    여성
+                  </span>
+                </div>
+                <div className="h-2 bg-gray-100 rounded-full overflow-hidden flex">
+                  <div
+                    className="h-full bg-blue-500 transition-all duration-700"
+                    style={{ width: `${footTraffic.genderRatio.male}%` }}
+                  />
+                  <div
+                    className="h-full bg-rose-400 transition-all duration-700"
+                    style={{ width: `${footTraffic.genderRatio.female}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-caption text-blue-950 mt-1 font-semibold">
+                  <span>{footTraffic.genderRatio.male}%</span>
+                  <span>{footTraffic.genderRatio.female}%</span>
+                </div>
               </div>
             </div>
           </div>
@@ -139,119 +158,154 @@ export function TrafficContent({ footTraffic }: TrafficContentProps) {
       {/* =====================================================
           시간대별 방문 비중 상세 (라인 차트)
           ===================================================== */}
-      <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-200">
-        <div className="flex items-center justify-between mb-6 mb-10">
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            시간대별 방문 비중 상세
-          </h2>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <span className="w-3 h-3 rounded-full bg-blue-950" />
-            방문 비중(%)
-          </div>
-        </div>
-
-        {/* 라인 차트 - SVG (비율 유지) + HTML 라벨 */}
-        <div className="relative">
-          {/* Y축 라벨 (HTML) */}
-          <div className="absolute left-0 top-0 h-44 w-8 flex flex-col justify-between text-right text-lg text-gray-700 pr-2">
-            <span>{Math.round(maxTimeRatio)}%</span>
-            <span>{Math.round(maxTimeRatio / 2)}%</span>
-            <span>0%</span>
+      <div className="grid gap-4">
+        <h2 className="text-h2 font-bold text-slate-900">
+          시간대별 방문 비중 상세
+        </h2>
+        <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-200">
+          <div className="flex items-center mb-10">
+            <div className="flex items-center gap-2 text-caption text-gray-500">
+              <span className="w-3 h-3 rounded-full bg-blue-950" />
+              방문 비중(%)
+            </div>
           </div>
 
-          {/* 차트 영역 - 라벨 공간 적절히 확보 */}
-          <div className="ml-10 relative h-44 mb-12">
-            {/* SVG 차트 (라인 + 쉐이딩) */}
-            <svg
-              className="w-full h-full absolute inset-0"
-              viewBox="0 0 540 160"
-              preserveAspectRatio="none"
-              style={{ overflow: 'visible' }}
-            >
-              {/* 그리드 라인 */}
-              <line x1="20" y1="0" x2="520" y2="0" stroke="#f3f4f6" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-              <line x1="20" y1="80" x2="520" y2="80" stroke="#f3f4f6" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-              <line x1="20" y1="160" x2="520" y2="160" stroke="#e5e7eb" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+          {/* 라인 차트 - SVG (비율 유지) + HTML 라벨 */}
+          <div className="relative">
+            {/* Y축 라벨 (HTML) */}
+            <div className="absolute left-0 top-0 h-44 w-8 flex flex-col justify-between text-right text-body text-gray-700 pr-2">
+              <span>{Math.round(maxTimeRatio)}%</span>
+              <span>{Math.round(maxTimeRatio / 2)}%</span>
+              <span>0%</span>
+            </div>
 
-              <defs>
-                <linearGradient id="lineGradient" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor="#172554" stopOpacity="0.15" />
-                  <stop offset="100%" stopColor="#172554" stopOpacity="0.02" />
-                </linearGradient>
-              </defs>
+            {/* 차트 영역 - 라벨 공간 적절히 확보 */}
+            <div className="ml-10 relative h-44 mb-12">
+              {/* SVG 차트 (라인 + 쉐이딩) */}
+              <svg
+                className="w-full h-full absolute inset-0"
+                viewBox="0 0 540 160"
+                preserveAspectRatio="none"
+                style={{ overflow: 'visible' }}
+              >
+                {/* 그리드 라인 */}
+                <line
+                  x1="20"
+                  y1="0"
+                  x2="520"
+                  y2="0"
+                  stroke="#f3f4f6"
+                  strokeWidth="1"
+                  vectorEffect="non-scaling-stroke"
+                />
+                <line
+                  x1="20"
+                  y1="80"
+                  x2="520"
+                  y2="80"
+                  stroke="#f3f4f6"
+                  strokeWidth="1"
+                  vectorEffect="non-scaling-stroke"
+                />
+                <line
+                  x1="20"
+                  y1="160"
+                  x2="520"
+                  y2="160"
+                  stroke="#e5e7eb"
+                  strokeWidth="1"
+                  vectorEffect="non-scaling-stroke"
+                />
 
-              {/* 영역 채우기 */}
-              <path
-                d={`
+                <defs>
+                  <linearGradient id="lineGradient" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="#172554" stopOpacity="0.15" />
+                    <stop
+                      offset="100%"
+                      stopColor="#172554"
+                      stopOpacity="0.02"
+                    />
+                  </linearGradient>
+                </defs>
+
+                {/* 영역 채우기 */}
+                <path
+                  d={`
                   M 20 ${160 - (timeData[0]?.ratio / maxTimeRatio) * 140}
-                  ${timeData.map((d, i) => {
-                    const x = 20 + (i / (timeData.length - 1)) * 500;
-                    const y = 160 - (d.ratio / maxTimeRatio) * 140;
-                    return `L ${x} ${y}`;
-                  }).join(' ')}
+                  ${timeData
+                    .map((d, i) => {
+                      const x = 20 + (i / (timeData.length - 1)) * 500;
+                      const y = 160 - (d.ratio / maxTimeRatio) * 140;
+                      return `L ${x} ${y}`;
+                    })
+                    .join(' ')}
                   L 520 160
                   L 20 160
                   Z
                 `}
-                fill="url(#lineGradient)"
-              />
-
-              {/* 라인 */}
-              <polyline
-                points={timeData
-                  .map((d, i) => {
-                    const x = 20 + (i / (timeData.length - 1)) * 500;
-                    const y = 160 - (d.ratio / maxTimeRatio) * 140;
-                    return `${x},${y}`;
-                  })
-                  .join(' ')}
-                fill="none"
-                stroke="#172554"
-                strokeWidth="7"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                vectorEffect="non-scaling-stroke"
-              />
-            </svg>
-
-            {/* HTML 데이터 포인트 (찌그러짐 방지) */}
-            {timeData.map((d, i) => {
-              // X 위치: SVG 좌표 20~520 (전체 540)를 퍼센트로 변환
-              const leftPercent = ((20 + (i / (timeData.length - 1)) * 500) / 540) * 100;
-              // Y 위치: 높이 140 (전체 160)를 퍼센트로 변환
-              const bottomPercent = (((d.ratio / maxTimeRatio) * 140) / 160) * 100;
-
-              return (
-                <div
-                  key={i}
-                  className="absolute w-6 h-6 bg-white border-[5px] border-blue-950 rounded-full z-10 box-border"
-                  style={{
-                    left: `${leftPercent}%`,
-                    bottom: `${bottomPercent}%`,
-                    transform: 'translate(-50%, 50%)', // 중앙 정렬
-                  }}
+                  fill="url(#lineGradient)"
                 />
-              );
-            })}
 
-            {/* X축 라벨 (HTML) - 포인트 위치와 정확히 일치, 일직선 배치 */}
-            <div className="absolute top-full left-0 right-0 h-10 mt-3">
+                {/* 라인 */}
+                <polyline
+                  points={timeData
+                    .map((d, i) => {
+                      const x = 20 + (i / (timeData.length - 1)) * 500;
+                      const y = 160 - (d.ratio / maxTimeRatio) * 140;
+                      return `${x},${y}`;
+                    })
+                    .join(' ')}
+                  fill="none"
+                  stroke="#172554"
+                  strokeWidth="7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  vectorEffect="non-scaling-stroke"
+                />
+              </svg>
+
+              {/* HTML 데이터 포인트 (찌그러짐 방지) */}
               {timeData.map((d, i) => {
-                const leftPercent = ((20 + (i / (timeData.length - 1)) * 500) / 540) * 100;
-                
+                // X 위치: SVG 좌표 20~520 (전체 540)를 퍼센트로 변환
+                const leftPercent =
+                  ((20 + (i / (timeData.length - 1)) * 500) / 540) * 100;
+                // Y 위치: 높이 140 (전체 160)를 퍼센트로 변환
+                const bottomPercent =
+                  (((d.ratio / maxTimeRatio) * 140) / 160) * 100;
+
                 return (
-                  <span
-                    key={d.timeRange}
-                    className="absolute text-center text-xl font-semibold text-gray-600 whitespace-nowrap"
+                  <div
+                    key={i}
+                    className="absolute w-6 h-6 bg-white border-[5px] border-blue-950 rounded-full z-10 box-border"
                     style={{
                       left: `${leftPercent}%`,
-                      transform: 'translateX(-50%)', // top 제거하여 일직선 유지
+                      bottom: `${bottomPercent}%`,
+                      transform: 'translate(-50%, 50%)', // 중앙 정렬
                     }}
-                  >
-                    {d.timeRange.replace('시', '')}
-                  </span>
+                  />
                 );
               })}
+
+              {/* X축 라벨 (HTML) - 포인트 위치와 정확히 일치, 일직선 배치 */}
+              <div className="absolute top-full left-0 right-0 h-10 mt-3">
+                {timeData.map((d, i) => {
+                  const leftPercent =
+                    ((20 + (i / (timeData.length - 1)) * 500) / 540) * 100;
+
+                  return (
+                    <span
+                      key={d.timeRange}
+                      className="absolute text-center text-body font-strong text-gray-600 whitespace-nowrap"
+                      style={{
+                        left: `${leftPercent}%`,
+                        transform: 'translateX(-50%)', // top 제거하여 일직선 유지
+                      }}
+                    >
+                      {d.timeRange.replace('시', '')}
+                    </span>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
@@ -260,54 +314,56 @@ export function TrafficContent({ footTraffic }: TrafficContentProps) {
       {/* =====================================================
           연령대별 방문 비중 상세 (막대 차트)
           ===================================================== */}
-      <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-200">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            연령대별 방문 비중 상세
-          </h2>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <Users className="w-4 h-4" />
-            방문 비율 (%)
+      <div className="grid gap-4">
+        <h2 className="text-h2 font-bold text-slate-900">
+          연령대별 방문 비중 상세
+        </h2>
+        <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-200">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2 text-caption text-gray-500">
+              <Users className="w-4 h-4" />
+              방문 비율 (%)
+            </div>
           </div>
-        </div>
 
-        {/* 막대 차트 */}
-        <div className="flex items-end justify-around gap-6 h-56 px-4 mt-10">
-          {ageData.map((d) => {
-            // 가장 높은 비율인 연령대는 빨간색(rose)으로 하이라이트
-            const isMax = d.ratio === maxAgeRatio;
-            const barColor = isMax ? 'bg-rose-400' : 'bg-blue-400';
-            const barHeight = (d.ratio / maxAgeRatio) * 100;
+          {/* 막대 차트 */}
+          <div className="flex items-end justify-around gap-6 h-56 px-4 mt-10">
+            {ageData.map((d) => {
+              // 가장 높은 비율인 연령대는 빨간색(rose)으로 하이라이트
+              const isMax = d.ratio === maxAgeRatio;
+              const barColor = isMax ? 'bg-rose-400' : 'bg-blue-400';
+              const barHeight = (d.ratio / maxAgeRatio) * 100;
 
-            return (
-              <div
-                key={d.ageGroup}
-                className="flex flex-col items-center flex-1"
-              >
-                {/* 비율 텍스트 */}
-                <span
-                  className={`text-md font-bold mb-2 ${isMax ? 'text-rose-500' : 'text-blue-950'}`}
+              return (
+                <div
+                  key={d.ageGroup}
+                  className="flex flex-col items-center flex-1"
                 >
-                  {d.ratio}%
-                </span>
+                  {/* 비율 텍스트 */}
+                  <span
+                    className={`text-body font-strong mb-2 ${isMax ? 'text-rose-500' : 'text-blue-950'}`}
+                  >
+                    {d.ratio}%
+                  </span>
 
-                {/* 막대 */}
-                <div className="w-full max-w-16 h-40 bg-gray-100 rounded-t-xl relative flex items-end">
-                  <div
-                    className={`w-full ${barColor} rounded-t-xl transition-all duration-700`}
-                    style={{ height: `${barHeight}%` }}
-                  />
+                  {/* 막대 */}
+                  <div className="w-full max-w-16 h-40 bg-gray-100 rounded-t-xl relative flex items-end">
+                    <div
+                      className={`w-full ${barColor} rounded-t-xl transition-all duration-700`}
+                      style={{ height: `${barHeight}%` }}
+                    />
+                  </div>
+
+                  {/* 연령대 라벨 */}
+                  <span
+                    className={`text-body mt-3 ${isMax ? 'font-strong text-rose-500' : 'font-bold text-blue-950'}`}
+                  >
+                    {d.ageGroup}
+                  </span>
                 </div>
-
-                {/* 연령대 라벨 */}
-                <span
-                  className={`text-xl mt-3 ${isMax ? 'font-bold text-rose-500' : 'font-semibold text-blue-950'}`}
-                >
-                  {d.ageGroup}
-                </span>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>

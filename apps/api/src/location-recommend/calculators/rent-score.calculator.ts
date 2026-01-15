@@ -9,6 +9,15 @@ const CAPITAL_MAP: Record<string, number> = {
   '200M+': 300000000,
 };
 
+const CAPITAL_LABEL_MAP: Record<string, string> = {
+  '10M': '1천만원',
+  '30M': '3천만원',
+  '50M': '5천만원',
+  '100M': '1억원',
+  '200M': '2억원',
+  '200M+': '2억원 이상',
+};
+
 @Injectable()
 export class RentScoreCalculator {
   /**
@@ -26,7 +35,6 @@ export class RentScoreCalculator {
     capital: string,
     avgDeposit: number | null,
     avgRent: number | null,
-    avgPremim: number | null,
   ): number {
     const capitalAmount = CAPITAL_MAP[capital] || 50000000;
 
@@ -36,10 +44,10 @@ export class RentScoreCalculator {
     }
 
     // 천원 → 원 단위 변환
+    // 1년 비용 기준: 보증금 + (월세 × 12개월)
     const deposit = (avgDeposit || 0) * 1000;
-    const rent = (avgRent || 0) * 6 * 1000;
-    const premium = (avgPremim || 0) * 1000;
-    const totalCost = deposit + rent + premium;
+    const rent = (avgRent || 0) * 12 * 1000;
+    const totalCost = deposit + rent;
 
     // 데이터 이상 방어
     if (totalCost <= 0) {
@@ -56,5 +64,63 @@ export class RentScoreCalculator {
 
     // 최소 0.1 보장
     return Math.max(0.1, Math.min(1, ratio));
+  }
+
+  /**
+   * 점수 + 설명 함께 반환
+   */
+  calculateWithExplanation(
+    capital: string,
+    avgDeposit: number | null,
+    avgRent: number | null,
+  ): { score: number; explanation: string } {
+    const capitalLabel = CAPITAL_LABEL_MAP[capital] || capital;
+    const capitalAmount = CAPITAL_MAP[capital] || 50000000;
+
+    if (avgDeposit === null && avgRent === null) {
+      return {
+        score: 0,
+        explanation: `임대 매물 데이터가 없습니다`,
+      };
+    }
+
+    const deposit = (avgDeposit || 0) * 1000;
+    const rent = (avgRent || 0) * 1000;
+    const monthlyRent = rent;
+    const totalCost = deposit + rent * 12;
+
+    if (totalCost <= 0) {
+      return {
+        score: 0,
+        explanation: `비용 정보를 확인할 수 없습니다`,
+      };
+    }
+
+    const score =
+      totalCost <= capitalAmount
+        ? 1.0
+        : Math.max(0.1, Math.min(1, capitalAmount / totalCost));
+
+    const formatMoney = (amount: number) => {
+      if (amount >= 100000000) {
+        return `${(amount / 100000000).toFixed(1)}억원`;
+      }
+      return `${Math.floor(amount / 10000).toLocaleString()}만원`;
+    };
+
+    const depositStr = formatMoney(deposit);
+    const rentStr = formatMoney(monthlyRent);
+
+    if (score >= 1) {
+      return {
+        score,
+        explanation: `보증금 ${depositStr}, 월세 ${rentStr} (예산 ${capitalLabel} 이내)`,
+      };
+    }
+
+    return {
+      score,
+      explanation: `보증금 ${depositStr}, 월세 ${rentStr} (예산 ${capitalLabel} 초과)`,
+    };
   }
 }

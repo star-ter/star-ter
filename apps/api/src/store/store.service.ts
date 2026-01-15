@@ -7,18 +7,12 @@ import {
   StoreResponseDto,
   GetStoreLocationsQueryDto,
   StoreLocationsResponseDto,
+  ModelConfig,
+  StoreStatsRow,
+  ClosureRateRankingRawRow,
+  StorePrismaDelegate,
+  getStoreDelegate,
 } from './dto/store.dto';
-
-type ModelConfig = {
-  codeField: string;
-  nameField: string;
-  modelName:
-    | 'storeCity'
-    | 'storeGu'
-    | 'storeDong'
-    | 'storeBackarea'
-    | 'storeCommercial';
-};
 
 @Injectable()
 export class StoreService {
@@ -64,13 +58,9 @@ export class StoreService {
       throw new BadRequestException(`지원하지 않는 레벨: ${level}`);
     }
 
-    const client = (this.prisma as any)[modelConfig.modelName];
-    if (!client) {
-      throw new BadRequestException('Prisma 모델을 찾을 수 없습니다.');
-    }
+    const client = getStoreDelegate(this.prisma, modelConfig.modelName);
 
-    const resolvedQuarter =
-      quarter || (await this.getLatestQuarter(client, modelConfig.modelName));
+    const resolvedQuarter = quarter || (await this.getLatestQuarter(client));
 
     const where: Record<string, string> = {
       stdr_yyqu_cd: resolvedQuarter,
@@ -100,7 +90,7 @@ export class StoreService {
       level,
       code,
       quarter: resolvedQuarter,
-      items: rows.map((row: any) => ({
+      items: rows.map((row: StoreStatsRow) => ({
         industryCode: row.svc_induty_cd,
         industryName: row.svc_induty_cd_nm,
         storeCount: Number(row.stor_co || 0),
@@ -190,8 +180,8 @@ export class StoreService {
     }[];
   }> {
     const modelConfig = this.modelMap['commercial'];
-    const client = (this.prisma as any)[modelConfig.modelName];
-    const currentQ = await this.getLatestQuarter(client, modelConfig.modelName);
+    const client = getStoreDelegate(this.prisma, modelConfig.modelName);
+    const currentQ = await this.getLatestQuarter(client);
     const prevQ = this.getPreviousQuarter(currentQ);
 
     // Raw Query로 최적화
@@ -251,7 +241,8 @@ export class StoreService {
       ${limitCondition};
     `;
 
-    const results: any[] = await this.prisma.$queryRawUnsafe(query);
+    const results =
+      await this.prisma.$queryRawUnsafe<ClosureRateRankingRawRow[]>(query);
 
     const items = results.map((row) => {
       const closureRate = Number(row.closureRate.toFixed(1));
@@ -282,20 +273,17 @@ export class StoreService {
     return `${year}${q - 1}`;
   }
 
-  private async getLatestQuarter(
-    client: any,
-    modelName: string,
-  ): Promise<string> {
+  private async getLatestQuarter(client: StorePrismaDelegate): Promise<string> {
     const latest = await client.findFirst({
       select: { stdr_yyqu_cd: true },
       orderBy: { stdr_yyqu_cd: 'desc' },
     });
 
     if (!latest?.stdr_yyqu_cd) {
-      this.logger.warn(`[${modelName}] 기준 분기 데이터가 없습니다.`);
+      this.logger.warn('기준 분기 데이터가 없습니다.');
       throw new BadRequestException('점포 데이터가 없습니다.');
     }
 
-    return latest.stdr_yyqu_cd as string;
+    return latest.stdr_yyqu_cd;
   }
 }

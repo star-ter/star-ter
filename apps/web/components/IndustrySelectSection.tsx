@@ -33,16 +33,16 @@ export function IndustrySelectSection({
   );
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[260px_minmax(0,1fr)]">
-      <div className="flex gap-3 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible">
+    <div className="grid gap-[3vw] lg:grid-cols-[clamp(200px,20vw,280px)_minmax(0,1fr)]">
+      <div className="flex gap-[1vw] overflow-x-auto pb-[1vh] lg:flex-col lg:overflow-visible">
         {MACRO_OPTIONS.map((macro) => (
           <button
             key={macro.code}
             onClick={() => onSelectMacro(macro.code)}
-            className={`min-w-[140px] whitespace-nowrap rounded-2xl border-2 px-6 py-4 text-lg font-semibold transition-all lg:w-full ${
+            className={`min-w-35 whitespace-nowrap rounded-2xl border-2 px-[1.5vw] py-[1.2vh] text-[clamp(1rem,1.5vw,1.125rem)] font-bold transition-all lg:w-full ${
               selectedMacro === macro.code
                 ? 'border-gray-900 bg-gray-50 text-gray-900 shadow-lg'
-                : 'border-gray-300 bg-white text-gray-700 hover:border-gray-900 hover:shadow-lg'
+                : 'border-gray-300 bg-white text-gray-700 hover:border-gray-900 hover:shadow-lg opacity-40 grayscale-[0.5]'
             }`}
           >
             {macro.name}
@@ -50,43 +50,47 @@ export function IndustrySelectSection({
         ))}
       </div>
 
-      <section className="flex h-[560px] flex-col rounded-2xl border-2 border-gray-300 bg-white p-8">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <section className="flex h-[clamp(400px,55vh,800px)] flex-col rounded-2xl border-2 border-gray-300 bg-white p-[clamp(1.5rem,3vw,2.5rem)]">
+        <div className="flex flex-wrap items-center justify-between gap-[1vw]">
           <div>
-            <h2 className="text-2xl font-semibold text-gray-900">
+            <h2 className="text-[clamp(1.25rem,2.5vw,1.75rem)] font-bold text-gray-900">
               {selectedMacroName} 소분류
             </h2>
-            <p className="text-lg text-gray-600">원하는 업종을 선택하세요</p>
+            <p className="text-[clamp(0.875rem,1.8vw,1.125rem)] text-gray-600">
+              원하는 업종을 선택하세요
+            </p>
           </div>
-          <span className="text-sm text-gray-500">
+          <span className="text-[clamp(0.75rem,1.2vw,0.875rem)] text-gray-500">
             {selectedIndustries.length}개
           </span>
         </div>
 
         <div className="relative mt-8 flex-1 min-h-0">
-          <div className="grid h-full content-start items-start gap-6 overflow-y-auto pr-2 pb-6 pt-2 sm:grid-cols-2 xl:grid-cols-3">
-          {selectedIndustries.map((industry) => (
-            <button
-              key={industry.code}
-              onClick={() =>
-                onSelectIndustryCode(
-                  selectedIndustryCode === industry.code ? null : industry.code,
-                )
-              }
-              className={`group rounded-2xl border-2 px-6 py-5 text-left transition-all hover:border-gray-900 hover:shadow-lg ${
-                selectedIndustryCode === industry.code
-                  ? 'border-gray-900 bg-gray-50 shadow-lg'
+          <div className="grid h-full content-start items-start gap-5 overflow-y-auto pr-2 pb-6 pt-2 sm:grid-cols-2 xl:grid-cols-3">
+            {selectedIndustries.map((industry) => (
+              <button
+                key={industry.code}
+                onClick={() =>
+                  onSelectIndustryCode(
+                    selectedIndustryCode === industry.code
+                      ? null
+                      : industry.code,
+                  )
+                }
+                className={`group rounded-2xl border-2 px-6 py-5 text-left transition-all hover:border-gray-900 hover:shadow-lg ${
+                  selectedIndustryCode === industry.code
+                    ? 'border-gray-900 bg-gray-50 shadow-lg'
                     : 'border-gray-300 bg-white'
-                }`}
+                } ${selectedIndustryCode && selectedIndustryCode !== industry.code ? 'opacity-40 grayscale-[0.5]' : 'opacity-100'}`}
               >
-                <div className="text-xl font-semibold text-gray-900">
+                <div className="text-xl font-bold text-gray-900">
                   {industry.name}
                 </div>
               </button>
             ))}
           </div>
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-white to-transparent" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-white to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-6 bg-linear-to-b from-white to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-linear-to-t from-white to-transparent" />
         </div>
       </section>
     </div>

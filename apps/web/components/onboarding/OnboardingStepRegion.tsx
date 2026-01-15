@@ -28,26 +28,29 @@ export function OnboardingStepRegion({
   onChange,
 }: OnboardingStepRegionProps) {
   return (
-    <div className="space-y-12">
-      <h1 className="text-5xl font-semibold text-gray-900">
+    <div className="space-y-[4vh]">
+      <h1 className="text-[clamp(1.875rem,4vw,2.5rem)] font-bold text-gray-900">
         선호하는 지역 특징을 선택하세요
       </h1>
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-[2vw]">
         {REGION_OPTIONS.map((option) => (
           <button
             key={option.value}
-            onClick={() => onChange(option.value)}
-            className={`p-12 border-2 rounded-2xl text-center transition-all hover:border-gray-900 hover:shadow-lg ${
+            onClick={() => onChange(value === option.value ? '' : option.value)}
+            className={`p-[15%] border-2 rounded-2xl text-center transition-all hover:border-gray-900 hover:shadow-lg ${
               value === option.value
                 ? 'border-gray-900 bg-gray-50 shadow-lg'
                 : 'border-gray-300'
-            }`}
+            } ${value && value !== option.value ? 'opacity-40 grayscale-[0.5]' : 'opacity-100'}`}
           >
-            <div className="flex justify-center mb-6">
-              <option.Icon size={56} className="text-gray-900" />
+            <div className="flex justify-center mb-[1.5vh]">
+              <option.Icon
+                size={40}
+                className="w-[clamp(2rem,5vw,2.75rem)] h-[clamp(2rem,5vw,2.75rem)] text-gray-900"
+              />
             </div>
-            <div className="text-xl font-semibold text-gray-900">
+            <div className="text-[clamp(1rem,2vw,1.25rem)] font-bold text-gray-900">
               {option.label}
             </div>
           </button>

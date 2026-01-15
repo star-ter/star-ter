@@ -7,6 +7,7 @@ export class ScoredLocation {
     region: number;
     time: number;
     rent: number;
+    industry: number | null; // 업종 미선택시 null
   };
 }
 

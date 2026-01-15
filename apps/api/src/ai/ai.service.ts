@@ -1,118 +1,39 @@
 import { Injectable } from '@nestjs/common';
-import {
-  analyzeResults,
-  embedText,
-  getCategoryByMessage,
-  getLocationByMessage,
-  getAiAnalysis,
-  getRealEstateSummary,
-  getTablesByMessage,
-  getText,
-  toolCallAi,
-} from './openAI/openAI';
+import { OpenAiService } from './openAI/open-ai.service';
 import { AiRepository } from './ai.repository';
 import { BusinessCategoryVectorDto } from './dto/column-vector';
 import { ResponseInputItem } from 'openai/resources/responses/responses.js';
 import { AiToolsService } from './ai-tools.service';
+import { AiResponseProcessor } from './ai-response.processor';
 
 @Injectable()
 export class AiService {
   constructor(
     private readonly aiRepository: AiRepository,
     private readonly aiToolsService: AiToolsService,
+    private readonly aiResponseProcessor: AiResponseProcessor,
+    private readonly openAiService: OpenAiService,
   ) {}
-
-  // 기존 단일 메시지 처리 함수 (하위 호환성 유지)
-  async getAIMessage(message: string): Promise<string> {
-    const [categories, areaList] = await Promise.all([
-      this.getCategories(message),
-      this.buildAreaList(message),
-    ]);
-
-    const input: ResponseInputItem[] = [{ role: 'user', content: message }];
-    const toolCallResponse = await toolCallAi(input, categories, areaList);
-    input.push(...toolCallResponse.output);
-
-    for (const toolCall of toolCallResponse.output) {
-      if (toolCall.type !== 'function_call') continue;
-      const toolResult = await this.aiToolsService.run(
-        toolCall.name,
-        toolCall.arguments,
-      );
-
-      if (toolResult === undefined) {
-        continue;
-      }
-
-      input.push({
-        type: 'function_call_output',
-        call_id: toolCall.call_id,
-        output: JSON.stringify(toolResult, safeBigIntStringify),
-      });
-    }
-
-    const analyzeResult = await analyzeResults(input);
-
-    // Structured Outputs: output_text에 JSON 문자열 ({ reply, actions }) 반환
-    // Structured Outputs: output_text에 JSON 문자열 ({ reply, actions }) 반환
-    const finalText = getText(analyzeResult);
-
-    try {
-      const parsedFn = JSON.parse(finalText);
-      if (parsedFn.actions && Array.isArray(parsedFn.actions)) {
-        let modified = false;
-        parsedFn.actions.forEach((action: any) => {
-          if (
-            action.type === 'real_estate.recommend' &&
-            (!action.payload?.lat || !action.payload?.lng)
-          ) {
-            const targetAreaName = action.payload?.areaName;
-            const foundArea =
-              areaList.find((a) => a.areaName === targetAreaName) ||
-              areaList[0];
-
-            if (foundArea && foundArea.lat && foundArea.lng) {
-              action.payload = {
-                ...action.payload,
-                lat: foundArea.lat,
-                lng: foundArea.lng,
-              };
-              modified = true;
-            }
-          }
-        });
-
-        if (modified) {
-          return JSON.stringify(parsedFn);
-        }
-      }
-    } catch (e) {
-      console.error(
-        '[AiService] Failed to patch coordinates in legacy function:',
-        e,
-      );
-    }
-
-    return finalText;
-  }
 
   // 대화 히스토리 포함 메시지 처리 함수 (꼬리 질문 지원)
   private readonly MAX_HISTORY_LENGTH = 10;
-  //TODO: 원래는 getAIMessage를 쓰려고 하였으나, 변경이 많이 필요하여 별도의 함수로 재생성 미안하다 정훈아
+  // [DEBUG] 히스토리 기능 on/off 플래그 - 시연용으로 끌 수 있음
+  private readonly ENABLE_HISTORY = true; // true로 변경하면 히스토리 활성화
+
   async getAIMessageWithHistory(
     message: string,
     history: Array<{ role: 'user' | 'assistant'; content: string }>,
   ): Promise<string> {
     const [categories, areaList] = await Promise.all([
       this.getCategories(message),
-      this.buildAreaList(message),
+      this.getAreaInfo(message),
     ]);
 
     // 입력 배열 구성 (히스토리 포함)
     const input: ResponseInputItem[] = [];
 
-    // 이전 대화 히스토리 추가 (최대 10개, 너무 길면 토큰 초과 방지)
-    if (history && history.length > 0) {
+    // 이전 대화 히스토리 추가 (ENABLE_HISTORY가 true일 때만)
+    if (this.ENABLE_HISTORY && history && history.length > 0) {
       const recentHistory = history.slice(-this.MAX_HISTORY_LENGTH);
       for (const msg of recentHistory) {
         input.push({
@@ -120,12 +41,21 @@ export class AiService {
           content: msg.content,
         });
       }
+      console.log(
+        `[AiService] History enabled: ${recentHistory.length} messages added`,
+      );
+    } else if (!this.ENABLE_HISTORY) {
+      console.log('[AiService] History disabled - using single message mode');
     }
 
     // 현재 사용자 메시지 추가
     input.push({ role: 'user', content: message });
 
-    const toolCallResponse = await toolCallAi(input, categories, areaList);
+    const toolCallResponse = await this.openAiService.toolCallAi(
+      input,
+      categories,
+      areaList,
+    );
     console.log(
       '[AiService] Tool call response:',
       JSON.stringify(toolCallResponse.output, null, 2),
@@ -146,179 +76,176 @@ export class AiService {
       input.push({
         type: 'function_call_output',
         call_id: toolCall.call_id,
-        output: JSON.stringify(toolResult, safeBigIntStringify),
+        output: JSON.stringify(toolResult, (k, v) =>
+          this.aiResponseProcessor.safeBigIntStringify(k, v),
+        ),
       });
     }
 
-    console.log('[AiService] Calling analyzeResults...');
-    const analyzeResult = await analyzeResults(input);
+    // [Fix] Track if break-even tool was called to ensure action generation
+    const breakEvenContext = toolCallResponse.output.reduce(
+      (acc, toolCall) => {
+        if (acc) return acc; // already found
+        if (toolCall.type !== 'function_call') return acc;
 
-    // 디버깅: LLM 응답 출력
-    const responseText = getText(analyzeResult);
+        try {
+          if (toolCall.name === 'calc_break_even_with_listing') {
+            const args = JSON.parse(toolCall.arguments) as {
+              listingId?: string;
+              categoryCode?: string;
+            };
+            if (args.listingId)
+              return {
+                type: 'listing' as const,
+                id: args.listingId,
+                categoryCode: args.categoryCode,
+              };
+          } else if (toolCall.name === 'calc_break_even') {
+            const args = JSON.parse(toolCall.arguments) as {
+              areaCd?: string;
+              categoryCode?: string;
+            };
+            if (args.areaCd)
+              return {
+                type: 'area' as const,
+                id: args.areaCd,
+                categoryCode: args.categoryCode,
+              };
+          }
+        } catch (e) {
+          console.warn(
+            '[AiService] Failed to parse tool arguments for BEP context:',
+            e,
+          );
+        }
+        return acc;
+      },
+      null as {
+        type: 'listing' | 'area';
+        id: string;
+        categoryCode?: string;
+      } | null,
+    );
+
+    console.log('[AiService] Calling analyzeResults...');
+    const analyzeResult = await this.openAiService.analyzeResults(input);
+
+    const responseText = this.openAiService.getText(analyzeResult);
     console.log('[AI Response]', responseText);
 
-    // Structured Outputs: output_text에 JSON 문자열 ({ reply, actions }) 반환
-    try {
-      let parsedFn;
-      try {
-        parsedFn = JSON.parse(responseText);
-      } catch (e) {
-        // 중괄호 카운팅을 통한 첫 번째 JSON 추출 시도
-        try {
-          const firstOpen = responseText.indexOf('{');
-          if (firstOpen === -1) throw e;
+    // Use processor for parsing and patching
+    const parsedResponse = this.aiResponseProcessor.parseResponse(responseText);
 
-          let balance = 0;
-          let end = -1;
-          let inString = false;
-          let escape = false;
+    // [Fix] Force inject chart.breakeven action if missing
+    if (breakEvenContext) {
+      parsedResponse.actions = parsedResponse.actions || [];
+      const hasAction = parsedResponse.actions.some(
+        (a) => a.type === 'chart.breakeven',
+      );
 
-          for (let i = firstOpen; i < responseText.length; i++) {
-            const char = responseText[i];
-
-            if (escape) {
-              escape = false;
-              continue;
-            }
-
-            if (char === '\\') {
-              escape = true;
-              continue;
-            }
-
-            if (char === '"') {
-              inString = !inString;
-              continue;
-            }
-
-            if (!inString) {
-              if (char === '{') {
-                balance++;
-              } else if (char === '}') {
-                balance--;
-                if (balance === 0) {
-                  end = i;
-                  break;
+      if (!hasAction) {
+        console.log(
+          '[AiService] Force injecting missing chart.breakeven action for',
+          breakEvenContext,
+        );
+        parsedResponse.actions.push({
+          type: 'chart.breakeven',
+          payload:
+            breakEvenContext.type === 'listing'
+              ? {
+                  listingId: breakEvenContext.id,
+                  industryCode: breakEvenContext.categoryCode,
                 }
-              }
-            }
-          }
-
-          if (end !== -1) {
-            const jsonStr = responseText.substring(firstOpen, end + 1);
-            parsedFn = JSON.parse(jsonStr);
-            console.log('[AiService] Successfully extracted first JSON object');
-          } else {
-            throw e;
-          }
-        } catch (extractError) {
-          throw e; // 추출 실패 시 원본 에러 던짐
-        }
-      }
-
-      if (parsedFn.actions && Array.isArray(parsedFn.actions)) {
-        let modified = false;
-        parsedFn.actions.forEach((action: any) => {
-          // 모든 액션에 대해 좌표 보정 시도 (lat, lng가 있고 areaName이 있는 경우)
-          if (action.payload?.areaName) {
-            const targetAreaName = action.payload.areaName;
-
-            // 정확한 이름 일치 우선, 없으면 areaList 첫 번째 사용
-            // 단, areaList가 비어있으면 보정 불가
-            const foundArea =
-              areaList.find((a) => a.areaName === targetAreaName) ||
-              areaList[0];
-
-            // foundArea가 있고, 이름이 일치하며, 좌표가 유효하다면 덮어쓰기
-            // 이름이 다르면(즉, 추천 로직에 의해 전혀 다른 지역이 선택된 경우) 덮어쓰지 않음
-            if (
-              foundArea &&
-              foundArea.areaName === targetAreaName &&
-              foundArea.lat &&
-              foundArea.lng
-            ) {
-              // 기존 좌표가 없거나, AI가 생성한 좌표가 이상할 수 있으므로 항상 신뢰할 수 있는 DB 좌표로 보정
-              // 단, 이미 정확한 좌표가 있는 경우(예: 매물 위치 등)는 제외해야 할 수도 있으나,
-              // 현재 상황(상권 중심점)에서는 DB 좌표가 더 정확함.
-              if (
-                !action.payload.lat ||
-                !action.payload.lng ||
-                action.type === 'ui.open_panel'
-              ) {
-                action.payload.lat = foundArea.lat;
-                action.payload.lng = foundArea.lng;
-                // zoom 레벨도 필요시 보정 (예: 상권이면 15)
-                if (!action.payload.zoom) {
-                  action.payload.zoom = 15;
-                }
-                console.log(
-                  `[AiService] Patched coordinates for ${action.type} (${targetAreaName}):`,
-                  foundArea.lat,
-                  foundArea.lng,
-                );
-                modified = true;
-              }
-            }
-          }
+              : {
+                  areaCode: breakEvenContext.id,
+                  industryCode: breakEvenContext.categoryCode,
+                },
         });
-
-        if (modified) {
-          return JSON.stringify(parsedFn);
-        }
       }
-    } catch (e) {
-      console.error('[AiService] Failed to patch coordinates:', e);
     }
+    const finalJson = this.aiResponseProcessor.patchCoordinates(
+      parsedResponse,
+      areaList,
+    );
 
-    return responseText;
+    return finalJson;
   }
 
-  async getAnalysis(topic: string, areaName: string, metrics: string) {
-    const response = await getAiAnalysis(topic, areaName, metrics);
-    return getText(response);
-  }
-
-  async getRealEstateSummary(metrics: string) {
-    const response = await getRealEstateSummary(metrics);
-    return getText(response);
-  }
-
-  async buildAreaList(message: string) {
-    const areaText = getText(await getLocationByMessage(message));
+  async getAreaInfo(message: string) {
+    const areaText = this.openAiService.getText(
+      await this.openAiService.getLocationByMessage(message),
+    );
     if (areaText === '""') return [];
     const messageAreaList = areaText.split(',').map((area) => area.trim());
 
+    const DISTANCE_THRESHOLD = 0.4; // 벡터 검색 신뢰도 임계값
+
     const results = await Promise.all(
       messageAreaList.map(async (area) => {
-        const areaVector = await embedText(area);
-        const [first] = await this.aiRepository.areaSearchByVector(
+        const areaVector = await this.openAiService.embedText(area);
+        const vectorCandidates = await this.aiRepository.areaSearchByVector(
           areaVector.data[0].embedding,
-          1,
+          3,
         );
 
-        if (first) {
+        console.log(
+          `[DEBUG] Vector search for "${area}":`,
+          vectorCandidates.map((c) => `${c.areaName} (dist: ${c.distance})`),
+        );
+
+        // 신뢰도 체크: 최상위 결과의 distance가 임계값 초과하면 fallback
+        let finalCandidates = vectorCandidates;
+        if (
+          vectorCandidates.length === 0 ||
+          Number(vectorCandidates[0].distance) > DISTANCE_THRESHOLD
+        ) {
           console.log(
-            `[DEBUG] Area found in vector DB: ${first.areaName} (${first.areaCode}, ${first.areaLevel})`,
+            `[DEBUG] Vector search unreliable (dist > ${DISTANCE_THRESHOLD}), trying text fallback...`,
           );
-          const coords = await this.aiRepository.getAreaCoordinates(
-            first.areaCode,
-            first.areaLevel,
+          const textCandidates = await this.aiRepository.areaSearchByText(
+            area,
+            3,
           );
-          console.log(`[DEBUG] Coords fetched for ${first.areaName}:`, coords);
-          if (coords) {
-            first.lat = coords.lat;
-            first.lng = coords.lng;
+          if (textCandidates.length > 0) {
+            // 텍스트 검색 결과 우선, 벡터 결과 병합 (중복 제거)
+            const seenCodes = new Set(textCandidates.map((c) => c.areaCode));
+            const mergedCandidates = [
+              ...textCandidates,
+              ...vectorCandidates.filter((c) => !seenCodes.has(c.areaCode)),
+            ];
+            finalCandidates = mergedCandidates.slice(0, 3);
+            console.log('[DEBUG] Using text search results:', finalCandidates);
           }
         }
-        return first;
+
+        // 좌표 추가
+        const candidatesWithCoords = await Promise.all(
+          finalCandidates.map(async (candidate) => {
+            const coords = await this.aiRepository.getAreaCoordinates(
+              candidate.areaCode,
+              candidate.areaLevel,
+            );
+            if (coords) {
+              candidate.lat = coords.lat;
+              candidate.lng = coords.lng;
+            }
+            return candidate;
+          }),
+        );
+
+        return candidatesWithCoords;
       }),
     );
-    return results;
+
+    return results
+      .flat()
+      .filter((item): item is NonNullable<typeof item> => !!item);
   }
 
   async getCategories(message: string) {
-    const categoryResponse = await getCategoryByMessage(message);
-    const categoryText = getText(categoryResponse);
+    const categoryResponse =
+      await this.openAiService.getCategoryByMessage(message);
+    const categoryText = this.openAiService.getText(categoryResponse);
     console.log(
       `[DEBUG] Extracted Categories for message "${message}":`,
       categoryText,
@@ -330,8 +257,8 @@ export class AiService {
 
     let categoryList: BusinessCategoryVectorDto[] = [];
     for (const category of categories) {
-      const categoryVector = await embedText(category);
-      // console.log(`[DEBUG] Embedding for ${category} generated.`);
+      const categoryVector = await this.openAiService.embedText(category);
+      console.log(`[DEBUG] Embedding for ${category} generated.`);
 
       const categoryResults = await this.aiRepository.categorySearchByVector(
         categoryVector.data[0].embedding,
@@ -346,18 +273,4 @@ export class AiService {
     }
     return categoryList;
   }
-
-  async getTables(message: string) {
-    const tableList = await getTablesByMessage(message);
-    if (getText(tableList) === '""') return [];
-    const categories = getText(tableList)
-      .split(',')
-      .map((cat) => cat.trim());
-    return categories;
-  }
-}
-
-function safeBigIntStringify(key: string, value: any) {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return typeof value === 'bigint' ? value.toString() : value;
 }

@@ -20,30 +20,32 @@ export function OnboardingStepOperatingTime({
   onChange,
 }: OnboardingStepOperatingTimeProps) {
   return (
-    <div className="space-y-12">
-      <h1 className="text-5xl font-semibold text-gray-900">
+    <div className="space-y-[4vh]">
+      <h1 className="text-[clamp(1.875rem,4vw,2.5rem)] font-bold text-gray-900">
         희망 운영 시간대를 선택하세요
       </h1>
 
-      <div className="space-y-4">
+      <div className="space-y-[1.5vh]">
         {OPERATING_TIME_OPTIONS.map((option) => (
           <button
             key={option.value}
-            onClick={() => onChange(option.value)}
-            className={`w-full p-8 border-2 rounded-2xl text-left transition-all hover:border-gray-900 hover:shadow-lg ${
+            onClick={() => onChange(value === option.value ? '' : option.value)}
+            className={`w-full px-[3%] py-[2%] border-2 rounded-2xl text-left transition-all hover:border-gray-900 hover:shadow-lg ${
               value === option.value
                 ? 'border-gray-900 bg-gray-50 shadow-lg'
                 : 'border-gray-300'
-            }`}
+            } ${value && value !== option.value ? 'opacity-40 grayscale-[0.5]' : 'opacity-100'}`}
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-6">
-                <option.Icon size={40} className="text-gray-900" />
+              <div className="flex items-center gap-[3vw]">
+                <option.Icon size={36} className="text-gray-900" />
                 <div>
-                  <div className="text-2xl font-semibold text-gray-900 mb-2">
+                  <div className="text-[clamp(1.125rem,2vw,1.25rem)] font-bold text-gray-900 mb-[0.5vh]">
                     {option.label}
                   </div>
-                  <div className="text-lg text-gray-600">{option.time}</div>
+                  <div className="text-[clamp(0.875rem,1.5vw,1rem)] text-gray-500">
+                    {option.time}
+                  </div>
                 </div>
               </div>
             </div>

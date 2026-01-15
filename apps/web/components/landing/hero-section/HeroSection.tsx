@@ -2,19 +2,24 @@ import Link from 'next/link';
 import { Button } from '../../ui/button';
 import { ImageWithFallback } from '../../figma/ImageWithFallback';
 import dummyMap from './img/dummy_map.png';
+import authBg from '../../img/auth_bg.png';
 
 export function HeroSection() {
   return (
-    <section className="bg-gray-50 pt-32 pb-16">
-      <div className="max-w-[1200px] mx-auto px-4">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+    <section>
+      <div className="w-screen h-screen flex items-center justify-center px-4 relative bg-[#F9FAFB]">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat blur-[2px] opacity-70"
+          style={{ backgroundImage: `url(${authBg.src})` }}
+        />
+        <div className="grid lg:grid-cols-2 gap-16 items-center relative z-10 w-full max-w-[1200px]">
           <div className="max-w-xl">
             <h1 className="text-5xl font-extrabold text-gray-900 mb-6 leading-[1.15]">
-              명당을 찾아주는
+              상권을 묻고, 데이터로 답한다
               <br />
-              상권 분석 서비스 <span className="text-blue-900">Starter</span>
+              <span className="text-blue-900">지리응답</span>
             </h1>
-            <p className="text-xl text-gray-600 mb-10 leading-relaxed">
+            <p className="text-xl text-gray-600 mb-10 font-bold leading-relaxed">
               빅데이터와 AI가 분석하는 가장 정밀한 상권 리포트.
               <br />
               예상 매출액부터 유동인구, 경쟁사 분석까지 한 번에 확인하세요.
