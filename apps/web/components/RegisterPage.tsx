@@ -59,10 +59,10 @@ export function RegisterPage({ onRegister }: RegisterPageProps) {
     <AuthLayout>
       <div className="flex flex-col items-center w-full">
         <div className="text-center mb-8 space-y-2">
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+          <h1 className="text-h1 font-heading mb-4 text-slate-900 tracking-tight">
             회원가입
           </h1>
-          <p className="text-slate-500 text-[15px] font-medium">
+          <p className="text-slate-500 text-body font-medium">
             지리응답 가입을 환영합니다!
           </p>
         </div>
@@ -78,7 +78,7 @@ export function RegisterPage({ onRegister }: RegisterPageProps) {
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
                 required
-                className="h-12 border border-slate-200 bg-white rounded-xl px-4 pl-4 text-[15px] placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-blue-100 focus-visible:border-blue-500 transition-all font-medium"
+                className="h-12 border border-slate-200 bg-white rounded-xl px-4 pl-4 text-body placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-blue-100 focus-visible:border-blue-500 transition-all font-medium"
               />
             </div>
 
@@ -91,7 +91,7 @@ export function RegisterPage({ onRegister }: RegisterPageProps) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="h-12 border border-slate-200 bg-white rounded-xl px-4 pl-4 text-[15px] placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-blue-100 focus-visible:border-blue-500 transition-all font-medium"
+                className="h-12 border border-slate-200 bg-white rounded-xl px-4 pl-4 text-body placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-blue-100 focus-visible:border-blue-500 transition-all font-medium"
               />
             </div>
 
@@ -104,7 +104,7 @@ export function RegisterPage({ onRegister }: RegisterPageProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="h-12 border border-slate-200 bg-white rounded-xl px-4 pl-4 pr-12 text-[15px] placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-blue-100 focus-visible:border-blue-500 transition-all font-medium"
+                className="h-12 border border-slate-200 bg-white rounded-xl px-4 pl-4 pr-12 text-body placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-blue-100 focus-visible:border-blue-500 transition-all font-medium"
               />
               <button
                 type="button"
@@ -128,7 +128,7 @@ export function RegisterPage({ onRegister }: RegisterPageProps) {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="h-12 border border-slate-200 bg-white rounded-xl px-4 pl-4 pr-12 text-[15px] placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-blue-100 focus-visible:border-blue-500 transition-all font-medium"
+                className="h-12 border border-slate-200 bg-white rounded-xl px-4 pl-4 pr-12 text-body placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-blue-100 focus-visible:border-blue-500 transition-all font-medium"
               />
               <button
                 type="button"
@@ -148,14 +148,14 @@ export function RegisterPage({ onRegister }: RegisterPageProps) {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white text-[16px] font-bold rounded-xl shadow-md shadow-slate-200 transition-all hover:-translate-y-0.5"
+              className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white text-md font-bold rounded-xl shadow-md shadow-slate-200 transition-all hover:-translate-y-0.5"
             >
               {isSubmitting ? '가입 중...' : '회원가입'}
             </Button>
           </div>
 
           {error && (
-            <p className="text-sm text-red-500 text-center font-medium bg-red-50 py-2 rounded-lg">
+            <p className="text-caption text-red-500 text-center font-medium bg-red-50 py-2 rounded-lg">
               {error}
             </p>
           )}
@@ -164,7 +164,7 @@ export function RegisterPage({ onRegister }: RegisterPageProps) {
         {/* Divider */}
         <div className="w-full flex items-center gap-4 my-8">
           <div className="h-[2px] flex-1 bg-slate-100"></div>
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+          <span className="text-caption font-strong text-slate-400 uppercase tracking-wider">
             Or Sign up with
           </span>
           <div className="h-[2px] flex-1 bg-slate-100"></div>
@@ -174,7 +174,7 @@ export function RegisterPage({ onRegister }: RegisterPageProps) {
         <div className="w-full grid grid-cols-1 gap-3">
           <button
             onClick={handleGoogleLogin}
-            className="flex items-center justify-center gap-3 w-full h-12 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors text-slate-700 font-bold text-[15px] group shadow-sm hover:shadow"
+            className="flex items-center justify-center gap-3 w-full h-12 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors text-slate-700 font-bold text-body group shadow-sm hover:shadow"
           >
             <svg
               className="w-5 h-5 opacity-70 group-hover:opacity-100 transition-opacity"
@@ -190,13 +190,13 @@ export function RegisterPage({ onRegister }: RegisterPageProps) {
         </div>
 
         <div className="mt-8 text-center">
-          <p className="text-sm font-medium text-slate-500">
+          <p className="text-caption font-medium text-slate-500">
             이미 계정이 있으신가요?{' '}
             <Link
               href="/login"
               className="text-slate-900 font-bold hover:underline ml-1"
             >
-              로그인 하기
+              로그인
             </Link>
           </p>
         </div>

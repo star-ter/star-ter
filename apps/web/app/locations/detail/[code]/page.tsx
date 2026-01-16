@@ -20,7 +20,7 @@ export default async function Page({ params }: PageProps) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center p-8">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">
+          <h1 className="text-h2 font-bold text-gray-800 mb-4">
             상권을 찾을 수 없습니다
           </h1>
           <p className="text-gray-600 mb-6">

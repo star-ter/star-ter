@@ -122,8 +122,31 @@ export class AiResponseProcessor {
         }
       }
 
+      // [신규] ui.open_panel 액션에서 areaCode로 좌표 패치 (Claude는 좌표 없이 areaCode만 보냄)
+      if (
+        action.type === 'ui.open_panel' &&
+        action.payload?.areaCode &&
+        (!action.payload.lat || !action.payload.lng)
+      ) {
+        const targetAreaCode = String(action.payload.areaCode);
+        // areaList에서 areaCode로 찾기
+        const foundArea = areaList.find((a) => a.areaCode === targetAreaCode);
+
+        if (foundArea && foundArea.lat && foundArea.lng) {
+          action.payload.lat = foundArea.lat;
+          action.payload.lng = foundArea.lng;
+          console.log(
+            `[AiResponseProcessor] Patched coords for areaCode ${targetAreaCode}: lat=${foundArea.lat}, lng=${foundArea.lng}`,
+          );
+        } else {
+          console.warn(
+            `[AiResponseProcessor] Could not find coords for areaCode ${targetAreaCode}`,
+          );
+        }
+      }
+
       // 카카오 지도 줌 레벨 고정 (숫자가 작을수록 확대)
-      // ui.open_panel 또는 map 관련 액션일 때 zoom을 3으로 고정
+      // ui.open_panel 또는 map 관련 액션일 때 zoom을 4으로 고정
       if (action.type === 'ui.open_panel' || action.type?.startsWith('map.')) {
         action.payload = action.payload || {};
         action.payload.zoom = 4; // 카카오 지도 상권 레벨
@@ -162,6 +185,7 @@ export interface AiResponse {
 
 export interface AreaInfo {
   areaName: string;
+  areaCode?: string; // 상권 코드 (좌표 조회용)
   lat?: number;
   lng?: number;
   [key: string]: unknown; // Allow other properties from AreaVectorDto

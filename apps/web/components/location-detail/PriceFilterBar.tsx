@@ -1,13 +1,15 @@
 'use client';
 
+import { useState, useRef, useEffect } from 'react';
+import { Building2, Settings2 } from 'lucide-react';
 import { formatToKoreaCurrency } from './utils';
-import { useState } from 'react';
 
 /**
  * 【PriceFilterBar 컴포넌트】
- * 
- * Apple Live Activities 스타일 + 흰색 Liquid Glass 효과
- * 양쪽 핸들로 최소/최대 가격 조절 가능
+ *
+ * 부동산 가격 필터바 - TrafficFilterBar와 동일한 스타일
+ * - 하단 바: 매물 수 요약 표시
+ * - 필터 패널: 보증금/월세 듀얼 레인지 슬라이더
  */
 
 interface PriceFilterBarProps {
@@ -35,226 +37,205 @@ export function PriceFilterBar({
   totalCount,
   filteredCount,
 }: PriceFilterBarProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
 
-  // 슬라이더 값을 퍼센트로 변환 (0 나눗셈 방지)
+  // 슬라이더 값을 퍼센트로 변환
   const depositDiff = maxDeposit - minDeposit || 1;
   const rentDiff = maxRent - minRent || 1;
-  
   const depositLeftPercent = ((depositRange[0] - minDeposit) / depositDiff) * 100;
   const depositRightPercent = ((depositRange[1] - minDeposit) / depositDiff) * 100;
   const rentLeftPercent = ((rentRange[0] - minRent) / rentDiff) * 100;
   const rentRightPercent = ((rentRange[1] - minRent) / rentDiff) * 100;
 
+  // 외부 클릭 시 패널 닫기 (토글 버튼 제외)
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.closest('[data-toggle-price-panel]')) return;
+      if (panelRef.current && !panelRef.current.contains(target)) {
+        setIsExpanded(false);
+      }
+    };
+    if (isExpanded) {
+      document.addEventListener('click', handleClickOutside);
+    }
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [isExpanded]);
+
   return (
-    <div className="absolute bottom-10 left-0 right-0 z-20 flex justify-center px-4 pointer-events-none">
+    <>
       <style>{`
-        .dual-range-slider::-webkit-slider-thumb {
-          pointer-events: auto;
-          width: 22px;
-          height: 22px;
+        .dual-slider::-webkit-slider-thumb {
           -webkit-appearance: none;
-          cursor: pointer;
-        }
-        .dual-range-slider::-moz-range-thumb {
           pointer-events: auto;
-          width: 22px;
-          height: 22px;
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: white;
+          border: 2px solid currentColor;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.2);
           cursor: pointer;
-          border: none;
         }
-        @keyframes spring-up {
-          0% {
-            opacity: 0;
-            transform: translateY(20px) scale(0.95);
-          }
-          60% {
-            opacity: 1;
-            transform: translateY(-5px) scale(1.02);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-        .animate-spring-up {
-          animation: spring-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        .dual-slider::-moz-range-thumb {
+          pointer-events: auto;
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: white;
+          border: 2px solid currentColor;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+          cursor: pointer;
         }
       `}</style>
 
-      {/* 
-         isOpen 상태에 따라 다른 UI 표시 
-         - pointer-events-auto를 자식에 적용하여 배경 클릭은 통과시키고 컴포넌트만 클릭 가능하게 함
-      */}
-      {isOpen ? (
-        <div className="w-full max-w-[420px] bg-white/40 backdrop-blur-2xl rounded-[40px] p-6 shadow-2xl border border-white/40 pointer-events-auto animate-spring-up ring-1 ring-black/5">
-          {/* 상단: 헤더 및 닫기 버튼 */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-3xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                {/* Building Icon (Larger) */}
-                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-gray-900 font-bold text-xl leading-tight">가격 필터</p>
-                <p className="text-blue-600 text-md font-semibold mt-0.5">
-                  {filteredCount.toLocaleString()}개 / {totalCount.toLocaleString()}개 매물
-                </p>
-              </div>
+      {/* 필터 패널 (보증금/월세 슬라이더) */}
+      {isExpanded && (
+        <div
+          ref={panelRef}
+          className="absolute bottom-20 left-1/2 -translate-x-1/2 z-20 pointer-events-auto bg-white rounded-2xl shadow-sm border border-gray-200 p-5 w-95"
+        >
+          {/* 보증금 슬라이더 */}
+          <div className="mb-5">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-caption font-medium text-gray-600">보증금</span>
+              <span className="text-caption font-bold text-blue-950">
+                {formatToKoreaCurrency(depositRange[0])} ~ {formatToKoreaCurrency(depositRange[1])}
+              </span>
             </div>
-            
-            <button 
-              onClick={() => setIsOpen(false)}
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-white/40 hover:bg-white/60 transition-colors text-gray-600 backdrop-blur-sm"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+            <div className="relative h-6 flex items-center">
+              {/* 트랙 배경 */}
+              <div className="absolute left-0 right-0 h-1.5 bg-gray-100 rounded-full" />
+              {/* 활성 트랙 */}
+              <div
+                className="absolute h-1.5 bg-blue-950 rounded-full"
+                style={{
+                  left: `${depositLeftPercent}%`,
+                  width: `${depositRightPercent - depositLeftPercent}%`
+                }}
+              />
+              {/* 왼쪽 슬라이더 (최소값) */}
+              <input
+                type="range"
+                min={minDeposit}
+                max={maxDeposit}
+                value={depositRange[0]}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  if (val < depositRange[1]) {
+                    onDepositChange([val, depositRange[1]]);
+                  }
+                }}
+                className="dual-slider absolute w-full h-full appearance-none bg-transparent pointer-events-none text-blue-950"
+                style={{ zIndex: depositRange[0] > (maxDeposit - minDeposit) / 2 + minDeposit ? 5 : 3 }}
+              />
+              {/* 오른쪽 슬라이더 (최대값) */}
+              <input
+                type="range"
+                min={minDeposit}
+                max={maxDeposit}
+                value={depositRange[1]}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  if (val > depositRange[0]) {
+                    onDepositChange([depositRange[0], val]);
+                  }
+                }}
+                className="dual-slider absolute w-full h-full appearance-none bg-transparent pointer-events-none text-blue-950"
+                style={{ zIndex: depositRange[1] < (maxDeposit - minDeposit) / 2 + minDeposit ? 5 : 4 }}
+              />
+            </div>
           </div>
 
-          {/* 슬라이더 영역 */}
-          <div className="space-y-6">
-            {/* 보증금 슬라이더 */}
-            <div className="bg-white/30 rounded-3xl p-4 border border-white/50 shadow-sm">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-gray-600 text-lg font-bold tracking-wide">보증금</span>
-                <span className="text-blue-700 text-base font-bold bg-blue-100/50 px-3 py-1.5 rounded-xl">
-                  {formatToKoreaCurrency(depositRange[0])} ~ {formatToKoreaCurrency(depositRange[1])}
-                </span>
-              </div>
-              <div className="relative h-3 bg-gray-200/60 rounded-full mx-2">
-                <div 
-                  className="absolute h-full bg-gradient-to-r from-blue-200 to-blue-600 rounded-full opacity-90"
-                  style={{
-                    left: `${depositLeftPercent}%`,
-                    width: `${depositRightPercent - depositLeftPercent}%`
-                  }}
-                />
-                <input
-                  type="range"
-                  min={minDeposit}
-                  max={maxDeposit}
-                  value={depositRange[0]}
-                  onChange={(e) => {
-                    const val = Number(e.target.value);
-                    if (val < depositRange[1]) {
-                      onDepositChange([val, depositRange[1]]);
-                    }
-                  }}
-                  className="absolute w-full h-full opacity-0 cursor-pointer z-20 pointer-events-none dual-range-slider"
-                />
-                <input
-                  type="range"
-                  min={minDeposit}
-                  max={maxDeposit}
-                  value={depositRange[1]}
-                  onChange={(e) => {
-                    const val = Number(e.target.value);
-                    if (val > depositRange[0]) {
-                      onDepositChange([depositRange[0], val]);
-                    }
-                  }}
-                  className="absolute w-full h-full opacity-0 cursor-pointer z-20 pointer-events-none dual-range-slider"
-                />
-                <div 
-                  className="absolute top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-lg border-[3px] border-blue-500 transition-transform hover:scale-110 z-10"
-                  style={{ left: `calc(${depositLeftPercent}% - 12px)` }}
-                />
-                <div 
-                  className="absolute top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-lg border-[3px] border-blue-500 transition-transform hover:scale-110 z-10"
-                  style={{ left: `calc(${depositRightPercent}% - 12px)` }}
-                />
-              </div>
+          {/* 월세 슬라이더 */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-caption font-medium text-gray-600">월세</span>
+              <span className="text-caption font-bold text-blue-700">
+                {formatToKoreaCurrency(rentRange[0])} ~ {formatToKoreaCurrency(rentRange[1])}
+              </span>
             </div>
-
-            {/* 월세 슬라이더 */}
-            <div className="bg-white/30 rounded-3xl p-4 border border-white/50 shadow-sm">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-gray-600 text-lg font-bold tracking-wide">월세</span>
-                <span className="text-orange-600 text-base font-bold bg-rose-100 px-3 py-1.5 rounded-xl">
-                  {formatToKoreaCurrency(rentRange[0])} ~ {formatToKoreaCurrency(rentRange[1])}
-                </span>
-              </div>
-              <div className="relative h-3 bg-gray-200/60 rounded-full mx-2">
-                <div 
-                  className="absolute h-full bg-gradient-to-r from-orange-200 to-orange-500 rounded-full opacity-90"
-                  style={{
-                    left: `${rentLeftPercent}%`,
-                    width: `${rentRightPercent - rentLeftPercent}%`
-                  }}
-                />
-                <input
-                  type="range"
-                  min={minRent}
-                  max={maxRent}
-                  value={rentRange[0]}
-                  onChange={(e) => {
-                    const val = Number(e.target.value);
-                    if (val < rentRange[1]) {
-                      onRentChange([val, rentRange[1]]);
-                    }
-                  }}
-                  className="absolute w-full h-full opacity-0 cursor-pointer z-20 pointer-events-none dual-range-slider"
-                />
-                <input
-                  type="range"
-                  min={minRent}
-                  max={maxRent}
-                  value={rentRange[1]}
-                  onChange={(e) => {
-                    const val = Number(e.target.value);
-                    if (val > rentRange[0]) {
-                      onRentChange([rentRange[0], val]);
-                    }
-                  }}
-                  className="absolute w-full h-full opacity-0 cursor-pointer z-20 pointer-events-none dual-range-slider"
-                />
-                <div 
-                  className="absolute top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-lg border-[3px] border-rose-500 transition-transform hover:scale-110 z-10"
-                  style={{ left: `calc(${rentLeftPercent}% - 12px)` }}
-                />
-                <div 
-                  className="absolute top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-lg border-[3px] border-rose-500 transition-transform hover:scale-110 z-10"
-                  style={{ left: `calc(${rentRightPercent}% - 12px)` }}
-                />
-              </div>
+            <div className="relative h-6 flex items-center">
+              {/* 트랙 배경 */}
+              <div className="absolute left-0 right-0 h-1.5 bg-gray-100 rounded-full" />
+              {/* 활성 트랙 */}
+              <div
+                className="absolute h-1.5 bg-blue-600 rounded-full"
+                style={{
+                  left: `${rentLeftPercent}%`,
+                  width: `${rentRightPercent - rentLeftPercent}%`
+                }}
+              />
+              {/* 왼쪽 슬라이더 (최소값) */}
+              <input
+                type="range"
+                min={minRent}
+                max={maxRent}
+                value={rentRange[0]}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  if (val < rentRange[1]) {
+                    onRentChange([val, rentRange[1]]);
+                  }
+                }}
+                className="dual-slider absolute w-full h-full appearance-none bg-transparent pointer-events-none text-blue-600"
+                style={{ zIndex: rentRange[0] > (maxRent - minRent) / 2 + minRent ? 5 : 3 }}
+              />
+              {/* 오른쪽 슬라이더 (최대값) */}
+              <input
+                type="range"
+                min={minRent}
+                max={maxRent}
+                value={rentRange[1]}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  if (val > rentRange[0]) {
+                    onRentChange([rentRange[0], val]);
+                  }
+                }}
+                className="dual-slider absolute w-full h-full appearance-none bg-transparent pointer-events-none text-blue-600"
+                style={{ zIndex: rentRange[1] < (maxRent - minRent) / 2 + minRent ? 5 : 4 }}
+              />
             </div>
           </div>
         </div>
-      ) : (
-        /* 닫힘 상태: 알약(Pill) 모양 - 크기 확대 */
-        <button 
-          onClick={() => setIsOpen(true)}
-          className="group pointer-events-auto flex items-center gap-5 bg-white/40 backdrop-blur-2xl rounded-full pl-4 pr-8 py-4 shadow-xl border border-white/40 hover:bg-white/50 transition-all duration-300 hover:scale-[1.03] active:scale-95 ring-1 ring-black/5"
-        >
-          {/* 아이콘 */}
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform duration-300">
-            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
-          </div>
-          
-          {/* 텍스트 정보 */}
-          <div className="flex flex-col items-start">
-            <span className="text-gray-900 font-bold text-xl leading-none mb-1">
-              {filteredCount.toLocaleString()}개 매물
-            </span>
-            <span className="text-blue-700 text-md font-medium">
-              인근 지역 검색결과
-            </span>
-          </div>
-          
-          {/* 열기 힌트 (Chevron) - 좀 더 크게 */}
-          <div className="w-8 h-8 rounded-full bg-white/30 flex items-center justify-center ml-2 opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-x-4 group-hover:translate-x-0">
-             <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-               <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
-             </svg>
-          </div>
-        </button>
       )}
-    </div>
+
+      {/* 하단 바 */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 pointer-events-auto">
+        <div className="flex items-center gap-3 bg-white rounded-full px-4 py-2.5 shadow-sm border border-gray-200 w-95 justify-between">
+          {/* 아이콘 */}
+          <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+            <Building2 className="w-4 h-4 text-blue-950" />
+          </div>
+
+          {/* 매물 정보 */}
+          <div className="flex items-center gap-2">
+            <span className="text-caption font-bold text-blue-950">
+              {filteredCount.toLocaleString()}개
+            </span>
+            <span className="text-caption font-medium text-gray-500">
+              / {totalCount.toLocaleString()}개 매물
+            </span>
+          </div>
+
+          <div className="w-px h-6 bg-gray-200 ml-2" />
+
+          {/* 필터 버튼 */}
+          <button
+            data-toggle-price-panel
+            onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
+            className={`flex items-center gap-1.5 px-2 py-1 rounded-lg transition-all ${
+              isExpanded ? 'bg-blue-50' : 'hover:bg-gray-50'
+            }`}
+          >
+            <span className="text-caption font-medium text-blue-900 whitespace-nowrap">
+              가격 필터
+            </span>
+            <Settings2 className={`w-4 h-4 transition-colors ${isExpanded ? 'text-blue-950' : 'text-gray-400'}`} />
+          </button>
+        </div>
+      </div>
+    </>
   );
 }

@@ -14,12 +14,12 @@ export function HeroSection() {
         />
         <div className="grid lg:grid-cols-2 gap-16 items-center relative z-10 w-full max-w-[1200px]">
           <div className="max-w-xl">
-            <h1 className="text-5xl font-extrabold text-gray-900 mb-6 leading-[1.15]">
+            <h1 className="text-display font-heading text-gray-900 mb-6 leading-[1.15]">
               상권을 묻고, 데이터로 답한다
               <br />
               <span className="text-blue-900">지리응답</span>
             </h1>
-            <p className="text-xl text-gray-600 mb-10 font-bold leading-relaxed">
+            <p className="text-h5 text-gray-900 mb-12 font-medium leading-relaxed">
               빅데이터와 AI가 분석하는 가장 정밀한 상권 리포트.
               <br />
               예상 매출액부터 유동인구, 경쟁사 분석까지 한 번에 확인하세요.
@@ -47,10 +47,7 @@ export function HeroSection() {
 
                 <div className="absolute top-6 left-6 right-6 flex justify-between items-start">
                   <div className="bg-white/90 backdrop-blur px-4 py-2 rounded-xl shadow-lg border border-white/20">
-                    <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-0.5">
-                      Hot Zone Analysis
-                    </div>
-                    <div className="text-sm font-bold text-gray-900 flex items-center gap-1.5">
+                    <div className="text-caption font-strong text-gray-900 flex items-center gap-1.5">
                       <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
                       성수동 카페거리 일대
                     </div>
@@ -59,24 +56,24 @@ export function HeroSection() {
 
                 <div className="absolute bottom-6 left-6 right-6 grid grid-cols-2 gap-3">
                   <div className="bg-white/90 backdrop-blur p-4 rounded-2xl shadow-lg border border-white/20">
-                    <div className="text-xs text-gray-500 mb-1">
+                    <div className="text-tiny text-gray-500 mb-1">
                       일 평균 유동인구
                     </div>
-                    <div className="text-lg font-bold text-gray-900">
+                    <div className="text-body font-bold text-gray-900">
                       142,500명
                     </div>
-                    <div className="text-[10px] text-green-600 font-bold">
+                    <div className="text-tiny text-green-600 font-bold">
                       ▲ 12.4%
                     </div>
                   </div>
                   <div className="bg-white/90 backdrop-blur p-4 rounded-2xl shadow-lg border border-white/20">
-                    <div className="text-xs text-gray-500 mb-1">
+                    <div className="text-tiny text-gray-500 mb-1">
                       예상 월 매출액
                     </div>
-                    <div className="text-lg font-bold text-gray-900">
+                    <div className="text-body font-bold text-gray-900">
                       ₩4,280만
                     </div>
-                    <div className="text-[10px] text-blue-600 font-bold">
+                    <div className="text-tiny text-blue-600 font-bold">
                       신뢰도 98% 분석 완료
                     </div>
                   </div>

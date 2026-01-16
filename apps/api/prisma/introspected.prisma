@@ -132,3 +132,13 @@ model area_vector_table {
 
   @@index([embedding])
 }
+
+model commercial_feature_vector {
+  area_cd        String                 @id @db.VarChar(20)
+  area_name      String?                @db.VarChar(100)
+  stdr_yyqu_cd   String?                @db.VarChar(10)
+  feature_vector Unsupported("vector")?
+  created_at     DateTime?              @default(now()) @db.Timestamp(6)
+
+  @@index([feature_vector], map: "idx_commercial_feature_cosine")
+}

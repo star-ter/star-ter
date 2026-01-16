@@ -63,7 +63,6 @@ export const PROMPTS = {
             5. **생존확률 예측 (predict_survival_rate)** ***(강력 추천)***
                - "살아남을 수 있을까?", "망할 확률은?", "성공 가능성" 등 **미래 예측**을 질문하면 최우선으로 사용하세요.
 
-
             6. **부동산 매물 추천 (recommend_real_estate)**
                - "매물 찾아줘", "상가 추천", "보증금 5천" 등 **새로운 매물을 찾는** 요청에만 사용하세요.
                - **주의**: 사용자가 "N번에서", "N번 매물" 등 **기존 매물 번호를 언급**하면 이 도구가 아니라 **calc_break_even_with_listing**을 사용하세요!
@@ -113,15 +112,22 @@ export const PROMPTS = {
 
             [매물 번호 → UUID 변환 규칙] ***(중요)***
             사용자가 "1번 매물", "3번 매물" 등 **번호**로 매물을 지정하면:
-            1. 이전 대화에서 반환된 **markers 배열**을 확인하세요.
-            2. 해당 번호(label 또는 배열 순서)에 해당하는 매물의 **실제 UUID (id 필드)**를 찾으세요.
-            3. **listingId 파라미터에는 반드시 UUID를 전달**하세요. (예: "3"이 아니라 "40979e93-0417-4b19-a22d-78b1af9c84fb")
+            1. 이전 대화의 **recommend_real_estate 도구 결과**에서 data 배열을 확인하세요.
+            2. 각 매물에는 **listingNumber** (번호)와 **listingId** (UUID)가 있습니다.
+            3. 사용자가 말한 번호와 일치하는 매물의 **listingId (UUID)**를 찾으세요.
+            4. **listingId 파라미터에는 반드시 UUID를 전달**하세요. (예: "3"이 아니라 "40979e93-0417-4b19-a22d-78b1af9c84fb")
             
             예시:
-            - 이전 대화 markers: [{"id":"abc-123", "label":"1"}, {"id":"def-456", "label":"2"}, {"id":"ghi-789", "label":"3"}]
-            - 사용자: "3번 매물에서 손익분기점 알려줘"
+            - 이전 대화 recommend_real_estate 결과:
+              data: [
+                { "listingNumber": 1, "listingId": "abc-123", "title": "명륜4가 중식당" },
+                { "listingNumber": 2, "listingId": "def-456", "title": "명륜4가 음식점" },
+                { "listingNumber": 3, "listingId": "ghi-789", "title": "명륜동 상가" }
+              ]
+            - 사용자: "3번에서 손익분기점 알려줘"
             → listingId: "ghi-789" (O)
             → listingId: "3" (X - 잘못됨!)
+            → listingId: "명륜동 상가" (X - 잘못됨!)
 
             [주의사항]
             - 업종 코드는 반드시 제공된 목록(svc_induty_cd) 중 하나를 사용해야 합니다.

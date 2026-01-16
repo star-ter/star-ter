@@ -14,27 +14,35 @@ function RankingTable({ data }: { data: AreaRanking[] }) {
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead>
-          <tr className="text-left text-sm text-gray-600 border-b">
-            <th className="pb-3 font-normal">순위/상권명</th>
-            <th className="pb-3 font-normal text-right">평균매출 (분기)</th>
-            <th className="pb-3 font-normal text-right">등락률</th>
+          <tr className="text-left text-caption text-gray-600 border-b">
+            <th className="pb-3 pl-4 font-normal">순위/상권명</th>
+            <th className="pb-3 pr-4 font-normal text-right">
+              평균매출 (분기)
+            </th>
+            <th className="pb-3 pr-4 font-normal text-right">등락률</th>
           </tr>
         </thead>
         <tbody>
           {data.map((area) => (
             <tr key={area.rank} className="border-b hover:bg-gray-50">
-              <td className="py-4">
+              <td className="p-4">
                 <div className="flex items-center gap-3">
                   <span className="text-gray-600 w-4">{area.rank}</span>
                   <div>
-                    <div className="font-medium text-gray-900">{area.name}</div>
-                    <div className="text-sm text-gray-500">{area.category}</div>
+                    <div className="text-body font-medium text-gray-900">
+                      {area.name}
+                    </div>
+                    <div className="text-tiny text-gray-500">
+                      {area.category}
+                    </div>
                   </div>
                 </div>
               </td>
-              <td className="py-4 text-right font-medium">{area.score}</td>
+              <td className="p-4 text-right text-body font-strong">
+                {area.score}
+              </td>
               <td
-                className={`py-4 text-right font-medium ${
+                className={`p-4 text-right text-body font-strong ${
                   area.growth.startsWith('▲') || area.growth === 'HOT'
                     ? 'text-red-600'
                     : 'text-blue-800'

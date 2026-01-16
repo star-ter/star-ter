@@ -14,7 +14,7 @@ export function OnboardingIntroPage({
   onBack,
 }: OnboardingIntroPageProps) {
   return (
-    <div className="h-screen h-dvh bg-white flex flex-col overflow-hidden">
+    <div className="h-screen bg-white flex flex-col overflow-hidden">
       <header className="px-4 py-6 flex items-center justify-between shrink-0">
         {onBack && (
           <button
@@ -31,10 +31,10 @@ export function OnboardingIntroPage({
 
       <div className="flex-1 flex flex-col justify-center px-[5%] py-[3vh] overflow-y-auto">
         <div className="max-w-[1200px] w-full mx-auto mb-[8vh] text-center">
-          <h2 className="text-[clamp(2.5rem,6vw,4rem)] font-bold text-gray-900 mb-[2vh]">
+          <h2 className="text-display font-bold text-gray-900 mb-[2vh]">
             상권 분석을 쉽게 시작하세요
           </h2>
-          <p className="text-[clamp(1.125rem,2.5vw,1.5rem)] text-gray-600">
+          <p className="text-h4 text-gray-600">
             당신의 나이, 선호 지역, 운영 시간, 자본금을 기반으로 맞춤형 업종과
             최적의 창업 지역을 추천해드립니다.
           </p>
@@ -43,11 +43,13 @@ export function OnboardingIntroPage({
         <div className="max-w-6xl w-full mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center px-4">
           <div className="flex justify-center lg:justify-end">
             <div className="relative">
-              <div 
+              <div
                 className="w-[clamp(300px,30vw,380px)] aspect-square shrink-0 rounded-2xl bg-white border border-slate-200 p-[6%] flex flex-col justify-between"
                 style={{
-                  animation: 'float 3s ease-in-out infinite, glow 2s ease-in-out infinite alternate',
-                  boxShadow: '0 10px 40px -10px rgba(59, 130, 246, 0.3), 0 4px 20px rgba(0, 0, 0, 0.08)',
+                  animation:
+                    'float 3s ease-in-out infinite, glow 2s ease-in-out infinite alternate',
+                  boxShadow:
+                    '0 10px 40px -10px rgba(59, 130, 246, 0.3), 0 4px 20px rgba(0, 0, 0, 0.08)',
                 }}
               >
                 <style>{`
@@ -61,24 +63,26 @@ export function OnboardingIntroPage({
                   }
                 `}</style>
                 <div className="space-y-1">
-                  <div className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[9px] font-bold text-white bg-blue-500">
+                  <div className="inline-flex items-center rounded-full px-2.5 py-0.5 text-tiny font-bold text-white bg-blue-500">
                     추천
                   </div>
-                  <h3 className="mt-1 text-2xl font-bold text-slate-900">
+                  <h3 className="mt-1 text-h3 font-bold text-slate-900">
                     홍대입구역(홍대)
                   </h3>
-                  <p className="text-lg font-semibold text-slate-400">서울</p>
+                  <p className="text-h5 font-semibold text-slate-400">서울</p>
                 </div>
                 <div className="flex items-end justify-between gap-3">
                   <div>
-                    <p className="text-xs font-semibold text-slate-400 mb-1">
+                    <p className="text-caption font-strong text-slate-400 mb-1">
                       매칭 점수
                     </p>
                     <div className="flex items-end gap-0.5">
-                      <span className="text-3xl font-black text-blue-500">
+                      <span className="text-h2 font-heading text-blue-500">
                         91.2
                       </span>
-                      <span className="text-sm font-bold text-blue-500">점</span>
+                      <span className="text-body font-bold text-blue-500">
+                        점
+                      </span>
                     </div>
                   </div>
                   <div className="relative right-3">
@@ -100,11 +104,46 @@ export function OnboardingIntroPage({
                           strokeWidth="1"
                           strokeDasharray="2,2"
                         ></polygon>
-                        <line x1="80" y1="80" x2="80" y2="24" stroke="#e2e8f0" strokeWidth="1"></line>
-                        <line x1="80" y1="80" x2="133" y2="63" stroke="#e2e8f0" strokeWidth="1"></line>
-                        <line x1="80" y1="80" x2="113" y2="125" stroke="#e2e8f0" strokeWidth="1"></line>
-                        <line x1="80" y1="80" x2="47" y2="125" stroke="#e2e8f0" strokeWidth="1"></line>
-                        <line x1="80" y1="80" x2="27" y2="63" stroke="#e2e8f0" strokeWidth="1"></line>
+                        <line
+                          x1="80"
+                          y1="80"
+                          x2="80"
+                          y2="24"
+                          stroke="#e2e8f0"
+                          strokeWidth="1"
+                        ></line>
+                        <line
+                          x1="80"
+                          y1="80"
+                          x2="133"
+                          y2="63"
+                          stroke="#e2e8f0"
+                          strokeWidth="1"
+                        ></line>
+                        <line
+                          x1="80"
+                          y1="80"
+                          x2="113"
+                          y2="125"
+                          stroke="#e2e8f0"
+                          strokeWidth="1"
+                        ></line>
+                        <line
+                          x1="80"
+                          y1="80"
+                          x2="47"
+                          y2="125"
+                          stroke="#e2e8f0"
+                          strokeWidth="1"
+                        ></line>
+                        <line
+                          x1="80"
+                          y1="80"
+                          x2="27"
+                          y2="63"
+                          stroke="#e2e8f0"
+                          strokeWidth="1"
+                        ></line>
                         <polygon
                           points="80,36 133,63 113,125 47,125 45,69"
                           fill="#3b82f6"
@@ -113,38 +152,73 @@ export function OnboardingIntroPage({
                           strokeWidth="1.5"
                         ></polygon>
                         <circle cx="80" cy="36" r="2.5" fill="#3b82f6"></circle>
-                        <circle cx="133" cy="63" r="2.5" fill="#3b82f6"></circle>
-                        <circle cx="113" cy="125" r="2.5" fill="#3b82f6"></circle>
-                        <circle cx="47" cy="125" r="2.5" fill="#3b82f6"></circle>
+                        <circle
+                          cx="133"
+                          cy="63"
+                          r="2.5"
+                          fill="#3b82f6"
+                        ></circle>
+                        <circle
+                          cx="113"
+                          cy="125"
+                          r="2.5"
+                          fill="#3b82f6"
+                        ></circle>
+                        <circle
+                          cx="47"
+                          cy="125"
+                          r="2.5"
+                          fill="#3b82f6"
+                        ></circle>
                         <circle cx="45" cy="69" r="2.5" fill="#3b82f6"></circle>
                       </svg>
                       <div
-                        className="absolute text-[11px] font-bold text-slate-500 whitespace-nowrap"
-                        style={{ left: '80px', top: '12px', transform: 'translate(-50%, -50%)' }}
+                        className="absolute text-tiny font-strong text-slate-500 whitespace-nowrap"
+                        style={{
+                          left: '80px',
+                          top: '12px',
+                          transform: 'translate(-50%, -50%)',
+                        }}
                       >
                         타깃 연령
                       </div>
                       <div
-                        className="absolute text-[10px] font-semibold text-slate-500 whitespace-nowrap"
-                        style={{ left: '145px', top: '60px', transform: 'translate(0%, -50%)' }}
+                        className="absolute text-tiny font-strong text-slate-500 whitespace-nowrap"
+                        style={{
+                          left: '145px',
+                          top: '60px',
+                          transform: 'translate(0%, -50%)',
+                        }}
                       >
                         창업 비용
                       </div>
                       <div
-                        className="absolute text-[10px] font-semibold text-slate-500 whitespace-nowrap"
-                        style={{ left: '121px', top: '135px', transform: 'translate(0%, -50%)' }}
+                        className="absolute text-tiny font-strong text-slate-500 whitespace-nowrap"
+                        style={{
+                          left: '121px',
+                          top: '135px',
+                          transform: 'translate(0%, -50%)',
+                        }}
                       >
                         상권 테마
                       </div>
                       <div
-                        className="absolute text-[10px] font-semibold text-slate-500 whitespace-nowrap"
-                        style={{ left: '39px', top: '135px', transform: 'translate(-100%, -50%)' }}
+                        className="absolute text-tiny font-strong text-slate-500 whitespace-nowrap"
+                        style={{
+                          left: '39px',
+                          top: '135px',
+                          transform: 'translate(-100%, -50%)',
+                        }}
                       >
                         운영 시간
                       </div>
                       <div
-                        className="absolute text-[10px] font-semibold text-slate-500 whitespace-nowrap"
-                        style={{ left: '15px', top: '60px', transform: 'translate(-100%, -50%)' }}
+                        className="absolute text-tiny font-strong text-slate-500 whitespace-nowrap"
+                        style={{
+                          left: '15px',
+                          top: '60px',
+                          transform: 'translate(-100%, -50%)',
+                        }}
                       >
                         업종 적합
                       </div>
@@ -158,42 +232,42 @@ export function OnboardingIntroPage({
           <div className="flex flex-col justify-center">
             <div className="space-y-[5vh] max-w-lg mx-auto lg:mx-0">
               <div className="flex gap-[1.5vw]">
-                <div className="shrink-0 bg-gray-50 p-[3%] rounded-2xl">
-                  <UserCircle size={40} className="w-[clamp(2rem,4vw,3rem)] h-[clamp(2rem,4vw,3rem)] text-gray-900" />
+                <div className="shrink-0 p-[3%] rounded-2xl">
+                  <UserCircle size={40} className="w-12 h-12 text-gray-900" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-[clamp(1.25rem,2.5vw,1.75rem)] font-bold text-gray-900 mb-[1vh]">
+                  <h3 className="text-h3 font-bold text-gray-900 mb-[1vh]">
                     기본 정보 입력
                   </h3>
-                  <p className="text-gray-500 text-[clamp(0.875rem,1.8vw,1.125rem)] leading-relaxed">
+                  <p className="text-gray-500 text-h5 leading-relaxed">
                     나이, 선호 지역, 운영 시간 등 기본 정보를 알려주세요.
                   </p>
                 </div>
               </div>
 
               <div className="flex gap-[1.5vw]">
-                <div className="shrink-0 bg-gray-50 p-[3%] rounded-2xl">
-                  <Store size={40} className="w-[clamp(2rem,4vw,3rem)] h-[clamp(2rem,4vw,3rem)] text-gray-900" />
+                <div className="shrink-0  p-[3%] rounded-2xl">
+                  <Store size={40} className="w-12 h-12 text-gray-900" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-[clamp(1.25rem,2.5vw,1.75rem)] font-bold text-gray-900 mb-[1vh]">
+                  <h3 className="text-h3 font-bold text-gray-900 mb-[1vh]">
                     업종 선택
                   </h3>
-                  <p className="text-gray-500 text-[clamp(0.875rem,1.8vw,1.125rem)] leading-relaxed">
+                  <p className="text-gray-500 text-h5 leading-relaxed">
                     창업하고 싶은 업종을 선택하면 맞춤 분석을 제공합니다.
                   </p>
                 </div>
               </div>
 
               <div className="flex gap-[1.5vw]">
-                <div className="shrink-0 bg-gray-50 p-[3%] rounded-2xl">
-                  <BarChart3 size={40} className="w-[clamp(2rem,4vw,3rem)] h-[clamp(2rem,4vw,3rem)] text-gray-900" />
+                <div className="shrink-0 p-[3%] rounded-2xl">
+                  <BarChart3 size={40} className="w-12 h-12 text-gray-900" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-[clamp(1.25rem,2.5vw,1.75rem)] font-bold text-gray-900 mb-[1vh]">
+                  <h3 className="text-h3 font-bold text-gray-900 mb-[1vh]">
                     상세 분석 확인
                   </h3>
-                  <p className="text-gray-500 text-[clamp(0.875rem,1.8vw,1.125rem)] leading-relaxed">
+                  <p className="text-gray-500 text-h5 leading-relaxed">
                     AI 기반 상권 분석과 맞춤 지역 추천을 받아보세요.
                   </p>
                 </div>
@@ -207,7 +281,7 @@ export function OnboardingIntroPage({
         <div className="max-w-7xl mx-auto flex justify-end">
           <Button
             onClick={onStart}
-            className="bg-gray-900 hover:bg-gray-800 text-white px-12 py-7 rounded-lg text-lg font-medium cursor-pointer"
+            className="bg-gray-900 hover:bg-gray-800 text-white px-8 py-7 rounded-lg text-lg font-medium cursor-pointer"
           >
             시작하기
           </Button>

@@ -12,9 +12,11 @@ export class ToolsRepository {
     private readonly locationRecommendService: LocationRecommendService,
   ) {}
 
-  // 2) 상권 기본 요약(간단): 유동/상주/직장/매출/점포 (업종 합계 기준)
+  // 2) 상권 기본 요약(간단): 유동/상주/직장/매출/점포 + 생존 데이터 (단일 쿼리로 최적화)
   async getCommercialSummary(params: QueryParams) {
     const { stdrYyquCd, areaCd } = params;
+
+    // 단일 쿼리로 모든 데이터 조회 (3번 → 1번 DB 호출로 최적화)
     const rows = await this.prisma.$queryRaw<unknown[]>`
       WITH
       sales_sum AS (
@@ -49,6 +51,28 @@ export class ToolsRepository {
         WHERE stdr_yyqu_cd = ${stdrYyquCd}
           AND area_cd = ${areaCd}
         GROUP BY 1, 2, 3, 4, 5, 6
+      ),
+      -- 상권 변화 데이터 (최신 분기)
+      change_stat AS (
+        SELECT DISTINCT ON (trdar_cd)
+          trdar_cd,
+          trdar_chnge_ix_nm,
+          opr_sale_mt_avrg
+        FROM commercial_change_commercial
+        WHERE trdar_cd = ${areaCd}
+          AND stdr_yyqu_cd <= ${stdrYyquCd}
+        ORDER BY trdar_cd, stdr_yyqu_cd DESC
+      ),
+      -- 점포 통계 데이터 (폐업률, 개업률 - 최신 분기)
+      store_stat AS (
+        SELECT DISTINCT ON (trdar_cd)
+          trdar_cd,
+          clsbiz_rt,
+          opbiz_rt
+        FROM store_commercial
+        WHERE trdar_cd = ${areaCd}
+          AND stdr_yyqu_cd <= ${stdrYyquCd}
+        ORDER BY trdar_cd, stdr_yyqu_cd DESC
       )
       SELECT
         sales_sum."기준 년분기 코드" AS "매출 기준 년분기 코드",
@@ -66,37 +90,45 @@ export class ToolsRepository {
         sales_sum."주말 매출 금액" AS "주말 매출 금액",
         store_sum."점포 수" AS "점포 수",
         store_sum."유사 업종 점포 수" AS "유사 업종 점포 수",
-        store_sum."프랜차이즈 점포 수" AS "프랜차이즈 점포 수"
+        store_sum."프랜차이즈 점포 수" AS "프랜차이즈 점포 수",
+        -- 생존 관련 데이터 (상권 평가에 중요!)
+        COALESCE(ROUND(ss.clsbiz_rt::numeric, 1)::text || '%', '정보없음') AS "폐업률",
+        COALESCE(ROUND(ss.opbiz_rt::numeric, 1)::text || '%', '정보없음') AS "개업률",
+        COALESCE(ROUND(cs.opr_sale_mt_avrg::numeric, 0)::text || '개월', '정보없음') AS "평균영업기간",
+        COALESCE(cs.trdar_chnge_ix_nm, '정보없음') AS "상권변화상태"
       FROM sales_sum
       LEFT JOIN v_foot_traffic ft
         ON ft.stdr_yyqu_cd = sales_sum."기준 년분기 코드"
-      AND ft.area_level = sales_sum."지역 수준"
-      AND ft.area_cd = sales_sum."지역 코드"
-      AND ft.area_nm = sales_sum."지역 이름"
-      AND ft.trdar_se_cd = sales_sum."상권 구분 코드"
-      AND ft.trdar_se_cd_nm = sales_sum."상권 구분 코드 명"
+        AND ft.area_level = sales_sum."지역 수준"
+        AND ft.area_cd = sales_sum."지역 코드"
+        AND ft.area_nm = sales_sum."지역 이름"
+        AND ft.trdar_se_cd = sales_sum."상권 구분 코드"
+        AND ft.trdar_se_cd_nm = sales_sum."상권 구분 코드 명"
       LEFT JOIN v_resident_population rp
         ON rp.stdr_yyqu_cd = sales_sum."기준 년분기 코드"
-      AND rp.area_level = sales_sum."지역 수준"
-      AND rp.area_cd = sales_sum."지역 코드"
-      AND rp.area_nm = sales_sum."지역 이름"
-      AND rp.trdar_se_cd = sales_sum."상권 구분 코드"
-      AND rp.trdar_se_cd_nm = sales_sum."상권 구분 코드 명"
+        AND rp.area_level = sales_sum."지역 수준"
+        AND rp.area_cd = sales_sum."지역 코드"
+        AND rp.area_nm = sales_sum."지역 이름"
+        AND rp.trdar_se_cd = sales_sum."상권 구분 코드"
+        AND rp.trdar_se_cd_nm = sales_sum."상권 구분 코드 명"
       LEFT JOIN v_working_population wp
         ON wp.stdr_yyqu_cd = sales_sum."기준 년분기 코드"
-      AND wp.area_level = sales_sum."지역 수준"
-      AND wp.area_cd = sales_sum."지역 코드"
-      AND wp.area_nm = sales_sum."지역 이름"
-      AND wp.trdar_se_cd = sales_sum."상권 구분 코드"
-      AND wp.trdar_se_cd_nm = sales_sum."상권 구분 코드 명"
+        AND wp.area_level = sales_sum."지역 수준"
+        AND wp.area_cd = sales_sum."지역 코드"
+        AND wp.area_nm = sales_sum."지역 이름"
+        AND wp.trdar_se_cd = sales_sum."상권 구분 코드"
+        AND wp.trdar_se_cd_nm = sales_sum."상권 구분 코드 명"
       LEFT JOIN store_sum
         ON store_sum."기준 년분기 코드" = sales_sum."기준 년분기 코드"
-      AND store_sum."지역 수준" = sales_sum."지역 수준"
-      AND store_sum."지역 코드" = sales_sum."지역 코드"
-      AND store_sum."지역 이름" = sales_sum."지역 이름"
-      AND store_sum."상권 구분 코드" = sales_sum."상권 구분 코드"
-      AND store_sum."상권 구분 코드 명" = sales_sum."상권 구분 코드 명"
+        AND store_sum."지역 수준" = sales_sum."지역 수준"
+        AND store_sum."지역 코드" = sales_sum."지역 코드"
+        AND store_sum."지역 이름" = sales_sum."지역 이름"
+        AND store_sum."상권 구분 코드" = sales_sum."상권 구분 코드"
+        AND store_sum."상권 구분 코드 명" = sales_sum."상권 구분 코드 명"
+      LEFT JOIN change_stat cs ON cs.trdar_cd = sales_sum."지역 코드"
+      LEFT JOIN store_stat ss ON ss.trdar_cd = sales_sum."지역 코드"
     `;
+
     return rows;
   }
 
@@ -1368,14 +1400,17 @@ export class ToolsRepository {
         LIMIT ${limit}
       `;
 
-      // BigInt 처리 및 포맷팅
-      const formattedItems = items.map((item) => {
+      // BigInt 처리 및 포맷팅 (번호 매핑 포함)
+      const formattedItems = items.map((item, index) => {
         // BigInt -> Number (천원 -> 만원 변환)
         const dep = Number(item.deposit || 0) / 10;
         const rent = Number(item.monthlyrent || 0) / 10;
         const dist = Number(item.distance || 0).toFixed(2); // km
 
         return {
+          // 번호-UUID 매핑: AI가 "N번 매물"을 참조할 때 사용
+          listingNumber: index + 1, // 1번, 2번, 3번...
+          listingId: item.id, // UUID (calc_break_even_with_listing에 사용)
           id: item.id,
           title: item.title || '상세 정보 없음',
           deposit: dep, // 만원

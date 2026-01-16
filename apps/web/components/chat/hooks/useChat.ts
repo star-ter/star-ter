@@ -1,53 +1,58 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { sendMessage as apiSendMessage } from '../../../app/actions/chat';
 import { type AiAction } from '../../../lib/api/ai';
 import { Message, Thread } from '../types';
+import type { AiProvider } from '../ChatHeader';
+import { useChatStore } from '@/store/use-chat-store';
+import {
+  buildMessageFromAiResponse,
+  splitActions,
+} from '@/lib/chat/ai-message';
 
 // userId를 받아서 개인화 추천에 활용
-export function useChat(userId?: string) {
+export function useChat(aiProvider: AiProvider = 'openai') {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const conversationId = useChatStore((state) => state.conversationId);
+  const setConversationId = useChatStore((state) => state.setConversationId);
+  const clearConversationId = useChatStore(
+    (state) => state.clearConversationId,
+  );
   const [currentThread, setCurrentThread] = useState<Thread>({
     id: 'default',
     title: 'New Thread',
     createdAt: new Date(),
   });
 
-  // localStorage에서 대화 내역 불러오기
-  useEffect(() => {
-    const savedMessages = localStorage.getItem('chat_messages');
-    if (savedMessages) {
-      try {
-        const parsed = JSON.parse(savedMessages);
-        const restored = parsed.map((msg: Message) => ({
-          ...msg,
-          timestamp: new Date(msg.timestamp),
-        }));
-        setMessages(restored);
-      } catch {
-        console.error('Failed to parse saved messages');
-      }
-    }
-  }, []);
-
-  // 메시지 변경 시 localStorage에 저장
-  useEffect(() => {
-    if (messages.length > 0) {
-      localStorage.setItem('chat_messages', JSON.stringify(messages));
-    }
-  }, [messages]);
-
   const handleNewThread = useCallback(() => {
     setMessages([]);
     setInputValue('');
+    clearConversationId();
     setCurrentThread({
       id: crypto.randomUUID(),
       title: 'New Thread',
       createdAt: new Date(),
     });
-    localStorage.removeItem('chat_messages');
-  }, []);
+  }, [clearConversationId]);
+
+  const loadConversation = useCallback(
+    (params: {
+      conversationId: string;
+      messages: Message[];
+      title?: string;
+    }) => {
+      setConversationId(params.conversationId);
+      setMessages(params.messages);
+      setInputValue('');
+      setCurrentThread({
+        id: params.conversationId,
+        title: params.title || 'New Thread',
+        createdAt: new Date(),
+      });
+    },
+    [setConversationId],
+  );
 
   const sendMessage = useCallback(
     async (text: string, onActions?: (actions: AiAction[]) => void) => {
@@ -77,18 +82,18 @@ export function useChat(userId?: string) {
           content: msg.content,
         }));
 
-        // userId를 전달하여 개인화 추천 지원
-        const response = await apiSendMessage(text, history, userId);
+        // userId와 aiProvider를 전달
+        const response = await apiSendMessage(
+          text,
+          history,
+          aiProvider,
+          conversationId || undefined,
+        );
 
         // 차트/리스트 액션과 지도 액션 분리
-        const chartActions =
-          response.actions?.filter(
-            (a) => a.type.startsWith('chart.') || a.type.startsWith('list.'),
-          ) || [];
-        const mapActions =
-          response.actions?.filter(
-            (a) => !a.type.startsWith('chart.') && !a.type.startsWith('list.'),
-          ) || [];
+        const { chartActions, otherActions: mapActions } = splitActions(
+          response.actions,
+        );
 
         // Markers 정보가 있다면 content에 hidden-like 텍스트로 추가하여 히스토리에 저장
         // (AI가 다음 턴에서 이전 매물 정보를 참조할 수 있게 함)
@@ -102,20 +107,23 @@ export function useChat(userId?: string) {
           )}`;
         }
 
-        const aiMessage: Message = {
+        const aiMessage: Message = buildMessageFromAiResponse({
           id: crypto.randomUUID(),
-          role: 'assistant',
-          content: contentWithMarkers, // markers가 포함된 content 저장
-          // UI에는 reply만 보여주기 위해 displayContent 필드 추가 (선택적)
-          // 단, Message 타입에 displayContent가 없다면 그냥 content를 보여주게 됨.
-          // 사용자가 이 텍스트를 보게 되더라도 기능 동작이 우선이므로 일단 저장.
-          // 더 깔끔하게 하려면 Message 타입을 확장해서 rawContent vs displayContent로 나눠야 함.
-          // 현재는 급한 불을 끄기 위해 텍스트 뒤에 붙임.
+          response,
+          contentOverride: contentWithMarkers,
           timestamp: new Date(),
           chartActions: chartActions.length > 0 ? chartActions : undefined,
-        };
+        });
 
         setMessages((prev) => [...prev, aiMessage]);
+
+        if (response.conversationId) {
+          setConversationId(response.conversationId);
+        }
+
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('chat:updated'));
+        }
 
         // 지도 관련 액션만 onActions로 전달
         if (mapActions.length > 0 && onActions) {
@@ -135,7 +143,7 @@ export function useChat(userId?: string) {
         setIsLoading(false);
       }
     },
-    [messages, userId],
+    [messages, aiProvider, conversationId, setConversationId],
   );
 
   return {
@@ -146,5 +154,6 @@ export function useChat(userId?: string) {
     currentThread,
     sendMessage,
     handleNewThread,
+    loadConversation,
   };
 }

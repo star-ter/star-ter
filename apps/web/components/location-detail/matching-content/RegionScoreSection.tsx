@@ -31,18 +31,6 @@ export function RegionScoreSection({ score }: RegionScoreSectionProps) {
       <div className="grid grid-cols-2 gap-3 mb-8">
         <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
           <div className="flex items-center gap-2 text-slate-400 text-caption mb-2">
-            <span>주요 연령층</span>
-          </div>
-          <p className="text-h2 font-heading text-slate-900">
-            {details.mainAgeGroup}
-          </p>
-          <p className="text-caption text-blue-600 font-medium">
-            비중 {details.mainAgeRatio.toFixed(1)}%
-          </p>
-        </div>
-
-        <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-          <div className="flex items-center gap-2 text-slate-400 text-caption mb-2">
             <span>
               {details.theme === 'university' && '인근 대학'}
               {details.theme === 'station' && '지하철역'}
@@ -70,6 +58,17 @@ export function RegionScoreSection({ score }: RegionScoreSectionProps) {
             {details.theme === 'commercial' && '일 평균'}
             {details.theme === 'office' && '도보 5분 이내'}
             {details.theme === 'residential' && '도보 5분 이내'}
+          </p>
+        </div>
+        <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+          <div className="flex items-center gap-2 text-slate-400 text-caption mb-2">
+            <span>유동인구 주요 연령층</span>
+          </div>
+          <p className="text-h2 font-heading text-slate-900">
+            {details.mainAgeGroup}
+          </p>
+          <p className="text-caption text-blue-600 font-medium">
+            비중 {details.mainAgeRatio.toFixed(1)}%
           </p>
         </div>
       </div>

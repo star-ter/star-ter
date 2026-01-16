@@ -108,7 +108,7 @@ export function OnboardingPage({
             {[1, 2, 3, 4, 5].map((s) => (
               <div key={s} className="flex-1 last:flex-none flex items-center">
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 shrink-0 ${
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-caption font-bold transition-all duration-300 shrink-0 ${
                     s <= step
                       ? 'bg-[#2C2F6C] text-white'
                       : 'bg-gray-200 text-gray-400'

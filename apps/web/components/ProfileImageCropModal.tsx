@@ -209,14 +209,14 @@ export function ProfileImageCropModal({
         className="w-[92vw] max-w-sm bg-white rounded-[28px] shadow-2xl border border-gray-100 overflow-hidden"
       >
         <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
-          <p className="text-base font-bold text-slate-900">이미지 편집하기</p>
+          <p className="text-h5 font-bold text-slate-900">이미지 편집하기</p>
           <button
             type="button"
             onClick={onClose}
             className="p-1 text-slate-400 hover:text-slate-600"
             aria-label="닫기"
           >
-            <X className="w-5 h-5" />
+            <X className="w-6 h-6" />
           </button>
         </div>
         <div className="p-6">
@@ -306,7 +306,7 @@ export function ProfileImageCropModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-2 rounded-2xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                className="px-5 py-2 rounded-2xl border border-slate-200 text-caption font-bold text-slate-600 hover:bg-slate-50"
               >
                 취소
               </button>
@@ -314,14 +314,14 @@ export function ProfileImageCropModal({
                 type="button"
                 onClick={handleConfirmCrop}
                 disabled={isUploadingImage}
-                className="px-5 py-2 rounded-2xl bg-indigo-500 text-white text-sm font-semibold shadow-lg shadow-indigo-200 hover:bg-indigo-600 transition-colors disabled:opacity-60"
+                className="px-5 py-2 rounded-2xl bg-indigo-500 text-white text-caption font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-600 transition-colors disabled:opacity-60"
               >
                 {isUploadingImage ? '업로드 중...' : '적용하기'}
               </button>
             </div>
           </div>
           {uploadError && (
-            <p className="mt-3 text-xs text-red-500">{uploadError}</p>
+            <p className="mt-3 text-caption text-red-500">{uploadError}</p>
           )}
         </div>
       </motion.div>

@@ -15,14 +15,12 @@ export class AiService {
     private readonly openAiService: OpenAiService,
   ) {}
 
-  // 대화 히스토리 포함 메시지 처리 함수 (꼬리 질문 지원)
-  private readonly MAX_HISTORY_LENGTH = 10;
   // [DEBUG] 히스토리 기능 on/off 플래그 - 시연용으로 끌 수 있음
   private readonly ENABLE_HISTORY = true; // true로 변경하면 히스토리 활성화
 
   async getAIMessageWithHistory(
     message: string,
-    history: Array<{ role: 'user' | 'assistant'; content: string }>,
+    history: { role: 'user' | 'assistant'; content: string }[],
   ): Promise<string> {
     const [categories, areaList] = await Promise.all([
       this.getCategories(message),
@@ -34,15 +32,14 @@ export class AiService {
 
     // 이전 대화 히스토리 추가 (ENABLE_HISTORY가 true일 때만)
     if (this.ENABLE_HISTORY && history && history.length > 0) {
-      const recentHistory = history.slice(-this.MAX_HISTORY_LENGTH);
-      for (const msg of recentHistory) {
+      history.forEach((msg) => {
         input.push({
           role: msg.role,
           content: msg.content,
         });
-      }
+      });
       console.log(
-        `[AiService] History enabled: ${recentHistory.length} messages added`,
+        `[AiService] History enabled: ${history.length} messages added`,
       );
     } else if (!this.ENABLE_HISTORY) {
       console.log('[AiService] History disabled - using single message mode');
@@ -170,7 +167,7 @@ export class AiService {
 
     return finalJson;
   }
-
+  /* 벡터 검색의 신뢰도 임계값보다 높으면(즉, 거리가 멀면) fallback으로, trgm 사용  */
   async getAreaInfo(message: string) {
     const areaText = this.openAiService.getText(
       await this.openAiService.getLocationByMessage(message),

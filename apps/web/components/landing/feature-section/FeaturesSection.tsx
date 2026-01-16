@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { ImageWithFallback } from '@/components/figma/ImageWithFallback';
 import bigdata from './img/db_img.png';
 import ai from './img/ai_img.png';
 import recommend from './img/estate_img.png';
@@ -63,9 +62,9 @@ export function FeaturesSection() {
                   <button
                     key={item.id}
                     onClick={() => setActiveTab(index)}
-                    className={`text-sm px-3 py-1 rounded-full transition-colors ${
+                    className={`text-caption px-3 py-1 rounded-full transition-colors ${
                       activeTab === index
-                        ? 'bg-white border border-gray-300 shadow-sm font-medium text-blue-900'
+                        ? 'bg-white border border-gray-300 shadow-sm font-bold text-blue-900'
                         : 'bg-gray-200 text-gray-500 hover:bg-gray-300'
                     }`}
                   >
@@ -73,16 +72,16 @@ export function FeaturesSection() {
                   </button>
                 ))}
               </div>
-              <h2 className="text-4xl font-extrabold min-h-[80px]">
+              <h2 className="text-display font-heading mb-8">
                 {feature.title}
               </h2>
-              <p className="text-gray-600 mb-6 text-lg leading-relaxed min-h-[84px]">
+              <p className="text-gray-600 mb-6 text-h5 leading-relaxed min-h-[84px]">
                 {feature.description}
               </p>
             </div>
 
             <div className="p-2 bg-white rounded-3xl shadow-xl border border-gray-100 transition-all duration-300 h-[520px] flex items-center justify-center overflow-hidden">
-              <figure className="w-full h-full bg-white rounded-2xl flex items-center justify-center text-slate-400 font-bold text-lg">
+              <figure className="w-full h-full bg-white rounded-2xl flex items-center justify-center">
                 <img
                   src={feature.image.src}
                   alt={feature.label}

@@ -97,10 +97,10 @@ export default function LoadingPage() {
 
         {/* Main Text Area */}
         <div className="text-center mb-10 space-y-4">
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+          <h1 className="text-h2 font-bold text-slate-900 tracking-tight">
             맞춤 추천을 준비하고 있습니다
           </h1>
-          <p className="text-slate-600 text-lg font-medium leading-relaxed">
+          <p className="text-slate-600 text-h5 font-medium leading-relaxed">
             입력하신 정보를 바탕으로 최적의 상권을 분석하고 있어요
           </p>
         </div>
@@ -115,7 +115,7 @@ export default function LoadingPage() {
           </div>
 
           {/* Status Loading Text */}
-          <p className="text-base font-bold text-slate-600 text-center animate-pulse tracking-widest">
+          <p className="text-body font-bold text-slate-600 text-center animate-pulse tracking-widest">
             {progress < 30 && '데이터 수집 중 . . .'}
             {progress >= 30 && progress < 60 && '매출 패턴 분석 중 . . .'}
             {progress >= 60 && progress < 90 && '경쟁 현황 파악 중 . . .'}
@@ -125,7 +125,7 @@ export default function LoadingPage() {
 
         {/* Meta Percentage Text */}
         <div className="mt-4">
-          <span className="text-sm font-bold text-slate-500 tabular-nums">
+          <span className="text-caption font-bold text-slate-500 tabular-nums">
             {progress}%
           </span>
         </div>

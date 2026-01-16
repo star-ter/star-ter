@@ -53,6 +53,7 @@ export class OpenAiService {
       temperature: 0,
       input: input,
       service_tier: 'priority',
+      parallel_tool_calls: true,
       tools: TOOLS as Array<Tool>,
       instructions: PROMPTS.TOOL_CALL_SYSTEM.replace(
         '${categoryVectors}',

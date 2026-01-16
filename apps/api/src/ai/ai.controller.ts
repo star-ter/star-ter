@@ -1,15 +1,6 @@
-import {
-  Controller,
-  Logger,
-  Post,
-  Body,
-  Get,
-  Query,
-  RequestTimeoutException,
-} from '@nestjs/common';
+import { Controller, Logger, Get, Query } from '@nestjs/common';
 import { AiService } from './ai.service';
 import { ToolsRepository } from './tools.repository';
-
 @Controller('ai')
 export class AiController {
   private readonly logger = new Logger(AiController.name);
@@ -18,53 +9,8 @@ export class AiController {
     private readonly toolsRepository: ToolsRepository,
   ) {}
 
-  // 대화 히스토리 포함 POST 엔드포인트 (꼬리 질문 지원)
-  @Post('/message')
-  async chatAIWithHistory(
-    @Body()
-    body: {
-      message: string;
-      history?: Array<{ role: 'user' | 'assistant'; content: string }>;
-    },
-  ) {
-    const startTime = Date.now();
-    this.logger.log(
-      `Received message with history: ${body.message} (${body.history?.length || 0} previous messages)`,
-    );
-
-    // 50초 타임아웃 설정
-    const TIMEOUT_MS = 50000;
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(
-        () =>
-          reject(
-            new RequestTimeoutException(
-              'AI 응답 시간이 초과되었습니다. (50초 제한)',
-            ),
-          ),
-        TIMEOUT_MS,
-      ),
-    );
-
-    try {
-      const response = await Promise.race([
-        this.aiService.getAIMessageWithHistory(
-          body.message,
-          body.history || [],
-        ),
-        timeoutPromise,
-      ]);
-
-      this.logger.log(`Response time: ${Date.now() - startTime} ms`);
-      return response;
-    } catch (error) {
-      this.logger.error(`Error processing message: ${error.message}`);
-      throw error;
-    }
-  }
-
   // =========================================
-  // 차트 데이터 API 엔드포인트
+  // 차트 데이터 API 엔드포인트(LLM 안에 들어가는 카드)
   // =========================================
 
   /**

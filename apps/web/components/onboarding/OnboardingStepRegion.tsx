@@ -29,7 +29,7 @@ export function OnboardingStepRegion({
 }: OnboardingStepRegionProps) {
   return (
     <div className="space-y-[4vh]">
-      <h1 className="text-[clamp(1.875rem,4vw,2.5rem)] font-bold text-gray-900">
+      <h1 className="text-display font-bold text-gray-900">
         선호하는 지역 특징을 선택하세요
       </h1>
 
@@ -47,10 +47,10 @@ export function OnboardingStepRegion({
             <div className="flex justify-center mb-[1.5vh]">
               <option.Icon
                 size={40}
-                className="w-[clamp(2rem,5vw,2.75rem)] h-[clamp(2rem,5vw,2.75rem)] text-gray-900"
+                className="w-12 h-12 text-gray-900"
               />
             </div>
-            <div className="text-[clamp(1rem,2vw,1.25rem)] font-bold text-gray-900">
+            <div className="text-h5 font-bold text-gray-900">
               {option.label}
             </div>
           </button>

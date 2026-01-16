@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useMemo, useState } from 'react';
+import { useRef, useEffect } from 'react';
 import {
   useKakaoMap,
   type KakaoPolygon,
@@ -9,10 +9,10 @@ import {
 } from '../../hooks/useKakaoMap';
 import { PolygonData, RealEstateItem } from './types';
 import { PriceFilterBar } from './PriceFilterBar';
-import { IndustryAnalysisBar, type IndustryId } from './IndustryAnalysisBar';
+
 import { TrafficFilterBar } from './TrafficFilterBar';
 import { useStoreLocations } from './hooks';
-import { MAJOR_CATEGORIES } from './constants/category';
+
 import { usePopulationLayer } from './hooks/usePopulationLayer';
 import { GenderFilter, AgeFilter } from './types';
 
@@ -98,10 +98,7 @@ export function MapSection({
   const industryMarkersRef = useRef<KakaoCustomOverlay[]>([]); // 업종 분석 마커용
   const isDraggingRef = useRef(false); // 드래그 상태 추적
 
-  // 【업종 분석 상태】
-  const [selectedIndustry, setSelectedIndustry] = useState<IndustryId | null>(
-    null,
-  );
+
 
   // 【커스텀 훅 사용】 점포 위치 데이터 fetch
   const { stores } = useStoreLocations(
@@ -110,44 +107,7 @@ export function MapSection({
     mode === 'analysis', // analysis 모드일 때만 활성화
   );
 
-  // 【과열 지역 수 계산】 stores에서 밀집도 기반으로 hotspot 계산
-  const hotspotCount = useMemo(() => {
-    if (stores.length === 0) return 0;
 
-    const GRID_SIZE = 50;
-    const getDistanceMeters = (
-      lat1: number,
-      lng1: number,
-      lat2: number,
-      lng2: number,
-    ): number => {
-      const R = 6371000;
-      const dLat = ((lat2 - lat1) * Math.PI) / 180;
-      const dLng = ((lng2 - lng1) * Math.PI) / 180;
-      const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos((lat1 * Math.PI) / 180) *
-          Math.cos((lat2 * Math.PI) / 180) *
-          Math.sin(dLng / 2) *
-          Math.sin(dLng / 2);
-      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    };
-
-    // 밀집도 계산
-    const storesWithDensity = stores.map((store) => {
-      const nearbyCount = stores.filter(
-        (other) =>
-          other !== store &&
-          getDistanceMeters(store.lat, store.lng, other.lat, other.lng) <=
-            GRID_SIZE * 2,
-      ).length;
-      return nearbyCount;
-    });
-
-    const maxNearby = Math.max(...storesWithDensity, 1);
-    // 밀집도 >= 0.6인 곳 = hotspot
-    return storesWithDensity.filter((count) => count / maxNearby >= 0.6).length;
-  }, [stores]);
 
   const { map, loaded } = useKakaoMap(mapRef);
 
@@ -587,21 +547,6 @@ export function MapSection({
             filteredCount={filteredCount}
           />
         )}
-
-      {/* 업종 분석 바 (analysis 모드일 때만 표시) */}
-      {mode === 'analysis' && (
-        <IndustryAnalysisBar
-          selectedIndustry={selectedIndustry}
-          onSelectIndustry={setSelectedIndustry}
-          storeCount={stores.length}
-          hotspotCount={hotspotCount}
-          selectedCategoryName={
-            MAJOR_CATEGORIES.find((c) => c.code === selectedAnalysisCategory)
-              ?.name || '전체'
-          }
-        />
-      )}
-
       {/* 유동인구 필터 바 (traffic 모드일 때만 표시) */}
       {mode === 'traffic' && trafficFilter && (
         <TrafficFilterBar
