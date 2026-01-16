@@ -5,8 +5,6 @@ import { ResponseInput, Tool } from 'openai/resources/responses/responses.js';
 import { TOOLS } from '../tools/definitions';
 import { FINAL_RESPONSE_SCHEMA_FOR_ACTION } from '../schemas/response-schemas';
 import { PROMPTS } from '../constants/prompts';
-import { initValkeySemanticCache } from '../cache/valkey.client';
-import { semanticGetByVec, semanticSetByVec } from '../cache/semantic-cache';
 
 @Injectable()
 export class OpenAiService {
@@ -104,39 +102,5 @@ export class OpenAiService {
           `svc_induty_cd: ${cat.code}, svc_induty_cd_nm: ${cat.categoryName}`,
       )
       .join('\n');
-  }
-
-  /**
-   * LLM 결과를 벡터 캐시에 저장하고 재사용하는 유틸리티 함수
-   * ex)
-   * getTestResponse(message: string) {
-   *   return this.llmSemanticCache(message, async () => {
-   *     const response = await this.client.responses.create({
-   *       model: 'gpt-4.1-mini',
-   *       input: message,
-   *     });
-   *     return this.getText(response);
-   *   });
-   * }
-   * @param text llm input text
-   * @param llmFunction llm 실행 함수
-   * @returns {response: string, hit: boolean} 캐시된 값 또는 LLM 결과
-   */
-  private async llmSemanticCache(
-    text: string,
-    llmFunction: () => Promise<string>,
-  ) {
-    const client = await initValkeySemanticCache();
-    const vec = (await this.embedText(text)).data[0].embedding;
-
-    const cached = await semanticGetByVec(client, vec, 1);
-    if (cached != null) {
-      return { value: String(cached), hit: true };
-    }
-
-    const value = await llmFunction();
-    await semanticSetByVec(client, text, vec, JSON.stringify(value), 300);
-
-    return { response: value, hit: false };
   }
 }

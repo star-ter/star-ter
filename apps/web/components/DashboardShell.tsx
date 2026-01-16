@@ -24,7 +24,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       style={
         {
           '--sidebar-offset': isSidebarOpen ? '350px' : '80px',
+        } as CSSProperties
+      }
+    >
       <Sidebar
+        activeMenu={activeMenu}
         onMenuClick={(id) => {
           if (id === 'home') router.push('/locations');
           if (id === 'templates') router.push('/locations/search');
