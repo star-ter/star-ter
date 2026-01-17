@@ -1,7 +1,6 @@
 "use client";
 
 import { Suspense } from "react";
-import { DashboardShell } from "@/components/DashboardShell";
 import { ChatPage } from "@/components/chat/ChatPage";
 
 /**
@@ -10,10 +9,8 @@ import { ChatPage } from "@/components/chat/ChatPage";
  */
 export default function ChatRoutePage() {
   return (
-    <DashboardShell>
-      <Suspense fallback={<div>Loading...</div>}>
-        <ChatPage />
-      </Suspense>
-    </DashboardShell>
+    <Suspense fallback={<div>Loading...</div>}>
+      <ChatPage />
+    </Suspense>
   );
 }
