@@ -16,6 +16,7 @@ interface NewsSectionProps {
   locationName?: string;
   showImages?: boolean;
   showPagination?: boolean;
+  limit?: number;
 }
 
 export default function NewsSection({
@@ -23,6 +24,7 @@ export default function NewsSection({
   locationName,
   showImages = false,
   showPagination = false,
+  limit = 5,
 }: NewsSectionProps) {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +41,7 @@ export default function NewsSection({
       const res = await fetch(
         `${API_URL}/news?region=${encodeURIComponent(
           targetRegion,
-        )}&page=${page}&limit=5`,
+        )}&page=${page}&limit=${limit}`,
       );
       if (!res.ok) {
         throw new Error('Failed to fetch news');
@@ -53,7 +55,7 @@ export default function NewsSection({
     } finally {
       setLoading(false);
     }
-  }, [region, page]);
+  }, [region, page, limit]);
 
   useEffect(() => {
     fetchNews();

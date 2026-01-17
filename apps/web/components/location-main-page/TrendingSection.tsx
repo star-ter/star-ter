@@ -57,18 +57,14 @@ export function TrendingSection() {
                   <div className="h-4 w-24 rounded bg-muted" />
                 </div>
               ))
-            : data.map((item) => (
+            : data.map((item, index) => (
                 <Link
                   key={item.code}
                   href={`/locations/detail/${item.code}`}
                   className="w-72 shrink-0 rounded-2xl bg-background shadow-sm border border-border p-5 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
                 >
-                  <span className="inline-block px-3 py-1 rounded-full text-tiny font-heading text-primary-foreground bg-destructive mb-2">
-                    {item.growthRate > 50
-                      ? '폭발 성장'
-                      : item.growthRate > 20
-                        ? '급성장'
-                        : '성장'}
+                  <span className="inline-block px-3 py-1 rounded-full text-tiny font-heading text-primary-foreground bg-primary mb-2">
+                    TOP {index + 1}
                   </span>
                   <h4 className="text-h5 font-heading text-foreground mb-1 line-clamp-1">
                     {item.name}
@@ -86,7 +82,7 @@ export function TrendingSection() {
                       <span className="text-caption font-strong text-muted-foreground block">
                         성장률
                       </span>
-                      <span className="text-h5 font-heading text-success">
+                      <span className="text-h5 font-heading text-primary">
                         +{item.growthRate.toFixed(1)}%
                       </span>
                     </div>

@@ -83,9 +83,7 @@ export function AverageSalesSection() {
                       <span className="text-caption font-strong text-muted-foreground block">
                         성장률
                       </span>
-                      <span
-                        className={`text-h5 font-heading ${item.growthRate > 0 ? 'text-success' : 'text-destructive'}`}
-                      >
+                      <span className={`text-h5 font-heading text-primary`}>
                         {item.growthRate > 0 ? '+' : ''}
                         {item.growthRate.toFixed(1)}%
                       </span>

@@ -343,6 +343,7 @@ export function LocationDetailPage({
                           locationName={basicInfo.dongName}
                           showImages={true}
                           showPagination={true}
+                          limit={10}
                         />
                       </div>
                     )}
