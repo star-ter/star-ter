@@ -61,6 +61,7 @@ export function RecommendSection() {
     ScoredLocation[]
   >([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const prefetchConsumed = useRef(false);
 
   useEffect(() => {
@@ -88,20 +89,16 @@ export function RecommendSection() {
       setIsLoading(true);
       try {
         const onboarding = await getOnboarding();
-        if (!onboarding || !onboarding.completed) return;
-        if (
-          !onboarding.age ||
-          !onboarding.region ||
-          !onboarding.operatingTime ||
-          !onboarding.capital
-        )
+        if (!onboarding || !onboarding.completed || !onboarding.age) {
+          setNeedsOnboarding(true);
           return;
+        }
 
         const response = await getRecommendations({
           age: onboarding.age,
-          region: onboarding.region,
-          operatingTime: onboarding.operatingTime,
-          capital: onboarding.capital,
+          region: onboarding.region!,
+          operatingTime: onboarding.operatingTime!,
+          capital: onboarding.capital!,
           industryCode: onboarding.industryCode,
         });
 
@@ -147,7 +144,7 @@ export function RecommendSection() {
     return [];
   }, [recommendedLocations]);
 
-  // 로그인 안됨 or 온보딩 미완료시 표시할 내용
+  // 로그인 안됨
   if (!authUser) {
     return (
       <section className="px-8 py-6">
@@ -162,10 +159,53 @@ export function RecommendSection() {
             더보기 &gt;
           </Link>
         </div>
-        <div className="bg-muted/30 rounded-2xl p-6 border border-border">
-          <p className="text-muted-foreground">
-            로그인하고 온보딩을 완료하면 맞춤 추천을 받을 수 있어요!
+        <div className="bg-muted/30 rounded-2xl p-6 border border-border flex flex-col items-center justify-center py-12 text-center">
+          <p className="text-body text-foreground mb-1 font-bold">
+            로그인이 필요한 서비스입니다.
           </p>
+          <p className="text-caption text-muted-foreground mb-4">
+            로그인하고 나에게 딱 맞는 상권을 추천받아보세요!
+          </p>
+          <Link
+            href="/login"
+            className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors"
+          >
+            로그인하기
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
+  // 온보딩 미완료 시
+  if (needsOnboarding) {
+    return (
+      <section className="px-8 py-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-h3 font-heading text-foreground">
+            {authUser?.nickname ? `${authUser.nickname}님` : '사장님'}께 추천하는
+            상권
+          </h2>
+          <Link
+            href="/locations/search?tab=맞춤 추천"
+            className="text-body font-strong text-muted-foreground hover:text-foreground transition-colors"
+          >
+            더보기 &gt;
+          </Link>
+        </div>
+        <div className="bg-muted/30 rounded-2xl p-6 border border-border flex flex-col items-center justify-center py-12 text-center">
+          <p className="text-body text-foreground mb-1 font-bold">
+            아직 맞춤 정보를 입력하지 않으셨네요!
+          </p>
+          <p className="text-caption text-muted-foreground mb-4">
+            간단한 설문을 완료하면 사장님께 딱 맞는 상권을 추천해드려요.
+          </p>
+          <Link
+            href="/onboarding/intro"
+            className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors"
+          >
+            맞춤 정보 입력하기
+          </Link>
         </div>
       </section>
     );

@@ -1,6 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { getOnboarding } from '@/services/user/user.api';
+import { useUserStore } from '@/store/use-user-store';
 import {
   AgeScoreSection,
   RegionScoreSection,
@@ -21,12 +24,41 @@ export function MatchingContent({
   locationName,
   trdarCd,
 }: MatchingContentProps) {
+  const authUser = useUserStore((state) => state.authUser);
   const [scoreData, setScoreData] = useState<ScoreData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
+  const [requiresLogin, setRequiresLogin] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
+      // 1. 로그인 체크 (authUser가 로드될 때까지 기다릴 수도 있지만, 여기선 간단히)
+      // useUserStore는 클라이언트 사이드에서 초기화되므로,
+      // useEffect 내부에서 authUser 값을 직접 확인하거나,
+      // 별도의 useEffect로 분리할 수도 있음.
+      // 하지만 여기선 fetchData 호출 시점에 판단.
+      if (!authUser) {
+        setRequiresLogin(true);
+        setLoading(false);
+        return;
+      }
+
       try {
+        // 2. 온보딩 체크
+        const onboarding = await getOnboarding();
+        if (
+          !onboarding ||
+          !onboarding.completed ||
+          !onboarding.age ||
+          !onboarding.region ||
+          !onboarding.operatingTime ||
+          !onboarding.capital
+        ) {
+          setNeedsOnboarding(true);
+          setLoading(false);
+          return;
+        }
+
         const API_URL =
           process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000';
 
@@ -47,10 +79,8 @@ export function MatchingContent({
       }
     }
 
-    if (trdarCd) {
-      fetchData();
-    }
-  }, [trdarCd]);
+    fetchData();
+  }, [trdarCd, authUser]);
 
   // locationName 사용하지 않아도 lint 경고 방지
   void locationName;
@@ -64,6 +94,86 @@ export function MatchingContent({
       <div className="space-y-10">
         <div className="space-y-6">
           <MatchingContentSkeleton />
+        </div>
+      </div>
+    );
+  }
+
+  // 로그인 필요 UI
+  if (requiresLogin) {
+    return (
+      <div className="space-y-10">
+        <h2 className="text-h2 font-bold text-slate-900">
+          업종 정밀 매칭 결과
+        </h2>
+        <div className="bg-slate-50 rounded-3xl p-8 border border-slate-100 flex flex-col items-center justify-center py-20 text-center gap-4">
+          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-2 shadow-sm border border-slate-100">
+            <svg
+              className="w-8 h-8 text-slate-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
+            </svg>
+          </div>
+          <p className="text-h4 font-bold text-slate-900">
+            로그인이 필요한 서비스입니다.
+          </p>
+          <p className="text-body text-slate-500">
+            로그인하고 이 상권이 나에게 얼마나 맞는지 확인해보세요!
+          </p>
+          <Link
+            href="/login"
+            className="mt-2 px-6 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors"
+          >
+            로그인하기
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // 온보딩 필요 UI
+  if (needsOnboarding) {
+    return (
+      <div className="space-y-10">
+        <h2 className="text-h2 font-bold text-slate-900">
+          업종 정밀 매칭 결과
+        </h2>
+        <div className="bg-slate-50 rounded-3xl p-8 border border-slate-100 flex flex-col items-center justify-center py-20 text-center gap-4">
+          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-2 shadow-sm border border-slate-100">
+            <svg
+              className="w-8 h-8 text-slate-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+              />
+            </svg>
+          </div>
+          <p className="text-h4 font-bold text-slate-900">
+            아직 맞춤 정보를 입력하지 않으셨네요!
+          </p>
+          <p className="text-body text-slate-500">
+            간단한 설문을 완료하면 이 상권과의 매칭 점수를 분석해드려요.
+          </p>
+          <Link
+            href="/onboarding/intro"
+            className="mt-2 px-6 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors"
+          >
+            맞춤 정보 입력하기
+          </Link>
         </div>
       </div>
     );
@@ -91,7 +201,7 @@ export function MatchingContent({
                     case score >= 80:
                       return {
                         title: '"성공 예감이 드는 곳입니다!"',
-                        desc: '매우 훌륭한 매칭 점수입니다. 안정적인 수익 창출이 기대되는 매력적인 상권입니다.',
+                        desc: '매 매우 훌륭한 매칭 점수입니다. 안정적인 수익 창출이 기대되는 매력적인 상권입니다.',
                         color: 'text-success',
                       };
                     case score >= 70:

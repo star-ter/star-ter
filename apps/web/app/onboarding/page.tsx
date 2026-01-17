@@ -16,8 +16,12 @@ export default function Page() {
       }}
       onBack={() => router.push('/onboarding/intro')}
       onSkip={async (data) => {
-        await updateOnboarding(data);
-        router.push('/onboarding/loading');
+        try {
+          await updateOnboarding(data);
+        } catch {
+          // 건너뛰기 시 데이터가 불완전하여 저장이 실패할 수 있음 (무시하고 이동)
+        }
+        router.push('/locations');
       }}
     />
   );

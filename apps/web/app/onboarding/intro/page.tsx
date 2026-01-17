@@ -8,7 +8,7 @@ export default function Page() {
   return (
     <OnboardingIntroPage
       onStart={() => router.push('/onboarding')}
-      onBack={() => router.push('/login')}
+      onSkip={() => router.push('/locations')}
     />
   );
 }

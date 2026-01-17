@@ -16,6 +16,16 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     setIsMounted(true);
   }, []);
 
+  // 사이드바를 숨길 경로 목록
+  const isExcludedPage = useMemo(() => {
+    if (!pathname) return false;
+    const excludedPrefixes = ['/onboarding', '/login', '/regist', '/test'];
+    // 정확히 일치하거나 하위 경로인 경우 제외
+    return excludedPrefixes.some(
+      (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+    );
+  }, [pathname]);
+
   // Hydration mismatch 방지: 마운트 전에는 아무것도 렌더링하지 않거나(깜빡임) 기본 로딩 상태 보여줌
   // 여기서는 구조상 children까지 안보이면 안되므로, 스타일 변수만 제어하거나
   // Sidebar 컴포넌트 내부적으로 처리하는 것이 좋음.
@@ -31,11 +41,13 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     return 'home';
   }, [pathname]);
 
-  // Hydration mismatch 방지: 첫 렌더링 시에는 서버와 동일하게(기본값) 렌더링하거나 숨김 처리
-  // 여기서는 isSidebarOpen 기본값이 true이므로, 마운트 전에는 true(기본값)를 유지하거나
-  // 깜빡임을 줄이기 위해 마운트 된 후에만 스토어 값을 사용하도록 처리할 수 있음.
-  // 다만 간단하게 구현하기 위해 바로 사용하되, 만약 레이아웃이 깨지면 isMounted 체크를 더 적극적으로 활용.
-  // Sidebar 컴포넌트 내부적으로도 isMounted 체크가 있으므로 큰 문제는 없을 것으로 예상됨.
+  if (isExcludedPage) {
+    return (
+      <div className="min-h-screen bg-[#f7f7f8] flex relative text-slate-800">
+        <main className="flex-1 w-full h-full">{children}</main>
+      </div>
+    );
+  }
 
   return (
     <div

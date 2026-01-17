@@ -177,12 +177,8 @@ export function OnboardingPage({
       </div>
 
       <div className="px-8 py-4 border-t shrink-0">
-        <div
-          className={`max-w-4xl mx-auto flex items-center ${
-            step === 5 && onSkip ? 'justify-between' : 'justify-end'
-          }`}
-        >
-          {step === 5 && onSkip && (
+        <div className="max-w-4xl mx-auto flex items-center justify-end gap-4">
+          {onSkip && (
             <Button
               onClick={handleSkip}
               variant="ghost"

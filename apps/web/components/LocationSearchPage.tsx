@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Loader2, ChevronDown, X } from 'lucide-react';
 
 import {
@@ -140,7 +141,7 @@ export function LocationSearchPage({
           const onboarding = await getOnboarding();
           if (!onboarding || !onboarding.completed) {
             setRecommendData([]);
-            setError('온보딩을 완료해주세요.');
+            setError('ONBOARDING_REQUIRED');
             return;
           }
 
@@ -151,7 +152,7 @@ export function LocationSearchPage({
             !onboarding.capital
           ) {
             setRecommendData([]);
-            setError('온보딩 정보가 부족합니다.');
+            setError('ONBOARDING_REQUIRED');
             return;
           }
 
@@ -501,6 +502,36 @@ export function LocationSearchPage({
             <div className="flex items-center justify-center py-20">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
+          ) : error === 'ONBOARDING_REQUIRED' ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
+              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-2">
+                <svg
+                  className="w-8 h-8 text-muted-foreground"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+                  />
+                </svg>
+              </div>
+              <p className="text-h4 font-strong text-foreground">
+                아직 맞춤 정보를 입력하지 않으셨네요!
+              </p>
+              <p className="text-body text-muted-foreground">
+                간단한 설문을 완료하면 사장님께 딱 맞는 상권을 추천해드려요.
+              </p>
+              <Link
+                href="/onboarding/intro"
+                className="mt-2 px-6 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors"
+              >
+                맞춤 정보 입력하기
+              </Link>
+            </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
               <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-2">
@@ -518,16 +549,24 @@ export function LocationSearchPage({
                   />
                 </svg>
               </div>
-              <p className="text-h4 font-strong text-foreground">{error}</p>
-              <p className="text-body text-muted-foreground">
-                맞춤 추천을 받으려면 로그인이 필요합니다.
+              <p className="text-h4 font-strong text-foreground">
+                {error === '로그인이 필요합니다.'
+                  ? '로그인이 필요한 서비스입니다.'
+                  : error}
               </p>
-              <button
-                onClick={() => router.push('/login')}
-                className="mt-2 px-6 py-2.5 bg-info text-white font-bold rounded-xl hover:bg-info/90 transition-colors"
-              >
-                로그인하기
-              </button>
+              <p className="text-body text-muted-foreground">
+                {error === '로그인이 필요합니다.'
+                  ? '로그인하고 나에게 딱 맞는 상권을 추천받아보세요!'
+                  : '잠시 후 다시 시도해주세요.'}
+              </p>
+              {error === '로그인이 필요합니다.' && (
+                <button
+                  onClick={() => router.push('/login')}
+                  className="mt-2 px-6 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors"
+                >
+                  로그인하기
+                </button>
+              )}
             </div>
           ) : currentData.length === 0 ? (
             <div className="flex items-center justify-center py-20 text-muted-foreground">

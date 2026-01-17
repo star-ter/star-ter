@@ -199,9 +199,9 @@ export function ChatMessage({ message, chartActions, sources }: ChatMessageProps
               </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {sources.map((source) => (
+              {sources.map((source, index) => (
                 <div
-                  key={source.tool}
+                  key={`${source.tool}-${index}`}
                   className="flex items-center gap-4 px-5 py-4 bg-muted/50 rounded-xl border border-border"
                 >
                   <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
