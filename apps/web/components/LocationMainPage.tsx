@@ -25,7 +25,7 @@ export function LocationListPage() {
   }, [chatInput]);
 
   return (
-    <div className="flex flex-1 flex-col h-full bg-white rounded-2xl shadow-lg overflow-hidden no-scrollbar relative">
+    <div className="flex flex-1 flex-col h-full bg-background rounded-2xl shadow-lg border border-border overflow-hidden no-scrollbar relative">
       {/* 본문 콘텐츠 컨테이너 - 채팅바 공간 확보를 위해 pb-32 추가 */}
       <div className="flex-1 overflow-y-auto pb-32 no-scrollbar">
         {/* 인사말 헤더 + 검색 */}

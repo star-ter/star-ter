@@ -115,7 +115,7 @@ export function ChatPage() {
       <ChatMapSection ref={mapSectionRef} isOpen={isMapOpen} />
 
       {/* 메인 채팅 영역 */}
-      <div className="flex-1 flex flex-col bg-background rounded-2xl shadow-lg overflow-hidden">
+      <div className="flex-1 flex flex-col bg-background rounded-2xl shadow-lg border border-border overflow-hidden">
         <ChatHeader
           threadTitle={currentThread.title}
           onNewThread={handleNewThread}

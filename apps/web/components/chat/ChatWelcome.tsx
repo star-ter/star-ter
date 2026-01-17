@@ -73,7 +73,7 @@ export function ChatWelcome({ onSuggestionClick }: ChatWelcomeProps) {
             </span>
           </div>
           <span className="block text-body text-slate-500">
-            강남역 주변에 장사하면 초보자가 살아남을 수 있을까?
+            강남역 주변에 장사하면 살아남을 수 있을까?
           </span>
         </button>
         <button
