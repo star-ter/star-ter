@@ -390,7 +390,7 @@ export const ChatMapSection = forwardRef<
 
   return (
     <div
-      className={`relative bg-background rounded-2xl shadow-lg
+      className={`relative bg-background rounded-2xl border border-border
                     transition-all duration-300 flex flex-col`}
       style={{
         // isOpen일 때는 width state 사용, 아니면 0
@@ -423,7 +423,7 @@ export const ChatMapSection = forwardRef<
         <div
           id="chat-map-container"
           ref={mapRef}
-          className="h-full w-full rounded-2xl overflow-hidden shadow-sm border border-border relative bg-muted"
+          className="h-full w-full rounded-2xl overflow-hidden border border-border relative bg-muted"
         >
           {!loaded && !error && (
             <div className="h-full flex items-center justify-center">

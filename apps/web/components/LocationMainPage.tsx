@@ -9,7 +9,7 @@ export function LocationListPage() {
   const { authUser } = useUserStore();
 
   return (
-    <div className="flex flex-1 overflow-y-auto flex-col h-full bg-background rounded-2xl shadow-lg overflow-hidden no-scrollbar border border-border">
+    <div className="flex flex-1 overflow-y-auto flex-col h-full bg-background rounded-2xl overflow-hidden no-scrollbar border border-border">
       {/* 인사말 헤더 */}
       <div className="px-8 pt-6 pb-4 shrink-0">
         <h1 className="text-h1 font-heading text-foreground mb-1">

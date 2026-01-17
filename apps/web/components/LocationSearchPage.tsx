@@ -348,7 +348,7 @@ export function LocationSearchPage({
 
   return (
     <div className="flex flex-1 flex-col h-full">
-      <div className="flex-1 flex flex-col bg-white rounded-2xl shadow-lg border border-border overflow-hidden">
+      <div className="flex-1 flex flex-col bg-white rounded-2xl border border-border overflow-hidden">
         <div className="px-8 pt-6 pb-4 border-b border-border shrink-0">
           <div className="flex justify-between items-center">
             <div className="flex gap-8">
