@@ -5,4 +5,4 @@ export { BreakEvenCard } from './BreakEvenCard';
 export { ListingsCard } from './ListingsCard';
 export { SimilarAreasCard } from './SimilarAreasCard';
 export { ChartRenderer } from './ChartRenderer';
-export type { ChartAction } from './ChartRenderer';
+export type { ChartItem, ChartActionType, ChartPayload } from './types';

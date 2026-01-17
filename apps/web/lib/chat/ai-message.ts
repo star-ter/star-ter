@@ -1,5 +1,5 @@
 import type { AiAction, AiResponse } from "@/lib/api/ai";
-import type { ChartAction } from "@/components/chat/charts";
+import type { ChartItem } from "@/components/chat/charts";
 import type { Message } from "@/components/chat/types";
 
 type MessageBaseParams = {
@@ -18,26 +18,6 @@ export function parseAiResponseText(text: string): AiResponse | null {
   }
 }
 
-
-export function splitActions(actions?: AiAction[]) {
-  const chartActions: ChartAction[] = [];
-  const otherActions: AiAction[] = [];
-
-  if (!actions) {
-    return { chartActions, otherActions };
-  }
-
-  for (const action of actions) {
-    if (isChartActionType(action.type)) {
-      chartActions.push(action as ChartAction);
-    } else {
-      otherActions.push(action);
-    }
-  }
-
-  return { chartActions, otherActions };
-}
-
 export function buildMessageFromAiText(params: MessageBaseParams): Message {
   const timestamp = params.timestamp ?? new Date();
 
@@ -51,7 +31,6 @@ export function buildMessageFromAiText(params: MessageBaseParams): Message {
   }
 
   const parsed = parseAiResponseText(params.content);
-  const chartActions = getChartActions(parsed?.actions);
   const reply = parsed?.reply?.trim() ? parsed.reply : params.content;
 
   return {
@@ -59,7 +38,6 @@ export function buildMessageFromAiText(params: MessageBaseParams): Message {
     role: "assistant",
     content: reply,
     timestamp,
-    chartActions,
   };
 }
 
@@ -68,11 +46,9 @@ export function buildMessageFromAiResponse(params: {
   response: AiResponse;
   timestamp?: Date;
   contentOverride?: string;
-  chartActions?: ChartAction[];
+  chartItems?: ChartItem[];
 }): Message {
   const timestamp = params.timestamp ?? new Date();
-  const chartActions =
-    params.chartActions ?? getChartActions(params.response.actions);
   const content = params.contentOverride ?? params.response.reply ?? "";
 
   // sources 매핑
@@ -87,7 +63,7 @@ export function buildMessageFromAiResponse(params: {
     role: "assistant",
     content,
     timestamp,
-    chartActions,
+    chartItems: params.chartItems,
     sources,
   };
 }
@@ -115,14 +91,4 @@ function coerceAiResponse(value: unknown): AiResponse | null {
       ? (data.suggestedPrompts as string[])
       : undefined,
   };
-}
-
-function getChartActions(actions?: AiAction[]): ChartAction[] | undefined {
-  if (!actions) return undefined;
-  const filtered = actions.filter((action) => isChartActionType(action.type));
-  return filtered.length ? (filtered as ChartAction[]) : undefined;
-}
-
-function isChartActionType(type: string) {
-  return type.startsWith("chart.") || type.startsWith("list.");
 }

@@ -1,34 +1,30 @@
-import { useMemo } from 'react';
-import { type AiAction } from '../../../lib/api/ai';
+import { type RefObject } from 'react';
 import { type ChatMapSectionRef } from '../ChatMapSection';
-import { ActionHandler, ActionContext } from '../actions/types';
-import { MapActionHandler } from '../actions/mapActionHandler';
-import { UiActionHandler } from '../actions/uiActionHandler';
+import { type ActionDispatchPayload } from '../actions/commandTypes';
 
 export function useActionDispatcher(
-  mapSectionRef: React.RefObject<ChatMapSectionRef | null>,
+  mapSectionRef: RefObject<ChatMapSectionRef | null>,
   setIsMapOpen: (isOpen: boolean) => void,
 ) {
-  const handlers = useMemo<ActionHandler[]>(() => {
-    return [new MapActionHandler(), new UiActionHandler()];
-  }, []);
+  const dispatch = (payload: ActionDispatchPayload) => {
+    if (payload.openMapPanel) {
+      setIsMapOpen(true);
+    }
 
-  const dispatch = (actions: AiAction[]) => {
-    const context: ActionContext = {
-      mapSection: mapSectionRef.current,
-      openMapPanel: () => setIsMapOpen(true),
-    };
+    if (!payload.mapCommands || payload.mapCommands.length === 0) {
+      return;
+    }
 
-    actions.forEach((action) => {
-      const handler = handlers.find((h) => h.canHandle(action.type));
-      if (handler) {
-        try {
-          handler.handle(action, context);
-        } catch (error) {
-          console.error(`Error handling action ${action.type}:`, error);
-        }
-      } else {
-        console.warn(`No handler found for action type: ${action.type}`);
+    if (!mapSectionRef.current) {
+      console.warn('[useActionDispatcher] Map section is not ready.');
+      return;
+    }
+
+    payload.mapCommands.forEach((command) => {
+      try {
+        mapSectionRef.current?.executeCommand(command);
+      } catch (error) {
+        console.error(`Error handling map command ${command.type}:`, error);
       }
     });
   };

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Copy, MoreHorizontal, Bot, Database } from 'lucide-react';
-import { ChartRenderer, type ChartAction } from './charts';
+import { ChartRenderer, type ChartItem } from './charts';
 import type { Source } from './types';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -16,7 +16,7 @@ import remarkGfm from 'remark-gfm';
  * - "assistant": AI 메시지 (왼쪽 정렬, 흰색 배경, 마크다운 렌더링)
  *
  * 차트 렌더링:
- * - AI 메시지에서 chartActions가 있으면 말풍선 안에 차트 표시
+ * - AI 메시지에서 chartItems가 있으면 말풍선 안에 차트 표시
  */
 
 interface Message {
@@ -28,18 +28,13 @@ interface Message {
 
 interface ChatMessageProps {
   message: Message;
-  chartActions?: ChartAction[]; // 차트 액션 (AI 메시지용)
+  chartItems?: ChartItem[];
   sources?: Source[]; // 데이터 출처 정보
 }
 
-export function ChatMessage({ message, chartActions, sources }: ChatMessageProps) {
+export function ChatMessage({ message, chartItems, sources }: ChatMessageProps) {
   const isUser = message.role === 'user';
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  // 차트 액션만 필터링
-  const chartOnlyActions = chartActions?.filter(
-    (a) => a.type.startsWith('chart.') || a.type.startsWith('list.'),
-  );
 
   // 숨겨진 markers 텍스트 제거
   const displayContent = message.content.split('\n\n[매물 목록 참조용')[0];
@@ -186,8 +181,8 @@ export function ChatMessage({ message, chartActions, sources }: ChatMessageProps
         )}
 
         {/* 차트 렌더링 (AI 메시지만, 말풍선 안) */}
-        {!isUser && chartOnlyActions && chartOnlyActions.length > 0 && (
-          <ChartRenderer actions={chartOnlyActions} className="mt-4 -mx-2" />
+        {!isUser && chartItems && chartItems.length > 0 && (
+          <ChartRenderer items={chartItems} className="mt-4 -mx-2" />
         )}
 
         {/* 데이터 출처 (AI 메시지만, 말풍선 안) */}

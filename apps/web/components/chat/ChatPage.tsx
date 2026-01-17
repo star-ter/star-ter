@@ -133,12 +133,12 @@ export function ChatPage() {
                 <ChatWelcome onSuggestionClick={handleSendMessageWrapper} />
               ) : (
                 messages.map((message) => (
-                    <ChatMessage
+                  <ChatMessage
                     key={message.id}
-                      message={message}
-                      chartActions={message.chartActions}
+                    message={message}
+                    chartItems={message.chartItems}
                     sources={message.sources}
-                    />
+                  />
                 ))
               )}
 

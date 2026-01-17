@@ -1,10 +1,10 @@
+import { type ChartItem } from './charts';
+
 export interface Source {
   tool: string;
   displayName: string;
   source: string;
 }
-
-import { type ChartAction } from './charts';
 
 export interface Message {
   id: string;
@@ -12,7 +12,7 @@ export interface Message {
   content: string;
   timestamp: Date;
   sources?: Source[];
-  chartActions?: ChartAction[]; // 차트 액션 (AI 메시지용)
+  chartItems?: ChartItem[];
 }
 
 export interface Thread {

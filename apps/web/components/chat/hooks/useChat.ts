@@ -1,13 +1,14 @@
 import { useState, useCallback } from 'react';
 import { sendMessage as apiSendMessage } from '../../../app/actions/chat';
-import { type AiAction } from '../../../lib/api/ai';
 import { Message, Thread } from '../types';
 import type { AiProvider } from '../ChatHeader';
 import { useChatStore } from '@/store/use-chat-store';
+import { buildMessageFromAiResponse } from '@/lib/chat/ai-message';
 import {
-  buildMessageFromAiResponse,
-  splitActions,
-} from '@/lib/chat/ai-message';
+  processAiActions,
+  type ChartItemUpdate,
+} from '../actions/actionProcessor';
+import { type ActionDispatchPayload } from '../actions/commandTypes';
 
 // userId를 받아서 개인화 추천에 활용
 export function useChat(aiProvider: AiProvider = 'openai') {
@@ -55,7 +56,7 @@ export function useChat(aiProvider: AiProvider = 'openai') {
   );
 
   const sendMessage = useCallback(
-    async (text: string, onActions?: (actions: AiAction[]) => void) => {
+    async (text: string, onDispatch?: (payload: ActionDispatchPayload) => void) => {
       if (!text.trim()) return;
 
       const userMessage: Message = {
@@ -84,29 +85,19 @@ export function useChat(aiProvider: AiProvider = 'openai') {
           conversationId || undefined,
         );
 
-        // 차트/리스트 액션과 지도 액션 분리
-        const { chartActions, otherActions: mapActions } = splitActions(
-          response.actions,
-        );
+        const actionPlan = processAiActions({
+          reply: response.reply ?? '',
+          actions: response.actions,
+        });
 
-        // Markers 정보가 있다면 content에 hidden-like 텍스트로 추가하여 히스토리에 저장
-        // (AI가 다음 턴에서 이전 매물 정보를 참조할 수 있게 함)
-        let contentWithMarkers = response.reply;
-        const listAction = response.actions?.find(
-          (a) => a.type === 'list.listings',
-        );
-        if (listAction?.payload?.markers) {
-          contentWithMarkers += `\n\n[매물 목록 참조용 - 이 메시지는 사용자에게 보이지 않습니다]\n${JSON.stringify(
-            listAction.payload.markers,
-          )}`;
-        }
-
+        const aiMessageId = crypto.randomUUID();
         const aiMessage: Message = buildMessageFromAiResponse({
-          id: crypto.randomUUID(),
+          id: aiMessageId,
           response,
-          contentOverride: contentWithMarkers,
+          contentOverride: actionPlan.contentWithMarkers,
           timestamp: new Date(),
-          chartActions: chartActions.length > 0 ? chartActions : undefined,
+          chartItems:
+            actionPlan.chartItems.length > 0 ? actionPlan.chartItems : undefined,
         });
 
         setMessages((prev) => [...prev, aiMessage]);
@@ -119,10 +110,32 @@ export function useChat(aiProvider: AiProvider = 'openai') {
           window.dispatchEvent(new CustomEvent('chat:updated'));
         }
 
-        // 지도 관련 액션만 onActions로 전달
-        if (mapActions.length > 0 && onActions) {
-          onActions(mapActions);
+        if (onDispatch) {
+          if (actionPlan.mapCommands.length > 0) {
+            console.log('[chat] mapCommands', actionPlan.mapCommands);
+          }
+          if (actionPlan.openMapPanel || actionPlan.mapCommands.length > 0) {
+            onDispatch({
+              openMapPanel: actionPlan.openMapPanel,
+              mapCommands: actionPlan.mapCommands,
+            });
+          }
         }
+
+        actionPlan.chartItemUpdates.forEach((updatePromise) => {
+          updatePromise.then((update) => {
+            setMessages((prev) =>
+              applyChartItemUpdate(prev, aiMessageId, update),
+            );
+          });
+        });
+
+        actionPlan.mapCommandUpdates.forEach((commandPromise) => {
+          commandPromise.then((commands) => {
+            if (!onDispatch || commands.length === 0) return;
+            onDispatch({ openMapPanel: true, mapCommands: commands });
+          });
+        });
       } catch (error) {
         console.error('Failed to get AI response:', error);
         const errorMessage: Message = {
@@ -150,4 +163,32 @@ export function useChat(aiProvider: AiProvider = 'openai') {
     handleNewThread,
     loadConversation,
   };
+}
+
+function applyChartItemUpdate(
+  messages: Message[],
+  messageId: string,
+  update: ChartItemUpdate,
+): Message[] {
+  return messages.map((message) => {
+    if (message.id !== messageId || !message.chartItems) {
+      return message;
+    }
+
+    const updatedItems = message.chartItems.map((item) =>
+      item.id === update.id
+        ? {
+            ...item,
+            data: update.data,
+            error: update.error,
+            isLoading: false,
+          }
+        : item,
+    );
+
+    return {
+      ...message,
+      chartItems: updatedItems,
+    };
+  });
 }

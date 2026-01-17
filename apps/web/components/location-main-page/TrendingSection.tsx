@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 import {
   fetchLocationRanking,
   LocationRankItem,
@@ -37,9 +38,9 @@ export function TrendingSection() {
         </h2>
         <Link
           href="/locations/search?tab=매출 성장 순"
-          className="text-body font-strong text-muted-foreground hover:text-foreground transition-colors"
+          className="flex items-center gap-1 text-body font-strong text-muted-foreground hover:text-foreground transition-colors"
         >
-          더보기 &gt;
+          더보기 <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
 

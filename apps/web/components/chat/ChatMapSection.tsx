@@ -13,13 +13,14 @@ import {
   type KakaoCustomOverlay,
   type KakaoPolygon,
 } from '../../hooks/useKakaoMap';
-import { type AiAction } from '../../lib/api/ai';
+import { type MapCommand } from './actions/commandTypes';
 import { usePopulationLayer } from '../location-detail/hooks/usePopulationLayer';
 import { type MarkerData } from './types/markerTypes';
 import { type BuildingInfo, type AreaInfo } from './types/mapTypes';
 import { MapInfoPanel } from './MapInfoPanel';
 import { useBuildingPolygons } from './hooks/useBuildingPolygons';
 import { PolygonData, Coordinate } from './types';
+
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000';
 
@@ -31,9 +32,7 @@ const API_BASE_URL =
  */
 
 export interface ChatMapSectionRef {
-  executeAction: (action: AiAction) => void;
-  setHeatmapVisible: (visible: boolean) => void;
-  setMarkers: (markers: MarkerData[]) => void;
+  executeCommand: (command: MapCommand) => void;
 }
 
 interface ChatMapSectionProps {
@@ -199,201 +198,119 @@ export const ChatMapSection = forwardRef<
     };
   }, [map, loaded, markers]);
 
+  const clearCommercialPolygon = useCallback(() => {
+    if (!commercialPolygonRef.current) return;
+
+    if (Array.isArray(commercialPolygonRef.current)) {
+      commercialPolygonRef.current.forEach((polygon: KakaoPolygon) =>
+        polygon.setMap(null),
+      );
+    } else {
+      commercialPolygonRef.current.setMap(null);
+    }
+
+    commercialPolygonRef.current = null;
+  }, []);
+
+  const drawCommercialPolygon = useCallback(
+    (polygon: PolygonData) => {
+      if (!map || !loaded) return;
+
+      clearCommercialPolygon();
+
+      const polygonStyle = {
+        strokeWeight: 3,
+        strokeColor: '#3B82F6',
+        strokeOpacity: 1,
+        strokeStyle: 'solid',
+        fillColor: '#ffffff',
+        fillOpacity: 0.3,
+      };
+
+      const polygons: KakaoPolygon[] = [];
+      const coords = polygon.coordinates;
+
+      if (polygon.type === 'MultiPolygon') {
+        (coords as Coordinate[][][]).forEach((polygonCoords) => {
+          const outerRing = polygonCoords[0];
+          const path = outerRing.map(
+            (coord: Coordinate) =>
+              new window.kakao.maps.LatLng(coord[1], coord[0]),
+          );
+
+          const polygonItem = new window.kakao.maps.Polygon({
+            path,
+            ...polygonStyle,
+          });
+          polygonItem.setMap(map);
+          polygons.push(polygonItem);
+        });
+      } else {
+        const pathCoords = (coords as Coordinate[][])[0];
+        const path = pathCoords.map(
+          (coord: Coordinate) =>
+            new window.kakao.maps.LatLng(coord[1], coord[0]),
+        );
+
+        const polygonItem = new window.kakao.maps.Polygon({
+          path,
+          ...polygonStyle,
+        });
+        polygonItem.setMap(map);
+        polygons.push(polygonItem);
+      }
+
+      commercialPolygonRef.current = polygons as unknown as KakaoPolygon;
+    },
+    [map, loaded, clearCommercialPolygon],
+  );
+
   // 부모 컴포넌트에 메서드 노출
   useImperativeHandle(ref, () => ({
-    setHeatmapVisible: (visible: boolean) => setIsHeatmapVisible(visible),
-    setMarkers: (newMarkers: MarkerData[]) => setMarkers(newMarkers),
-    executeAction: (action: AiAction) => {
+    executeCommand: (command: MapCommand) => {
       if (!map || !loaded) {
         console.warn('Map is not ready yet.');
         return;
       }
 
-      console.log('[ChatMapSection] Executing action:', action);
+      console.log('[ChatMapSection] Executing command:', command);
 
       try {
-        // 1. 지도 이동 및 줌
-        if (
-          action.type === 'map.pan_to' ||
-          (action.payload?.lat && action.payload?.lng)
-        ) {
-          if (action.payload?.lat && action.payload?.lng) {
-            const moveLatLon = new window.kakao.maps.LatLng(
-              action.payload.lat,
-              action.payload.lng,
-            );
-            map.panTo(moveLatLon);
+        if (command.type === 'map.pan_to') {
+          const moveLatLon = new window.kakao.maps.LatLng(
+            command.payload.lat,
+            command.payload.lng,
+          );
+          map.panTo(moveLatLon);
 
-            if (action.payload.zoom) {
-              map.setLevel(action.payload.zoom);
-            }
+          if (command.payload.zoom) {
+            map.setLevel(command.payload.zoom);
           }
+          return;
         }
 
-        // 2. 레이어 제어 (ActionHandler에서 setHeatmapVisible 호출 권장하지만, 여기서 직접 처리도 가능)
-        if (action.type === 'map.setLayer') {
-          if (action.payload.layer === 'footTraffic') {
-            const visible = action.payload.visible !== false; // default true
+        if (command.type === 'map.setLayer') {
+          if (command.payload.layer === 'footTraffic') {
+            const visible = command.payload.visible !== false;
             setIsHeatmapVisible(visible);
-
-            // 히트맵을 켰을 때, 만약 panel이 열려있다면 닫거나 안내 메시지 표시 가능/
             console.log(`Heatmap visibility set to ${visible}`);
           }
+          return;
         }
 
-        // 3. 마커 설정
-        if (action.type === 'map.setMarkers') {
-          // payload.markers 배열 사용
-          const markersPayload = action.payload.markers;
-          if (Array.isArray(markersPayload)) {
-            const newMarkers: MarkerData[] = markersPayload.map(
-              (m: {
-                id?: string;
-                lat: number;
-                lng: number;
-                label?: string;
-                type?: 'default' | 'competitor';
-              }) => ({
-                id: m.id || Math.random().toString(36).substr(2, 9),
-                lat: m.lat,
-                lng: m.lng,
-                label: m.label,
-                type: m.type || 'default',
-              }),
-            );
-            setMarkers(newMarkers);
-
-            // 마커들이 보이도록 지도 범위 조정 (옵션)
-            if (newMarkers.length > 0) {
-              const bounds = new window.kakao.maps.LatLngBounds();
-              newMarkers.forEach((m) =>
-                bounds.extend(new window.kakao.maps.LatLng(m.lat, m.lng)),
-              );
-              // 여백을 두고 범위 설정은 map.setBounds가 필요한데, kakao api 확인 필요
-              // 간단히 첫 번째 마커로 이동하거나 추후 구현
-            }
-          }
+        if (command.type === 'map.setMarkers') {
+          setMarkers(command.payload.markers);
+          return;
         }
-        // 4. ui.open_panel 시 상권 폴리곤 표시
-        if (action.type === 'ui.open_panel' && action.payload?.areaCode) {
-          const areaCode = action.payload.areaCode;
-          console.log(
-            '[ChatMapSection] Loading commercial polygon for:',
-            areaCode,
-          );
 
-          // 기존 상권 폴리곤 제거 (배열로 관리)
-          if (commercialPolygonRef.current) {
-            if (Array.isArray(commercialPolygonRef.current)) {
-              commercialPolygonRef.current.forEach((p: KakaoPolygon) =>
-                p.setMap(null),
-              );
-            } else {
-              commercialPolygonRef.current.setMap(null);
-            }
-            commercialPolygonRef.current = null;
-          }
-
-          // 상권 폴리곤 API 호출
-          fetch(`${API_BASE_URL}/polygon/commercial/code?code=${areaCode}`)
-            .then((res) => res.json())
-            .then((data) => {
-              if (!data || !data.polygons) return;
-
-              const polygonStyle = {
-                strokeWeight: 3,
-                strokeColor: '#3B82F6',
-                strokeOpacity: 1,
-                strokeStyle: 'solid',
-                fillColor: '#ffffff',
-                fillOpacity: 0.3,
-              };
-
-              const polygons: KakaoPolygon[] = [];
-              const coords = data.polygons.coordinates;
-
-              // MultiPolygon vs Polygon 처리
-              if (data.polygons.type === 'MultiPolygon') {
-                // MultiPolygon: 모든 폴리곤을 순회
-                (coords as Coordinate[][][]).forEach((polygonCoords) => {
-                  const outerRing = polygonCoords[0]; // 외곽선
-                  const path = outerRing.map(
-                    (coord: Coordinate) =>
-                      new window.kakao.maps.LatLng(coord[1], coord[0]),
-                  );
-
-                  const polygon = new window.kakao.maps.Polygon({
-                    path,
-                    ...polygonStyle,
-                  });
-                  polygon.setMap(map);
-                  polygons.push(polygon);
-                });
-              } else {
-                // Polygon: 단일 폴리곤
-                const pathCoords = (coords as Coordinate[][])[0]; // 외곽선
-                const path = pathCoords.map(
-                  (coord: Coordinate) =>
-                    new window.kakao.maps.LatLng(coord[1], coord[0]),
-                );
-
-                const polygon = new window.kakao.maps.Polygon({
-                  path,
-                  ...polygonStyle,
-                });
-                polygon.setMap(map);
-                polygons.push(polygon);
-              }
-
-              // 배열로 저장 (나중에 제거할 때 사용)
-              commercialPolygonRef.current =
-                polygons as unknown as KakaoPolygon;
-
-              // 상권 요약 API 호출하여 실제 데이터 가져오기
-              fetch(`${API_BASE_URL}/ai/area/summary?areaCd=${areaCode}`)
-                .then((res) => res.json())
-                .then((summaryData) => {
-                  setSelectedBuilding(null);
-                  if (summaryData.success && summaryData.data) {
-                    setSelectedArea({
-                      code: areaCode,
-                      name:
-                        summaryData.data.areaName ||
-                        data.properties?.commercialName ||
-                        areaCode,
-                      type: 'commercial',
-                      revenue: summaryData.data.revenue,
-                      floatingPopulation: summaryData.data.floatingPopulation,
-                      storeCount: summaryData.data.storeCount,
-                    });
-                  } else {
-                    // API 실패 시 기본 정보만 표시
-                    setSelectedArea({
-                      code: areaCode,
-                      name: data.properties?.commercialName || areaCode,
-                      type: 'commercial',
-                    });
-                  }
-                })
-                .catch(() => {
-                  // 에러 시 기본 정보만
-                  setSelectedBuilding(null);
-                  setSelectedArea({
-                    code: areaCode,
-                    name: data.properties?.commercialName || areaCode,
-                    type: 'commercial',
-                  });
-                });
-            })
-            .catch((err) => {
-              console.error(
-                '[ChatMapSection] Failed to load commercial polygon:',
-                err,
-              );
-            });
+        if (command.type === 'map.showCommercialArea') {
+          drawCommercialPolygon(command.payload.polygon);
+          setSelectedBuilding(null);
+          setSelectedArea(command.payload.area);
+          setIsInfoLoading(false);
         }
       } catch (e) {
-        console.error('Failed to execute map action:', e);
+        console.error('Failed to execute map command:', e);
       }
     },
   }));
