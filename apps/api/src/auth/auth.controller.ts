@@ -67,27 +67,6 @@ export class AuthController {
     });
   }
 
-  @Post('logout')
-  logout(@Res() res: Response) {
-    this.logger.log(`Logging out user`);
-    res.clearCookie('access_token');
-    return res.sendStatus(200);
-  }
-
-  @Get('me')
-  @UseGuards(JwtAuthGuard)
-  async me(@User() user: AuthenticatedUser) {
-    const profile = await this.usersService.getProfileForAuth(user.id);
-
-    return {
-      id: user.id,
-      nickname: profile.nickname ?? user.nickname,
-      on_boarding_completed:
-        profile.on_boarding_completed ?? user.on_boarding_completed,
-      profile_image_key: profile.profile_image_key,
-    };
-  }
-
   // Google OAuth 시작
   @Get('google')
   @UseGuards(AuthGuard('google'))
@@ -124,7 +103,30 @@ export class AuthController {
     });
 
     // 프론트엔드 온보딩 페이지로 리다이렉트 (사용자 정보 쿼리 파라미터 포함)
-    const redirectUrl = `http://localhost:3000/onboarding/intro?userId=${user.id}&nickname=${encodeURIComponent(user.nickname)}`;
+    const redirectUrl = `${
+      process.env.ALLOW_ORIGIN ?? 'http://localhost:3000'
+    }/auth/google/callback`;
     return res.redirect(redirectUrl);
+  }
+
+  @Post('logout')
+  logout(@Res() res: Response) {
+    this.logger.log(`Logging out user`);
+    res.clearCookie('access_token');
+    return res.sendStatus(200);
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  async me(@User() user: AuthenticatedUser) {
+    const profile = await this.usersService.getProfileForAuth(user.id);
+
+    return {
+      id: user.id,
+      nickname: profile.nickname ?? user.nickname,
+      on_boarding_completed:
+        profile.on_boarding_completed ?? user.on_boarding_completed,
+      profile_image_key: profile.profile_image_key,
+    };
   }
 }

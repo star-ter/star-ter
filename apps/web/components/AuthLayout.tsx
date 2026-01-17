@@ -17,7 +17,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
         className="w-screen h-screen relative"
       ></ImageWithFallback>
       {/* <Logo className="mb-0" /> */}
-      <div className="absolute w-full max-w-[480px] bg-white rounded-[32px] shadow-2xl p-12 md:p-8">
+      <div className="absolute w-full max-w-[480px] bg-background rounded-[32px] shadow-2xl p-12 md:p-8 border border-border/50">
         {children}
       </div>
     </div>

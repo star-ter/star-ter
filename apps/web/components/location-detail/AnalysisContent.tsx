@@ -61,7 +61,7 @@ export function AnalysisContent({
     <div className="space-y-6">
       {/* 업종별 개업/폐업 현황 섹션 */}
       <div className="grid gap-4">
-        <h2 className="text-h2 font-bold text-slate-900">
+        <h2 className="text-h2 font-bold text-foreground">
           업종별 개업 / 폐업 현황
         </h2>
         <div className="flex flex-wrap gap-2">
@@ -71,8 +71,8 @@ export function AnalysisContent({
               onClick={() => setSelectedCategory(cat.code)}
               className={`px-4 py-2 mb-2 rounded-xl text-body font-strong transition-all duration-200 ${
                 selectedCategory === cat.code
-                  ? 'bg-blue-950 text-white font-bold shadow-md'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-primary text-white font-bold shadow-md'
+                  : 'bg-muted text-muted-foreground hover:bg-border'
               }`}
             >
               {cat.code === 'ALL' && <span className="mr-1">●</span>}
@@ -139,13 +139,13 @@ export function AnalysisContent({
               {/* 시장 활성도 카드 (개업 VS 폐업) */}
               <div className="w-full bg-white rounded-2xl p-6 border border-gray-100 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
                 <div className="flex items-center gap-2 mb-6">
-                  <div className="w-8 h-8 rounded-full border-blue-950 flex items-center justify-center">
-                    <Activity className="w-6 h-6 text-blue-950" />
+                  <div className="w-8 h-8 rounded-full border-primary flex items-center justify-center">
+                    <Activity className="w-6 h-6 text-primary" />
                   </div>
-                  <h3 className="text-h3 font-bold text-gray-900">
+                  <h3 className="text-h3 font-bold text-foreground">
                     시장 활성도
                   </h3>
-                  <span className="text-caption font-medium text-gray-900 bg-gray-100 px-2 py-1 rounded-full">
+                  <span className="text-caption font-medium text-foreground bg-muted px-2 py-1 rounded-full">
                     개업 VS 폐업
                   </span>
                 </div>
@@ -154,7 +154,7 @@ export function AnalysisContent({
                   {/* 개업 */}
                   <div>
                     <div className="flex items-baseline gap-1 mb-1">
-                      <span className="text-h2 font-heading text-emerald-500 tracking-tight">
+                      <span className="text-h2 font-heading text-success tracking-tight">
                         {vitality.opbizStoreCount.toLocaleString()}
                       </span>
                       <span className="text-gray-500 font-medium text-caption">
@@ -162,10 +162,10 @@ export function AnalysisContent({
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-body font-strong text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+                      <span className="text-body font-strong text-success bg-success/10 px-2 py-0.5 rounded-md">
                         개업
                       </span>
-                      <span className="text-gray-600 text-body">
+                      <span className="text-muted-foreground text-body">
                         {vitality.opbizRt.toFixed(1)}%
                       </span>
                     </div>
@@ -174,7 +174,7 @@ export function AnalysisContent({
                   {/* 폐업 */}
                   <div className="text-right">
                     <div className="flex items-baseline gap-1 justify-end mb-1">
-                      <span className="text-h2 font-heading text-red-400 tracking-tight">
+                      <span className="text-h2 font-heading text-danger tracking-tight">
                         {vitality.clsbizStoreCount.toLocaleString()}
                       </span>
                       <span className="text-gray-500 font-medium text-caption">
@@ -182,10 +182,10 @@ export function AnalysisContent({
                       </span>
                     </div>
                     <div className="flex items-center gap-2 justify-end">
-                      <span className="text-body font-strong text-red-500 bg-red-50 px-2 py-0.5 rounded-md">
+                      <span className="text-body font-strong text-danger bg-danger/10 px-2 py-0.5 rounded-md">
                         폐업
                       </span>
-                      <span className="text-gray-600 text-body">
+                      <span className="text-muted-foreground text-body">
                         {vitality.clsbizRt.toFixed(1)}%
                       </span>
                     </div>
@@ -193,15 +193,15 @@ export function AnalysisContent({
                 </div>
 
                 {/* 비교 바 */}
-                <div className="h-4 bg-gray-100 rounded-full overflow-hidden flex mb-5 ring-1 ring-gray-100">
+                <div className="h-4 bg-muted rounded-full overflow-hidden flex mb-5 ring-1 ring-muted">
                   <div
-                    className="h-full bg-emerald-500"
+                    className="h-full bg-success"
                     style={{
                       width: `${(vitality.opbizStoreCount / (vitality.opbizStoreCount + vitality.clsbizStoreCount + 0.001)) * 100}%`,
                     }}
                   ></div>
                   <div
-                    className="h-full bg-red-400"
+                    className="h-full bg-danger"
                     style={{
                       width: `${(vitality.clsbizStoreCount / (vitality.opbizStoreCount + vitality.clsbizStoreCount + 0.001)) * 100}%`,
                     }}
@@ -209,24 +209,24 @@ export function AnalysisContent({
                 </div>
 
                 {/* 결론 메시지 */}
-                <div className="py-4 px-4 bg-gray-50 rounded-lg text-center">
+                <div className="py-4 px-4 bg-muted/50 rounded-lg text-center">
                   {netChange >= 0 ? (
                     <p className="flex items-center justify-center gap-2">
-                      <TrendingUp className="w-5 h-5 text-emerald-500" />
-                      <span className="text-h5 font-strong text-gray-900">
+                      <TrendingUp className="w-5 h-5 text-success" />
+                      <span className="text-h5 font-strong text-foreground">
                         성장하는 시장입니다
                       </span>
-                      <span className="text-gray-400 text-body font-medium">
+                      <span className="text-muted-foreground text-body font-medium">
                         (진입 추천)
                       </span>
                     </p>
                   ) : (
                     <p className="flex items-center justify-center gap-2">
-                      <TrendingDown className="w-5 h-5 text-red-400" />
-                      <span className="text-h5 font-strong text-gray-900">
+                      <TrendingDown className="w-5 h-5 text-danger" />
+                      <span className="text-h5 font-strong text-foreground">
                         위축되는 시장입니다
                       </span>
-                      <span className="text-gray-400 text-body font-medium">
+                      <span className="text-muted-foreground text-body font-medium">
                         (주의 필요)
                       </span>
                     </p>
@@ -239,12 +239,12 @@ export function AnalysisContent({
                 <div>
                   <div className="flex items-center gap-2 mb-6">
                     <div className="w-8 h-8 rounded-full flex items-center justify-center">
-                      <Store className="w-6 h-6 text-blue-950" />
+                      <Store className="w-6 h-6 text-primary" />
                     </div>
-                    <h3 className="font-bold text-h3 text-gray-900">
+                    <h3 className="font-bold text-h3 text-foreground">
                       경쟁 밀집도
                     </h3>
-                    <span className="text-caption font-medium text-gray-900 bg-gray-100 px-2 py-1 rounded-full">
+                    <span className="text-caption font-medium text-foreground bg-muted px-2 py-1 rounded-full">
                       점포수 증감
                     </span>
                   </div>
@@ -253,24 +253,24 @@ export function AnalysisContent({
                     <div
                       className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-sm border ${
                         netChange >= 0
-                          ? 'bg-emerald-50 border-emerald-100'
-                          : 'bg-red-50 border-red-100'
+                          ? 'bg-success/5 border-success/20'
+                          : 'bg-danger/5 border-danger/20'
                       }`}
                     >
                       {netChange >= 0 ? (
-                        <TrendingUp className="w-8 h-8 text-emerald-500" />
+                        <TrendingUp className="w-8 h-8 text-success" />
                       ) : (
-                        <TrendingDown className="w-8 h-8 text-red-400" />
+                        <TrendingDown className="w-8 h-8 text-danger" />
                       )}
                     </div>
                     <div>
-                      <p className="text-body font-strong text-gray-500 mb-1">
+                      <p className="text-body font-strong text-muted-foreground mb-1">
                         신규 - 폐업 (순증감)
                       </p>
                       <div className="flex items-baseline gap-1">
                         <p
                           className={`text-h2 font-heading tracking-tight ${
-                            netChange >= 0 ? 'text-emerald-500' : 'text-red-400'
+                            netChange >= 0 ? 'text-success' : 'text-danger'
                           }`}
                         >
                           {netChange > 0 ? '+' : ''}
@@ -284,15 +284,15 @@ export function AnalysisContent({
                   </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                <div className="bg-muted/50 rounded-xl p-4">
                   <p className="text-gray-800 font-strong text-body leading-relaxed">
-                    지난 분기 동안{' '}
-                    <span className="font-bold text-emerald-600">
+                    지난 분기 동안 지난 분기 동안{' '}
+                    <span className="font-bold text-success">
                       {vitality.opbizStoreCount.toLocaleString()}개
                     </span>
                     가 새로 생기고,
                     <br />
-                    <span className="font-bold text-red-500">
+                    <span className="font-bold text-danger">
                       {vitality.clsbizStoreCount.toLocaleString()}개
                     </span>
                     가 문을 닫았습니다.
@@ -312,18 +312,19 @@ export function AnalysisContent({
       {/* 업종별 매출 분석 섹션 */}
 
       <div className="grid gap-4">
-        <h2 className="text-h2 font-bold text-slate-900">업종별 매출 분석</h2>
-        <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-200">
+        <h2 className="text-h2 font-bold text-foreground">업종별 매출 분석</h2>
+        <div className="bg-white rounded-2xl p-8 shadow-sm border border-border">
           {sortedSectors.length > 0 ? (
             <div className="space-y-4">
-              {sortedSectors.map((item, index) => {
+              {sortedSectors.map((item) => {
                 const share =
                   totalRevenue > 0
                     ? Math.round((item.value / totalRevenue) * 100)
                     : 0;
-                // 1등은 Orange, 나머지는 Blue
-                const colorClass =
-                  index === 0 ? 'bg-orange-500' : 'bg-blue-900';
+                // 최대 매출 업종 강조 (Info Blue), 그 외에는 Primary Navy
+                const maxSales = Math.max(...sortedSectors.map((s) => s.value));
+                const isMax = item.value === maxSales;
+                const colorClass = isMax ? 'bg-info' : 'bg-primary';
 
                 return (
                   <div key={item.name} className="space-y-2">
@@ -332,12 +333,12 @@ export function AnalysisContent({
                         <span
                           className={`w-3 h-3 rounded-full ${colorClass}`}
                         />
-                        <span className="font-strong text-gray-900">
+                        <span className="font-strong text-foreground">
                           {item.name}
                         </span>
                       </div>
                       <div className="text-right">
-                        <span className="font-strong text-gray-900">
+                        <span className="font-strong text-foreground">
                           {formatRevenue(item.value)}
                         </span>
                         <span className="text-caption font-bold text-gray-500 ml-2">
@@ -345,7 +346,7 @@ export function AnalysisContent({
                         </span>
                       </div>
                     </div>
-                    <div className="bg-gray-200 rounded-full h-2.5">
+                    <div className="bg-muted rounded-full h-2.5">
                       <div
                         className={`h-2.5 rounded-full transition-all duration-500 ${colorClass}`}
                         style={{ width: `${Math.min(share, 100)}%` }}
@@ -361,7 +362,7 @@ export function AnalysisContent({
                   <span className="text-gray-600 text-body font-medium">
                     총 매출
                   </span>
-                  <span className="text-h5 font-heading text-gray-900">
+                  <span className="text-h5 font-heading text-foreground">
                     {formatRevenue(totalRevenue)}
                   </span>
                 </div>
@@ -378,23 +379,25 @@ export function AnalysisContent({
       {/* 업종별 포화도 섹션 (있을 경우) */}
       {analytics?.saturation && analytics.saturation.length > 0 && (
         <div className="grid gap-4">
-          <h2 className="text-h2 font-bold text-gray-900">업종별 경쟁 강도</h2>
-          <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-200">
+          <h2 className="text-h2 font-bold text-foreground">
+            업종별 경쟁 강도
+          </h2>
+          <div className="bg-white rounded-2xl p-8 shadow-sm border border-border">
             <div className="grid grid-cols-2 gap-3">
               {analytics.saturation.slice(0, 4).map((item) => {
                 const statusColor =
                   {
-                    위험: 'bg-red-500 text-white',
-                    경계: 'bg-yellow-500 text-white',
-                    추천: 'bg-green-500 text-white',
+                    위험: 'bg-danger text-white',
+                    경계: 'bg-accent text-white',
+                    추천: 'bg-success text-white',
                   }[item.status] || 'bg-gray-500 text-white';
 
                 return (
                   <div
                     key={item.name}
-                    className="flex items-center justify-between p-2 bg-gray-50 rounded-xl"
+                    className="flex items-center justify-between p-2 bg-muted rounded-xl"
                   >
-                    <span className="text-h4 font-bold text-blue-950 p-4">
+                    <span className="text-h4 font-bold text-foreground p-4">
                       {item.name}
                     </span>
                     <span

@@ -1,7 +1,7 @@
 'use client';
 
 import { AgeScoreData } from './types';
-import { getScoreColor, USER_LABELS } from './constants';
+import { USER_LABELS } from './constants';
 
 interface AgeScoreSectionProps {
   score: AgeScoreData;
@@ -9,10 +9,20 @@ interface AgeScoreSectionProps {
 }
 
 export function AgeScoreSection({ score, userAge }: AgeScoreSectionProps) {
-  const { text } = getScoreColor(score.score);
+  // text color는 이제 사용하지 않고 항상 검은색 (text-slate-900)
   const percentage = Math.round(score.score * 100);
   const userLabel = USER_LABELS.age[userAge] || userAge;
   const { selected } = score.breakdown;
+
+  // 도넛 차트 색상 결정 로직 (정밀 매칭 결과와 동일)
+  const getChartColor = (percent: number) => {
+    if (percent >= 80) return 'stroke-success';
+    if (percent >= 60) return 'stroke-info';
+    if (percent >= 40) return 'stroke-accent';
+    return 'stroke-danger';
+  };
+
+  const chartColorClass = getChartColor(percentage);
 
   // 도넛 차트 계산
   const radius = 60;
@@ -26,7 +36,7 @@ export function AgeScoreSection({ score, userAge }: AgeScoreSectionProps) {
         <h4 className="text-h4 font-heading text-slate-900">타깃 연령</h4>
         <div className="text-right">
           <p className="text-caption text-slate-400">적합도</p>
-          <p className={`text-h4 font-heading ${text}`}>{percentage}%</p>
+          <p className="text-h4 font-heading text-slate-900">{percentage}%</p>
         </div>
       </div>
       <p className="text-caption text-slate-400">연령대별 매출 비중</p>
@@ -50,18 +60,20 @@ export function AgeScoreSection({ score, userAge }: AgeScoreSectionProps) {
               cy="80"
               r={radius}
               fill="none"
-              stroke="#6366f1"
+              stroke="currentColor"
               strokeWidth="10"
               strokeDasharray={circumference}
               strokeDashoffset={selectedOffset}
               strokeLinecap="round"
-              className="transition-all duration-700"
+              className={`transition-all duration-700 ${chartColorClass}`}
             />
           </svg>
 
           {/* 중앙 라벨 */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-h3 font-heading text-indigo-600">
+            <span
+              className={`text-h3 font-heading ${chartColorClass.replace('stroke-', 'text-')}`}
+            >
               {selected.toFixed(1)}%
             </span>
             <span className="text-caption text-slate-400">{userLabel}</span>
@@ -71,7 +83,9 @@ export function AgeScoreSection({ score, userAge }: AgeScoreSectionProps) {
         {/* 범례 (차트 아래) */}
         <div className="flex items-center gap-4 text-sm">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-indigo-500 rounded-full" />
+            <div
+              className={`w-3 h-3 rounded-full ${chartColorClass.replace('stroke-', 'bg-')}`}
+            />
             <span className="text-slate-600">{userLabel}</span>
           </div>
           <div className="flex items-center gap-2">

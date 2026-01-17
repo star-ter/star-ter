@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ChatRepository } from './chat.repository';
 import { AiService } from './ai.service';
 
@@ -41,18 +41,30 @@ export class ChatService {
     });
 
     const historyMessages = await this.getHistoryMessages(conversationId);
-    const aiResponse = await this.aiService.getAIMessageWithHistory(
+    const aiResponseJson = await this.aiService.getAIMessageWithHistory(
       message,
       historyMessages,
     );
 
+    // JSON 파싱
+    const parsed = JSON.parse(aiResponseJson) as {
+      reply: string;
+      actions?: unknown[];
+      sources?: { tool: string; displayName: string; source: string }[];
+    };
+
     await this.chatRepository.addMessage({
       conversationId: conversationId,
       role: 'assistant',
-      content: aiResponse,
+      content: parsed.reply,
     });
 
-    return aiResponse;
+    return {
+      reply: parsed.reply,
+      actions: parsed.actions || [],
+      sources: parsed.sources || [],
+      conversationId,
+    };
   }
 
   private async getHistoryMessages(
@@ -94,5 +106,40 @@ export class ChatService {
           content: msg.content,
         })),
       );
+  }
+
+  async updateConversationTitle(
+    userId: string,
+    conversationId: string,
+    title: string,
+  ) {
+    const conversation =
+      await this.chatRepository.getConversation(conversationId);
+    if (!conversation || conversation.userId !== userId) {
+      throw new NotFoundException('Conversation not found or access denied');
+    }
+
+    const updated = await this.chatRepository.updateConversation(
+      conversationId,
+      {
+        title,
+      },
+    );
+
+    return {
+      id: updated.id,
+      title: updated.title,
+    };
+  }
+
+  async deleteConversation(userId: string, conversationId: string) {
+    const conversation =
+      await this.chatRepository.getConversation(conversationId);
+    if (!conversation || conversation.userId !== userId) {
+      throw new NotFoundException('Conversation not found or access denied');
+    }
+
+    await this.chatRepository.deleteConversation(conversationId);
+    return { id: conversationId };
   }
 }

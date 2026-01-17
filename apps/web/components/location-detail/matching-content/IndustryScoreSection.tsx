@@ -1,7 +1,6 @@
 'use client';
 
 import { ScoreWithExplanation } from './types';
-import { getScoreColor } from './constants';
 
 interface IndustryScoreSectionProps {
   score: ScoreWithExplanation;
@@ -14,34 +13,34 @@ const getDensityLevel = (count: number) => {
   if (count === 0)
     return {
       label: '없음',
-      color: 'text-emerald-600',
+      color: 'text-success',
       bgColor: 'bg-slate-50',
       status: '진입 최적',
     };
   if (count <= 3)
     return {
       label: '낮음',
-      color: 'text-emerald-600',
+      color: 'text-success',
       bgColor: 'bg-slate-50',
       status: '진입 유리',
     };
   if (count <= 7)
     return {
       label: '보통',
-      color: 'text-amber-600',
+      color: 'text-accent',
       bgColor: 'bg-slate-50',
       status: '경쟁 예상',
     };
   if (count <= 15)
     return {
       label: '높음',
-      color: 'text-orange-600',
+      color: 'text-danger',
       bgColor: 'bg-slate-50',
       status: '경쟁 치열',
     };
   return {
     label: '매우 높음',
-    color: 'text-rose-600',
+    color: 'text-danger',
     bgColor: 'bg-slate-50',
     status: '레드오션',
   };
@@ -52,7 +51,6 @@ export function IndustryScoreSection({
   industryName,
   competitorCount = 0,
 }: IndustryScoreSectionProps) {
-  const { text } = getScoreColor(score.score);
   const percentage = Math.round(score.score * 100);
   const density = getDensityLevel(competitorCount);
 
@@ -77,7 +75,7 @@ export function IndustryScoreSection({
         <h4 className="text-h4 font-heading text-slate-900">업종 적합도</h4>
         <div className="text-right">
           <p className="text-caption text-slate-400">적합도</p>
-          <p className={`text-h4 font-heading ${text}`}>{percentage}%</p>
+          <p className="text-h4 font-heading text-slate-900">{percentage}%</p>
         </div>
       </div>
 
@@ -94,7 +92,7 @@ export function IndustryScoreSection({
           <p className={`text-h2 font-heading text-slate-900`}>
             {competitorCount}개
           </p>
-          <p className={`text-caption mt-2 text-blue-600 font-medium`}>
+          <p className={`text-caption mt-2 text-info font-medium`}>
             {density.status}
           </p>
         </div>
@@ -107,7 +105,7 @@ export function IndustryScoreSection({
           <p className={`text-h2 font-heading text-slate-900`}>
             {density.label}
           </p>
-          <p className="text-caption text-blue-600 font-medium mt-2">
+          <p className="text-caption text-info font-medium mt-2">
             동일 업종 기준
           </p>
         </div>

@@ -35,6 +35,12 @@ export class ChatRepository {
     });
   }
 
+  async deleteConversation(conversationId: string) {
+    return this.prisma.conversation.delete({
+      where: { id: conversationId },
+    });
+  }
+
   async getConversation(conversationId: string, includeMessages = false) {
     return this.prisma.conversation.findUnique({
       where: { id: conversationId },

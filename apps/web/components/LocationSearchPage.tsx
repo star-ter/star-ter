@@ -259,11 +259,11 @@ export function LocationSearchPage({
 
   return (
     <div className="flex flex-1 flex-col h-full overflow-hidden">
-      <div className="flex-1 flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="px-8 pt-6 pb-4 border-b border-gray-100 shrink-0">
+      <div className="flex-1 flex flex-col bg-white rounded-2xl shadow-sm border border-border overflow-hidden">
+        <div className="px-8 pt-6 pb-4 border-b border-border shrink-0">
           <div className="flex justify-between items-center">
             <div className="flex gap-8">
-              <h1 className="text-h1 font-heading text-slate-900">
+              <h1 className="text-h1 font-heading text-foreground">
                 실시간 상권 차트
               </h1>
             </div>
@@ -275,12 +275,12 @@ export function LocationSearchPage({
                 placeholder="상권명 검색..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                className="w-full px-4 py-2 bg-muted border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-info focus:bg-card transition-all"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -289,17 +289,17 @@ export function LocationSearchPage({
           </div>
         </div>
 
-        <div className="px-8 py-4 flex flex-col gap-3 shrink-0 border-b border-gray-50">
+        <div className="px-8 py-4 flex flex-col gap-3 shrink-0 border-b border-border">
           <div className="flex items-center justify-between gap-2">
-            <div className="flex bg-gray-100 p-1 rounded-xl gap-1">
+            <div className="flex bg-muted p-1 rounded-xl gap-1">
               {subTabs.map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setSubTab(tab)}
                   className={`px-4 py-2 text-caption rounded-lg transition-all ${
                     subTab === tab
-                      ? 'bg-white text-slate-900 font-bold shadow-sm'
-                      : 'text-slate-500 hover:text-slate-700'
+                      ? 'bg-card text-foreground font-bold shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   {tab}
@@ -313,15 +313,15 @@ export function LocationSearchPage({
               {isPopulationTab(subTab) ? (
                 <>
                   {/* 연령대 드롭다운 */}
-                  <div className="flex bg-slate-100 p-0.5 rounded-lg">
+                  <div className="flex bg-muted p-0.5 rounded-lg">
                     {AGE_GROUP_OPTIONS.map((opt) => (
                       <button
                         key={opt.value}
                         onClick={() => setAgeGroup(opt.value)}
                         className={`px-3 py-1.5 text-tiny rounded-md transition-all ${
                           ageGroup === opt.value
-                            ? 'bg-white text-slate-900 font-bold shadow-sm'
-                            : 'text-slate-500 hover:text-slate-700'
+                            ? 'bg-card text-foreground font-bold shadow-sm'
+                            : 'text-muted-foreground hover:text-foreground'
                         }`}
                       >
                         {opt.label}
@@ -329,15 +329,15 @@ export function LocationSearchPage({
                     ))}
                   </div>
                   {/* 시간대 드롭다운 */}
-                  <div className="flex bg-slate-100 p-0.5 rounded-lg">
+                  <div className="flex bg-muted p-0.5 rounded-lg">
                     {TIME_SLOT_OPTIONS.map((opt) => (
                       <button
                         key={opt.value}
                         onClick={() => setTimeSlot(opt.value)}
                         className={`px-3 py-1.5 text-tiny rounded-md transition-all ${
                           timeSlot === opt.value
-                            ? 'bg-white text-slate-900 font-bold shadow-sm'
-                            : 'text-slate-500 hover:text-slate-700'
+                            ? 'bg-card text-foreground font-bold shadow-sm'
+                            : 'text-muted-foreground hover:text-foreground'
                         }`}
                       >
                         {opt.label}
@@ -358,14 +358,14 @@ export function LocationSearchPage({
                     }}
                     className={`flex items-center gap-2 px-4 py-2 rounded-full text-tiny font-bold transition-colors ${
                       industryCode
-                        ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                        ? 'bg-info/10 text-info hover:bg-info/20'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
                     }`}
                   >
                     {selectedIndustryName}
                     {industryCode ? (
                       <X
-                        className="w-4 h-4 hover:text-red-500"
+                        className="w-4 h-4 hover:text-danger"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleClearFilter();
@@ -379,10 +379,10 @@ export function LocationSearchPage({
                   </button>
 
                   {isIndustryOpen && (
-                    <div className="absolute top-full right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50">
+                    <div className="absolute top-full right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-border overflow-hidden z-50">
                       {!selectedMajor ? (
                         <div className="p-2">
-                          <div className="px-3 py-2 text-caption font-bold text-slate-400 uppercase">
+                          <div className="px-3 py-2 text-caption font-bold text-muted-foreground uppercase">
                             대분류 선택
                           </div>
                           <div className="grid grid-cols-2 gap-1">
@@ -390,10 +390,10 @@ export function LocationSearchPage({
                               <button
                                 key={category.major}
                                 onClick={() => setSelectedMajor(category.major)}
-                                className="px-3 py-2.5 text-left text-caption font-strong text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+                                className="px-3 py-2.5 text-left text-caption font-strong text-foreground hover:bg-muted rounded-lg transition-colors"
                               >
                                 {category.major}
-                                <span className="text-slate-400 ml-1 text-caption">
+                                <span className="text-muted-foreground ml-1 text-caption">
                                   ({category.items.length})
                                 </span>
                               </button>
@@ -402,14 +402,14 @@ export function LocationSearchPage({
                         </div>
                       ) : (
                         <div>
-                          <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 bg-slate-50">
+                          <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-muted">
                             <button
                               onClick={() => setSelectedMajor(null)}
-                              className="text-tiny font-strong text-slate-500 hover:text-slate-700"
+                              className="text-tiny font-strong text-muted-foreground hover:text-foreground"
                             >
                               ← 뒤로
                             </button>
-                            <span className="text-caption font-bold text-slate-900">
+                            <span className="text-caption font-bold text-foreground">
                               {selectedMajor}
                             </span>
                           </div>
@@ -424,8 +424,8 @@ export function LocationSearchPage({
                                 }}
                                 className={`w-full px-2 py-2 text-left text-caption rounded-lg transition-colors ${
                                   industryCode === item.code
-                                    ? 'text-blue-600 font-bold bg-blue-50'
-                                    : 'text-slate-700 hover:bg-slate-100'
+                                    ? 'text-info font-bold bg-info/10'
+                                    : 'text-foreground hover:bg-muted'
                                 }`}
                               >
                                 {item.name}
@@ -444,7 +444,7 @@ export function LocationSearchPage({
 
         {/* 테이블 헤더 - 탭에 따라 다르게 표시 */}
         <div
-          className="px-6 py-3 grid items-center text-body font-strong text-slate-400 shrink-0 border-b border-gray-50 bg-slate-50/30 gap-4"
+          className="px-6 py-3 grid items-center text-body font-strong text-muted-foreground shrink-0 border-b border-border bg-muted/30 gap-4"
           style={{
             gridTemplateColumns: isRecommendTab(subTab)
               ? '3fr 1fr 2fr'
@@ -499,13 +499,13 @@ export function LocationSearchPage({
         <div className="flex-1 overflow-y-auto overflow-x-visible px-6 pb-10 no-scrollbar">
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
-              <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
-              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-2">
+              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-2">
                 <svg
-                  className="w-8 h-8 text-slate-400"
+                  className="w-8 h-8 text-muted-foreground"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -518,19 +518,19 @@ export function LocationSearchPage({
                   />
                 </svg>
               </div>
-              <p className="text-h4 font-strong text-slate-700">{error}</p>
-              <p className="text-body text-slate-500">
+              <p className="text-h4 font-strong text-foreground">{error}</p>
+              <p className="text-body text-muted-foreground">
                 맞춤 추천을 받으려면 로그인이 필요합니다.
               </p>
               <button
                 onClick={() => router.push('/login')}
-                className="mt-2 px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors"
+                className="mt-2 px-6 py-2.5 bg-info text-white font-bold rounded-xl hover:bg-info/90 transition-colors"
               >
                 로그인하기
               </button>
             </div>
           ) : currentData.length === 0 ? (
-            <div className="flex items-center justify-center py-20 text-slate-500">
+            <div className="flex items-center justify-center py-20 text-muted-foreground">
               데이터가 없습니다.
             </div>
           ) : isRecommendTab(subTab) ? (
@@ -539,15 +539,15 @@ export function LocationSearchPage({
               <button
                 key={item.id}
                 onClick={() => router.push(`/locations/detail/${item.id}`)}
-                className="w-full py-4 items-center hover:bg-slate-50/80 rounded-2xl transition-all group relative grid gap-4 text-left"
+                className="w-full py-4 items-center hover:bg-muted/50 rounded-2xl transition-all group relative grid gap-4 text-left"
                 style={{ gridTemplateColumns: '3fr 1fr 2fr' }}
               >
                 <div className="flex items-center gap-4">
-                  <span className="w-6 text-h5 font-strong text-slate-400 group-hover:text-slate-900 transition-colors">
+                  <span className="w-6 text-h5 font-strong text-muted-foreground group-hover:text-foreground transition-colors">
                     {index + 1}
                   </span>
                   <div className="text-left">
-                    <div className="text-h5 font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                    <div className="text-h5 font-bold text-foreground group-hover:text-info transition-colors">
                       {item.name}
                     </div>
                   </div>
@@ -558,12 +558,12 @@ export function LocationSearchPage({
                   <span
                     className={`px-3 py-1 rounded-full text-caption font-strong ${
                       item.totalScore >= 90
-                        ? 'bg-emerald-50 text-emerald-600'
+                        ? 'bg-success/10 text-success'
                         : item.totalScore >= 70
-                          ? 'bg-blue-50 text-blue-600'
+                          ? 'bg-info/10 text-info'
                           : item.totalScore >= 50
-                            ? 'bg-amber-50 text-amber-600'
-                            : 'bg-slate-100 text-slate-600'
+                            ? 'bg-accent/10 text-accent'
+                            : 'bg-muted text-muted-foreground'
                     }`}
                   >
                     {item.totalScore.toFixed(1)}점
@@ -572,7 +572,7 @@ export function LocationSearchPage({
 
                 {/* 호버 시 점수 그래프 - 플로팅 툴팁 */}
                 <div className="flex items-center justify-center">
-                  <div className="text-caption text-slate-400">
+                  <div className="text-caption text-muted-foreground">
                     마우스를 올려 상세 점수 보기
                   </div>
 
@@ -582,13 +582,13 @@ export function LocationSearchPage({
                       index < 5 ? 'top-full mt-2' : 'bottom-full mb-2'
                     }`}
                   >
-                    <div className="bg-white rounded-xl shadow-xl border border-slate-200 p-5 relative">
+                    <div className="bg-white rounded-xl shadow-xl border border-border p-5 relative">
                       {/* 화살표 - 방향에 따라 다르게 (테두리 효과) */}
                       {index < 5 ? (
                         <div className="absolute -top-2.5 right-8">
                           {/* 테두리용 삼각형 (뒤) */}
                           <div
-                            className="w-0 h-0 border-l-11 border-r-11 border-b-11 border-l-transparent border-r-transparent border-b-slate-300"
+                            className="w-0 h-0 border-l-11 border-r-11 border-b-11 border-l-transparent border-r-transparent border-b-border"
                             style={{
                               position: 'absolute',
                               top: '-1px',
@@ -609,7 +609,7 @@ export function LocationSearchPage({
                         <div className="absolute -bottom-2.5 right-8">
                           {/* 테두리용 삼각형 (뒤) */}
                           <div
-                            className="w-0 h-0 border-l-11 border-r-11 border-t-11 border-l-transparent border-r-transparent border-t-slate-300"
+                            className="w-0 h-0 border-l-11 border-r-11 border-t-11 border-l-transparent border-r-transparent border-t-border"
                             style={{
                               position: 'absolute',
                               bottom: '-1px',
@@ -679,7 +679,7 @@ export function LocationSearchPage({
                                     y1={getY(level)}
                                     x2={chartWidth - padding.right}
                                     y2={getY(level)}
-                                    stroke="#e2e8f0"
+                                    stroke="var(--border)"
                                     strokeWidth="1"
                                     strokeDasharray={level === 1 ? '0' : '3,3'}
                                   />
@@ -688,7 +688,7 @@ export function LocationSearchPage({
                                     y={getY(level)}
                                     textAnchor="end"
                                     dominantBaseline="middle"
-                                    className="text-tiny fill-slate-400"
+                                    className="text-tiny fill-muted-foreground"
                                   >
                                     {Math.round(level * 100)}
                                   </text>
@@ -701,7 +701,7 @@ export function LocationSearchPage({
                                 y1={getY(0)}
                                 x2={chartWidth - padding.right}
                                 y2={getY(0)}
-                                stroke="#cbd5e1"
+                                stroke="var(--border)"
                                 strokeWidth="1"
                               />
 
@@ -716,12 +716,12 @@ export function LocationSearchPage({
                                 >
                                   <stop
                                     offset="0%"
-                                    stopColor="#3b82f6"
+                                    stopColor="var(--info)"
                                     stopOpacity="0.3"
                                   />
                                   <stop
                                     offset="100%"
-                                    stopColor="#3b82f6"
+                                    stopColor="var(--info)"
                                     stopOpacity="0"
                                   />
                                 </linearGradient>
@@ -735,7 +735,7 @@ export function LocationSearchPage({
                               <path
                                 d={linePath}
                                 fill="none"
-                                stroke="#3b82f6"
+                                stroke="var(--info)"
                                 strokeWidth="2.5"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
@@ -748,7 +748,7 @@ export function LocationSearchPage({
                                   cx={getX(i)}
                                   cy={getY(s.value)}
                                   r="5"
-                                  fill="#3b82f6"
+                                  fill="var(--info)"
                                   stroke="white"
                                   strokeWidth="2"
                                 />
@@ -761,7 +761,7 @@ export function LocationSearchPage({
                                   x={getX(i)}
                                   y={chartHeight - 20}
                                   textAnchor="middle"
-                                  className="text-tiny fill-slate-600 font-medium"
+                                  className="text-tiny fill-muted-foreground font-medium"
                                 >
                                   {s.label}
                                 </text>
@@ -774,7 +774,7 @@ export function LocationSearchPage({
                                   x={getX(i)}
                                   y={chartHeight - 5}
                                   textAnchor="middle"
-                                  className="text-tiny fill-blue-600 font-bold"
+                                  className="text-tiny fill-info font-bold"
                                 >
                                   {Math.round(s.value * 100)}%
                                 </text>
@@ -794,21 +794,21 @@ export function LocationSearchPage({
               <button
                 key={`${item.id}-${item.rank}-${item.name}`}
                 onClick={() => handleLocationClick(item)}
-                className="w-full py-4 items-center hover:bg-slate-50/80 rounded-2xl transition-all group grid gap-4 text-left"
+                className="w-full py-4 items-center hover:bg-muted/50 rounded-2xl transition-all group grid gap-4 text-left"
                 style={{ gridTemplateColumns: '3fr 1.2fr 0.8fr 1fr' }}
               >
                 <div className="flex items-center gap-4">
-                  <span className="w-6 text-h5 font-strong text-slate-400 group-hover:text-slate-900 transition-colors">
+                  <span className="w-6 text-h5 font-strong text-muted-foreground group-hover:text-foreground transition-colors">
                     {item.rank}
                   </span>
                   <div className="text-left">
-                    <div className="text-h5 font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                    <div className="text-h5 font-bold text-foreground group-hover:text-info transition-colors">
                       {item.name}
                     </div>
                   </div>
                 </div>
 
-                <div className="text-center text-h5 font-strong text-slate-900">
+                <div className="text-center text-h5 font-strong text-foreground">
                   {item.population}
                 </div>
 
@@ -816,8 +816,8 @@ export function LocationSearchPage({
                   <div
                     className={`px-2 py-1 rounded-lg text-caption font-strong min-w-15 ${
                       item.growthRate > 0
-                        ? 'bg-red-50 text-red-500'
-                        : 'bg-blue-50 text-blue-500'
+                        ? 'bg-danger/10 text-danger'
+                        : 'bg-info/10 text-info'
                     }`}
                   >
                     {item.growthRate > 0 ? '▲' : '▼'}{' '}
@@ -829,12 +829,12 @@ export function LocationSearchPage({
                   <span
                     className={`px-3 py-1 rounded-lg text-caption font-strong ${
                       item.statusType === 'hot'
-                        ? 'bg-red-50 text-red-600'
+                        ? 'bg-danger/10 text-danger'
                         : item.statusType === 'stable'
-                          ? 'bg-green-50 text-green-600'
+                          ? 'bg-success/10 text-success'
                           : item.statusType === 'danger'
-                            ? 'bg-orange-50 text-orange-600'
-                            : 'bg-slate-100 text-slate-600'
+                            ? 'bg-accent/10 text-accent'
+                            : 'bg-muted text-muted-foreground'
                     }`}
                   >
                     {item.status}
@@ -848,26 +848,26 @@ export function LocationSearchPage({
               <button
                 key={`${item.id}-${item.rank}-${item.name}`}
                 onClick={() => handleLocationClick(item)}
-                className="w-full py-4 items-center hover:bg-slate-50/80 rounded-2xl transition-all group grid gap-4 text-left"
+                className="w-full py-4 items-center hover:bg-muted/50 rounded-2xl transition-all group grid gap-4 text-left"
                 style={{ gridTemplateColumns: '3fr 1.2fr 0.8fr 1fr' }}
               >
                 <div className="flex items-center gap-4">
-                  <span className="w-6 text-h5 font-bold text-slate-400 group-hover:text-slate-900 transition-colors">
+                  <span className="w-6 text-h5 font-bold text-muted-foreground group-hover:text-foreground transition-colors">
                     {item.rank}
                   </span>
                   <div className="text-left">
-                    <div className="text-h5 font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                    <div className="text-h5 font-bold text-foreground group-hover:text-info transition-colors">
                       {item.name}
                     </div>
                   </div>
                 </div>
 
-                <div className="text-center text-h5 font-strong text-slate-900">
+                <div className="text-center text-h5 font-strong text-foreground">
                   {item.population}
                 </div>
 
                 <div className="flex justify-center">
-                  <div className="px-2 py-1 rounded-lg text-caption font-strong min-w-15 bg-violet-50 text-violet-600">
+                  <div className="px-2 py-1 rounded-lg text-caption font-strong min-w-15 bg-accent/10 text-accent">
                     {item.growthRate.toFixed(1)}%
                   </div>
                 </div>
@@ -876,12 +876,12 @@ export function LocationSearchPage({
                   <span
                     className={`px-3 py-1 rounded-lg text-xs font-bold ${
                       item.statusType === 'hot'
-                        ? 'bg-red-50 text-red-600'
+                        ? 'bg-danger/10 text-danger'
                         : item.statusType === 'stable'
-                          ? 'bg-green-50 text-green-600'
+                          ? 'bg-success/10 text-success'
                           : item.statusType === 'danger'
-                            ? 'bg-orange-50 text-orange-600'
-                            : 'bg-slate-100 text-slate-600'
+                            ? 'bg-accent/10 text-accent'
+                            : 'bg-muted text-muted-foreground'
                     }`}
                   >
                     {item.status}
@@ -895,35 +895,35 @@ export function LocationSearchPage({
               <button
                 key={`${item.id}-${item.rank}-${item.name}`}
                 onClick={() => handleLocationClick(item)}
-                className="w-full py-4 items-center hover:bg-slate-50/80 rounded-2xl transition-all group grid gap-4 text-left"
+                className="w-full py-4 items-center hover:bg-muted/50 rounded-2xl transition-all group grid gap-4 text-left"
                 style={{ gridTemplateColumns: '3fr 0.6fr 1fr 1.2fr 1fr' }}
               >
                 <div className="flex items-center gap-4">
-                  <span className="w-6 text-h5 font-bold text-slate-400 group-hover:text-slate-900 transition-colors">
+                  <span className="w-6 text-h5 font-bold text-muted-foreground group-hover:text-foreground transition-colors">
                     {item.rank}
                   </span>
                   <div className="text-left">
-                    <div className="text-h5 font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                    <div className="text-h5 font-bold text-foreground group-hover:text-info transition-colors">
                       {item.name}
                     </div>
                   </div>
                 </div>
 
-                <div className="text-center text-h5 font-strong text-slate-900">
+                <div className="text-center text-h5 font-strong text-foreground">
                   {item.closureRate}%
                 </div>
 
-                <div className="text-center text-h5 font-strong text-slate-600">
-                  <span className="text-red-500 font-heading">
+                <div className="text-center text-h5 font-strong text-muted-foreground">
+                  <span className="text-danger font-heading">
                     {item.closedStoreCount}
                   </span>
                   개 폐업
                 </div>
 
-                <div className="flex justify-center items-center gap-2 text-caption text-slate-500">
+                <div className="flex justify-center items-center gap-2 text-caption text-muted-foreground">
                   <span>{item.previousStoreCount}개</span>
-                  <span className="text-slate-300">→</span>
-                  <span className="font-strong text-slate-900">
+                  <span className="text-border">→</span>
+                  <span className="font-strong text-foreground">
                     {item.currentStoreCount}개
                   </span>
                 </div>
@@ -932,12 +932,12 @@ export function LocationSearchPage({
                   <span
                     className={`px-3 py-1 rounded-lg text-xs font-bold ${
                       item.statusType === 'hot'
-                        ? 'bg-red-50 text-red-600'
+                        ? 'bg-danger/10 text-danger'
                         : item.statusType === 'stable'
-                          ? 'bg-green-50 text-green-600'
+                          ? 'bg-success/10 text-success'
                           : item.statusType === 'danger'
-                            ? 'bg-orange-50 text-orange-600'
-                            : 'bg-slate-100 text-slate-600'
+                            ? 'bg-accent/10 text-accent'
+                            : 'bg-muted text-muted-foreground'
                     }`}
                   >
                     {item.status}
@@ -951,25 +951,25 @@ export function LocationSearchPage({
               <button
                 key={`${item.id}-${item.rank}-${item.name}`}
                 onClick={() => handleLocationClick(item)}
-                className="w-full py-4 items-center hover:bg-slate-50/80 rounded-2xl transition-all group grid gap-4 text-left"
+                className="w-full py-4 items-center hover:bg-muted/50 rounded-2xl transition-all group grid gap-4 text-left"
                 style={{ gridTemplateColumns: '3fr 1fr 1.2fr 1fr 1.2fr' }}
               >
                 <div className="flex items-center gap-4">
-                  <span className="w-6 text-h5 font-bold text-slate-400 group-hover:text-slate-900 transition-colors">
+                  <span className="w-6 text-h5 font-bold text-muted-foreground group-hover:text-foreground transition-colors">
                     {item.rank}
                   </span>
 
                   <div className="text-left">
-                    <div className="text-h5 font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                    <div className="text-h5 font-bold text-foreground group-hover:text-info transition-colors">
                       {item.name}
                     </div>
-                    <div className="text-caption font-strong text-slate-400">
+                    <div className="text-caption font-strong text-muted-foreground">
                       점포 수: {item.storeCount}개
                     </div>
                   </div>
                 </div>
 
-                <div className="text-center text-h5 font-strong text-slate-900">
+                <div className="text-center text-h5 font-strong text-foreground">
                   {item.avgRevenue}
                 </div>
 
@@ -977,8 +977,8 @@ export function LocationSearchPage({
                   <div
                     className={`px-2 py-1 rounded-lg text-caption font-strong ${
                       item.growthRate > 0
-                        ? 'bg-red-50 text-red-500'
-                        : 'bg-blue-50 text-blue-500'
+                        ? 'bg-danger/10 text-danger'
+                        : 'bg-info/10 text-info'
                     }`}
                   >
                     {item.growthRate > 0 ? '+' : ''}
@@ -986,24 +986,26 @@ export function LocationSearchPage({
                   </div>
                 </div>
 
-                <div className="text-center text-h5 font-strong text-slate-900">
+                <div className="text-center text-h5 font-strong text-foreground">
                   {item.totalRevenue}
                 </div>
 
                 <div className="flex flex-col items-center gap-1">
-                  <div className="flex w-32 h-1.5 rounded-full overflow-hidden bg-gray-100">
+                  <div className="flex w-32 h-1.5 rounded-full overflow-hidden bg-muted">
                     <div
-                      className="h-full bg-blue-500 transition-all duration-1000"
+                      className="h-full bg-gender-male transition-all duration-1000"
                       style={{ width: `${item.ratio.male}%` }}
                     />
                     <div
-                      className="h-full bg-red-500 transition-all duration-1000"
+                      className="h-full bg-gender-female transition-all duration-1000"
                       style={{ width: `${item.ratio.female}%` }}
                     />
                   </div>
-                  <div className="flex justify-between w-32 text-caption font-strong text-slate-400">
-                    <span className="text-blue-500">{item.ratio.male}</span>
-                    <span className="text-red-500">{item.ratio.female}</span>
+                  <div className="flex justify-between w-32 text-caption font-strong text-muted-foreground">
+                    <span className="text-gender-male">{item.ratio.male}</span>
+                    <span className="text-gender-female">
+                      {item.ratio.female}
+                    </span>
                   </div>
                 </div>
               </button>
@@ -1014,7 +1016,7 @@ export function LocationSearchPage({
             <div className="mt-8 mb-10 flex justify-center">
               <button
                 onClick={handleLoadMore}
-                className="px-8 py-3 bg-gray-50 text-slate-500 rounded-xl text-caption font-strong hover:bg-gray-100 transition-all"
+                className="px-8 py-3 bg-muted text-muted-foreground rounded-xl text-caption font-strong hover:bg-muted/80 transition-all"
               >
                 더 보기 ({displayCount} / {currentData.length})
               </button>

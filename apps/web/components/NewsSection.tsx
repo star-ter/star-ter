@@ -152,7 +152,7 @@ export default function NewsSection({
             <div className="group cursor-pointer flex gap-2">
               <div className="flex-1 min-w-0 flex flex-col">
                 <h3
-                  className="text-body font-strong text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-1"
+                  className="text-body font-strong text-gray-900 group-hover:text-info transition-colors line-clamp-1"
                   dangerouslySetInnerHTML={{ __html: item.title }}
                 />
                 <p

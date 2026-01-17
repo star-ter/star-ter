@@ -7,8 +7,12 @@ import {
   Post,
   Body,
   RequestTimeoutException,
+  UseGuards,
 } from '@nestjs/common';
 import { AssistantService } from './assistant.service';
+import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
+import { User } from 'src/auth/decorators/user.decorator';
+import type { AuthenticatedUser } from 'src/auth/types/authenticatedUser';
 
 @Controller('assistant')
 export class AssistantController {
@@ -19,19 +23,24 @@ export class AssistantController {
   /**
    * 대화 히스토리 포함 채팅 엔드포인트
    * POST /assistant/message
+   *
+   * [변경사항]
+   * - JwtAuthGuard 추가: 인증된 사용자만 접근 가능
+   * - conversationId 파라미터 추가: DB 히스토리 저장용
    */
+  @UseGuards(JwtAuthGuard)
   @Post('/message')
   async chatWithHistory(
+    @User() user: AuthenticatedUser,
     @Body()
     body: {
       message: string;
-      history?: Array<{ role: 'user' | 'assistant'; content: string }>;
+      conversationId?: string;
+      // history는 더 이상 필요 없음 (DB에서 로드)
     },
   ) {
     const startTime = Date.now();
-    this.logger.log(
-      `[Claude] Received: ${body.message} (${body.history?.length || 0} history)`,
-    );
+    this.logger.log(`[Claude] Received: ${body.message}`);
 
     // 50초 타임아웃
     const TIMEOUT_MS = 50000;
@@ -49,7 +58,8 @@ export class AssistantController {
       const response = await Promise.race([
         this.assistantService.getMessageWithHistory(
           body.message,
-          body.history || [],
+          user.id,
+          body.conversationId,
         ),
         timeoutPromise,
       ]);

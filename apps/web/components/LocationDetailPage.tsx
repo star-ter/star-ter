@@ -252,7 +252,7 @@ export function LocationDetailPage({
             handleComponent={{
               right: (
                 <div className="h-full flex items-center justify-center group cursor-col-resize">
-                  <div className="w-1.5 h-16 bg-slate-300 rounded-full group-hover:bg-blue-600 transition-all group-hover:h-24 group-hover:w-2 flex items-center justify-center shadow-sm">
+                  <div className="w-1.5 h-16 bg-slate-300 rounded-full group-hover:bg-info transition-all group-hover:h-24 group-hover:w-2 flex items-center justify-center shadow-sm">
                     <GripVertical className="w-3 h-3 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                 </div>

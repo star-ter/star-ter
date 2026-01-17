@@ -64,7 +64,7 @@ export class OpenAiService {
 
   analyzeResults(input: ResponseInput) {
     return this.client.responses.create({
-      model: 'gpt-4.1-mini',
+      model: 'gpt-4o-mini',
       input: input,
       service_tier: 'priority',
       max_output_tokens: 10000,

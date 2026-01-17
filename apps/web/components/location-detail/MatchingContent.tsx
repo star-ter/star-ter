@@ -86,43 +86,43 @@ export function MatchingContent({
                       return {
                         title: '"여기가 바로 명당입니다!"',
                         desc: '데이터가 증명하는 최적의 입지입니다. 사장님을 위해 준비된 기회를 놓치지 마세요.',
-                        color: 'text-violet-600',
+                        color: 'text-success',
                       };
                     case score >= 80:
                       return {
                         title: '"성공 예감이 드는 곳입니다!"',
                         desc: '매우 훌륭한 매칭 점수입니다. 안정적인 수익 창출이 기대되는 매력적인 상권입니다.',
-                        color: 'text-indigo-600',
+                        color: 'text-success',
                       };
                     case score >= 70:
                       return {
                         title: '"긍정적인 신호가 가득해요"',
                         desc: '상권 데이터가 사장님에게 호의적입니다. 좋은 기회가 될 수 있으니 적극적으로 검토해보세요.',
-                        color: 'text-blue-600',
+                        color: 'text-gender-male',
                       };
                     case score >= 51:
                       return {
                         title: '"안정적인 평균 수준입니다"',
                         desc: '무난한 선택지입니다. 차별화된 마케팅과 서비스로 승부한다면 충분히 좋은 성과를 낼 수 있습니다.',
-                        color: 'text-emerald-600',
+                        color: 'text-accent',
                       };
                     case score >= 31:
                       return {
                         title: '"가능성이 보이는 상권입니다"',
                         desc: '나쁘지 않은 조건이지만, 확실한 성공을 위해서는 이 상권만의 공략 포인트가 필요합니다.',
-                        color: 'text-amber-500',
+                        color: 'text-accent',
                       };
                     case score >= 21:
                       return {
                         title: '"신중한 재검토가 필요합니다"',
                         desc: '성공적인 창업을 위해서는 더 많은 준비가 필요해 보입니다. 리스크를 줄이기 위한 방안을 모색해보세요.',
-                        color: 'text-orange-500',
+                        color: 'text-danger',
                       };
                     default:
                       return {
                         title: '"새로운 전략이 필요해요"',
                         desc: '현재 데이터로는 높은 경쟁력을 기대하기 어렵습니다. 다른 지역이나 업종도 함께 고려해보시는 것을 추천합니다.',
-                        color: 'text-rose-500',
+                        color: 'text-danger',
                       };
                   }
                 };
@@ -158,9 +158,7 @@ export function MatchingContent({
                         />
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span
-                          className={`text-h3 font-heading ${content.color}`}
-                        >
+                        <span className="text-h3 font-heading text-slate-900">
                           {scoreData.totalScore}%
                         </span>
                       </div>
@@ -249,7 +247,7 @@ export function MatchingContent({
                 {loading ? (
                   <div className="h-9 w-32 bg-slate-200 animate-pulse rounded" />
                 ) : (
-                  <span className="text-h3 font-black text-blue-950">
+                  <span className="text-h3 font-black text-primary">
                     {metrics
                       ? metrics.industryRevenue === 0
                         ? '데이터 없음'
@@ -264,7 +262,7 @@ export function MatchingContent({
               <span className="text-caption font-bold text-slate-600">
                 상권 전체 매출의
               </span>
-              <span className="text-h5 font-heading text-blue-600">
+              <span className="text-h5 font-heading text-info">
                 {metrics && metrics.totalRevenue > 0
                   ? (
                       (metrics.industryRevenue / metrics.totalRevenue) *
@@ -273,7 +271,9 @@ export function MatchingContent({
                   : 0}
                 %
               </span>
-              <span className="text-caption font-bold text-slate-600">차지</span>
+              <span className="text-caption font-bold text-slate-600">
+                차지
+              </span>
             </div>
           </div>
         </div>

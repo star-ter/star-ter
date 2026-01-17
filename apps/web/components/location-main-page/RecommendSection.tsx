@@ -27,25 +27,29 @@ const getScoreBadge = (score: number) => {
   if (score >= 90)
     return {
       text: '최적 매칭',
-      badgeColor: 'bg-emerald-500',
-      textColor: 'text-emerald-500',
+      badgeColor: 'bg-success',
+      textColor: 'text-success',
+      chartColor: 'var(--success)',
     };
   if (score >= 70)
     return {
       text: '추천',
-      badgeColor: 'bg-blue-500',
-      textColor: 'text-blue-500',
+      badgeColor: 'bg-info',
+      textColor: 'text-info',
+      chartColor: 'var(--info)',
     };
   if (score >= 50)
     return {
       text: '적합',
-      badgeColor: 'bg-amber-500',
-      textColor: 'text-amber-500',
+      badgeColor: 'bg-primary',
+      textColor: 'text-primary',
+      chartColor: 'var(--primary)',
     };
   return {
     text: '참고',
-    badgeColor: 'bg-slate-400',
-    textColor: 'text-slate-400',
+    badgeColor: 'bg-muted',
+    textColor: 'text-muted-foreground',
+    chartColor: 'var(--muted-foreground)',
   };
 };
 
@@ -148,18 +152,18 @@ export function RecommendSection() {
     return (
       <section className="px-8 py-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-h3 font-heading text-slate-900">
+          <h2 className="text-h3 font-heading text-foreground">
             사장님께 추천하는 상권
           </h2>
           <Link
             href="/locations/search?tab=맞춤 추천"
-            className="text-body font-strong text-slate-400 hover:text-slate-600 transition-colors"
+            className="text-body font-strong text-muted-foreground hover:text-foreground transition-colors"
           >
             더보기 &gt;
           </Link>
         </div>
-        <div className="bg-linear-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
-          <p className="text-slate-600">
+        <div className="bg-muted/30 rounded-2xl p-6 border border-border">
+          <p className="text-muted-foreground">
             로그인하고 온보딩을 완료하면 맞춤 추천을 받을 수 있어요!
           </p>
         </div>
@@ -170,13 +174,13 @@ export function RecommendSection() {
   return (
     <section className="px-8 py-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-h3 font-heading text-slate-900">
+        <h2 className="text-h3 font-heading text-foreground">
           {authUser?.nickname ? `${authUser.nickname}님` : '사장님'}께 추천하는
           상권
         </h2>
         <Link
           href="/locations/search?tab=맞춤 추천"
-          className="text-body font-strong text-slate-400 hover:text-slate-600 transition-colors"
+          className="text-body font-strong text-muted-foreground hover:text-foreground transition-colors"
         >
           더보기 &gt;
         </Link>
@@ -188,22 +192,22 @@ export function RecommendSection() {
             ? Array.from({ length: 5 }).map((_, index) => (
                 <div
                   key={`loading-${index}`}
-                  className="w-96 shrink-0 rounded-2xl bg-white shadow-sm border border-slate-100 p-6 animate-pulse flex flex-col justify-between h-96"
+                  className="w-96 shrink-0 rounded-2xl bg-background shadow-sm border border-border p-6 animate-pulse flex flex-col justify-between h-96"
                 >
                   <div className="space-y-3">
-                    <div className="h-5 w-16 rounded-full bg-slate-100" />
-                    <div className="h-5 w-40 rounded bg-slate-100" />
-                    <div className="h-4 w-24 rounded bg-slate-100" />
+                    <div className="h-5 w-16 rounded-full bg-muted" />
+                    <div className="h-5 w-40 rounded bg-muted" />
+                    <div className="h-4 w-24 rounded bg-muted" />
                   </div>
                   <div className="flex items-end justify-between gap-6">
                     <div>
-                      <div className="mb-3 h-3 w-14 rounded bg-slate-100" />
+                      <div className="mb-3 h-3 w-14 rounded bg-muted" />
                       <div className="flex items-end gap-2">
-                        <div className="h-8 w-16 rounded bg-slate-100" />
-                        <div className="h-4 w-6 rounded bg-slate-100" />
+                        <div className="h-8 w-16 rounded bg-muted" />
+                        <div className="h-4 w-6 rounded bg-muted" />
                       </div>
                     </div>
-                    <div className="h-40 w-40 rounded-full bg-slate-100" />
+                    <div className="h-40 w-40 rounded-full bg-muted" />
                   </div>
                 </div>
               ))
@@ -213,7 +217,7 @@ export function RecommendSection() {
                   <Link
                     key={location.id}
                     href={location.href}
-                    className="w-96 shrink-0 rounded-2xl bg-white shadow-sm border border-slate-100 p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg flex flex-col justify-between h-96"
+                    className="w-96 shrink-0 rounded-2xl bg-background shadow-sm border border-border p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg flex flex-col justify-between h-96"
                   >
                     <div className="space-y-1.5">
                       <div
@@ -221,17 +225,17 @@ export function RecommendSection() {
                       >
                         {badge.text}
                       </div>
-                      <h3 className="mt-2 text-h4 font-heading text-slate-900">
+                      <h3 className="mt-2 text-h4 font-heading text-foreground">
                         {location.name}
                       </h3>
-                      <p className="text-h5 font-strong text-slate-400">
+                      <p className="text-h5 font-strong text-muted-foreground">
                         {location.region}
                       </p>
                     </div>
 
                     <div className="flex items-end justify-between gap-6">
                       <div>
-                        <p className="text-caption font-strong text-slate-400 mb-1">
+                        <p className="text-caption font-strong text-muted-foreground mb-1">
                           매칭 점수
                         </p>
                         <div className="flex items-end gap-1">
@@ -249,7 +253,11 @@ export function RecommendSection() {
                       </div>
 
                       <div className="relative right-6">
-                        <PentagonChart metrics={location.metrics} size={200} />
+                        <PentagonChart
+                          metrics={location.metrics}
+                          size={200}
+                          color={badge.chartColor}
+                        />
                       </div>
                     </div>
                   </Link>

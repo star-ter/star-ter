@@ -61,8 +61,8 @@ export function ProfilePopup({
     ? `${API_BASE_URL}/image/${encodeURIComponent(profileImageKey)}`
     : fallbackImage;
   const popupPositionClass = isSidebarOpen
-    ? 'bottom-24 left-6 w-[calc(350px-3rem)]'
-    : 'bottom-20 left-6 w-[calc(350px-3rem)]';
+    ? 'bottom-24 left-4 w-[calc(320px-2rem)]'
+    : 'bottom-20 left-4 w-[calc(320px-2rem)]';
 
   useEffect(() => {
     return () => {
@@ -115,12 +115,12 @@ export function ProfilePopup({
         initial={{ opacity: 0, scale: 0.95, y: 16 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 16 }}
-        className={`fixed z-50 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col ${popupPositionClass}`}
+        className={`fixed z-50 bg-background rounded-2xl shadow-2xl border border-border overflow-hidden flex flex-col ${popupPositionClass}`}
       >
-        <div className="p-6 border-b border-gray-50 bg-slate-50/50">
+        <div className="p-6 border-b border-border bg-muted/30">
           <div className="flex items-center gap-4">
             <div className="relative">
-              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-md">
+              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-background shadow-md">
                 <ImageWithFallback
                   src={profileImageUrl}
                   alt="Profile"
@@ -130,7 +130,7 @@ export function ProfilePopup({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="absolute -bottom-1 -right-1 p-1.5 bg-slate-900 text-white rounded-full shadow-lg hover:scale-110 transition-transform"
+                className="absolute -bottom-1 -right-1 p-1.5 bg-primary text-primary-foreground rounded-full shadow-lg hover:scale-110 transition-transform"
                 aria-label="프로필 이미지 변경"
               >
                 <Camera className="w-3 h-3" />
@@ -141,62 +141,64 @@ export function ProfilePopup({
                 type="text"
                 value={nickname}
                 onChange={(e) => onNicknameChange(e.target.value)}
-                className="w-full text-h5 font-bold text-slate-900 bg-transparent border-none focus:ring-0 p-0"
+                className="w-full text-h5 font-bold text-foreground bg-transparent border-none focus:ring-0 p-0"
                 placeholder="닉네임 입력"
               />
               <button
                 type="button"
                 onClick={onSaveProfile}
                 disabled={isSavingProfile || nickname.trim().length === 0}
-                className="text-caption font-medium text-slate-500 hover:text-slate-900 transition-colors disabled:opacity-60"
+                className="text-caption font-medium text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
               >
                 {isSavingProfile ? '저장 중...' : '프로필 저장'}
               </button>
             </div>
           </div>
           {profileError && (
-            <p className="mt-3 text-tiny text-red-500">{profileError}</p>
+            <p className="mt-3 text-tiny text-destructive">{profileError}</p>
           )}
         </div>
 
         <div className="p-2">
           {settingsGroups.map((group) => (
             <div key={group.title} className="mb-2">
-              <p className="px-3 py-2 text-tiny font-medium text-slate-400 uppercase tracking-wider">
+              <p className="px-3 py-2 text-tiny font-medium text-muted-foreground uppercase tracking-wider">
                 {group.title}
               </p>
               {group.items.map((item) => (
                 <button
                   key={item.label}
                   onClick={item.onClick}
-                  className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-slate-50 rounded-xl transition-all group"
+                  className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-muted rounded-xl transition-all group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-white border border-gray-100 flex items-center justify-center text-slate-400 group-hover:text-blue-600 shadow-sm">
+                    <div className="w-8 h-8 rounded-lg bg-background border border-border flex items-center justify-center text-muted-foreground group-hover:text-primary shadow-sm">
                       <item.icon className="w-4 h-4" />
                     </div>
-                    <span className="text-caption font-strong text-slate-700">
+                    <span className="text-caption font-strong text-foreground">
                       {item.label}
                     </span>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-slate-300" />
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </button>
               ))}
             </div>
           ))}
         </div>
 
-        <div className="p-2 bg-slate-50 border-t border-gray-100">
+        <div className="p-2 bg-muted/50 border-t border-border">
           <button
             onClick={onLogout}
             disabled={isLoggingOut}
-            className="w-full flex items-center justify-center gap-2 py-3 text-caption font-bold text-red-500 hover:bg-white hover:shadow-sm rounded-xl transition-all disabled:opacity-60"
+            className="w-full flex items-center justify-center gap-2 py-3 text-caption font-bold text-destructive hover:bg-background hover:shadow-sm rounded-xl transition-all disabled:opacity-60"
           >
             <LogOut className="w-4 h-4" />
             {isLoggingOut ? '로그아웃 중...' : '로그아웃'}
           </button>
           {logoutError && (
-            <p className="px-2 pt-2 text-caption text-red-500">{logoutError}</p>
+            <p className="px-2 pt-2 text-caption text-destructive">
+              {logoutError}
+            </p>
           )}
         </div>
       </motion.div>

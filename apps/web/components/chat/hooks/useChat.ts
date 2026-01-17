@@ -77,15 +77,9 @@ export function useChat(aiProvider: AiProvider = 'openai') {
       }
 
       try {
-        const history = messages.map((msg) => ({
-          role: msg.role,
-          content: msg.content,
-        }));
-
-        // userId와 aiProvider를 전달
+        // history는 더 이상 필요 없음 (DB에서 관리)
         const response = await apiSendMessage(
           text,
-          history,
           aiProvider,
           conversationId || undefined,
         );

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import React from "react";
-import { Target, AlertCircle, Clock, Wallet, Building2 } from "lucide-react";
+import React from 'react';
+import { Target, AlertCircle, Clock, Wallet, Building2 } from 'lucide-react';
 
 /**
  * BreakEvenCard - 손익분기점 분석 카드 컴포넌트
- * 
+ *
  * 차분하고 깔끔한 디자인 (다른 컴포넌트와 일관된 스타일)
  */
 
@@ -61,7 +61,15 @@ export function BreakEvenCard({ data, isLoading }: BreakEvenCardProps) {
     );
   }
 
-  const { bepRevenue, totalFixedCost, rent, laborCost, variableRate, deposit, paybackMonths } = data;
+  const {
+    bepRevenue,
+    totalFixedCost,
+    rent,
+    laborCost,
+    variableRate,
+    deposit,
+    paybackMonths,
+  } = data;
   const isLongPayback = paybackMonths && paybackMonths > 24;
 
   return (
@@ -71,10 +79,12 @@ export function BreakEvenCard({ data, isLoading }: BreakEvenCardProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Target className="w-5 h-5 text-slate-400" />
-            <h3 className="text-lg font-semibold text-slate-700">손익분기점 분석</h3>
+            <h3 className="text-body font-strong text-slate-700">
+              손익분기점 분석
+            </h3>
           </div>
           {isLongPayback && (
-            <span className="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 bg-slate-100 text-slate-600 rounded-md border border-slate-200">
+            <span className="flex items-center gap-1.5 text-tiny font-medium px-2.5 py-1 bg-slate-100 text-slate-600 rounded-md border border-slate-200">
               <AlertCircle className="w-3.5 h-3.5" />
               회수기간 긴 편
             </span>
@@ -85,16 +95,22 @@ export function BreakEvenCard({ data, isLoading }: BreakEvenCardProps) {
       {/* 메인 손익분기 매출 */}
       <div className="px-6 py-6 border-b border-slate-100 bg-slate-50">
         <div className="text-center">
-          <div className="text-sm text-slate-500 mb-1">월 손익분기 매출액</div>
-          <div className="text-4xl font-bold text-slate-800">
+          <div className="text-caption text-slate-500 mb-1">
+            월 손익분기 매출액
+          </div>
+          <div className="text-h1 font-bold text-slate-800">
             {formatCurrency(bepRevenue)}
-            <span className="text-lg text-slate-400 font-normal ml-1">원</span>
+            <span className="text-h3 text-slate-400 font-normel ml-1">원</span>
           </div>
           {paybackMonths && (
             <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-white rounded-full border border-slate-200">
               <Clock className="w-4 h-4 text-slate-400" />
-              <span className="text-sm text-slate-600">
-                약 <span className="font-semibold text-slate-800">{paybackMonths}개월</span> 후 손익분기 도달
+              <span className="text-caption text-slate-600">
+                약{' '}
+                <span className="font-storng text-slate-800">
+                  {paybackMonths}개월
+                </span>{' '}
+                후 손익분기 도달
               </span>
             </div>
           )}
@@ -104,45 +120,59 @@ export function BreakEvenCard({ data, isLoading }: BreakEvenCardProps) {
       {/* 핵심 지표 */}
       <div className="grid grid-cols-3 divide-x divide-slate-100 border-b border-slate-100">
         <div className="p-4 text-center">
-          <div className="text-sm text-slate-400 mb-1">총 고정비</div>
-          <div className="text-lg font-bold text-slate-800">{formatCurrency(totalFixedCost)}</div>
+          <div className="text-caption text-slate-400 mb-1">총 고정비</div>
+          <div className="text-h4 font-bold text-slate-800">
+            {formatCurrency(totalFixedCost)}
+          </div>
         </div>
         <div className="p-4 text-center">
-          <div className="text-sm text-slate-400 mb-1">변동비율</div>
-          <div className="text-lg font-bold text-slate-800">{(variableRate * 100).toFixed(0)}%</div>
+          <div className="text-caption text-slate-400 mb-1">변동비율</div>
+          <div className="text-h4 font-bold text-slate-800">
+            {(variableRate * 100).toFixed(0)}%
+          </div>
         </div>
         <div className="p-4 text-center">
-          <div className="text-sm text-slate-400 mb-1">공헌이익률</div>
-          <div className="text-lg font-bold text-slate-800">{((1 - variableRate) * 100).toFixed(0)}%</div>
+          <div className="text-caption text-slate-400 mb-1">공헌이익률</div>
+          <div className="text-h4 font-bold text-slate-800">
+            {((1 - variableRate) * 100).toFixed(0)}%
+          </div>
         </div>
       </div>
 
       {/* 고정비 내역 */}
       <div className="p-6">
-        <div className="text-sm font-medium text-slate-500 mb-3">고정비 내역</div>
+        <div className="text-caption font-medium text-slate-500 mb-3">
+          고정비 내역
+        </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between py-2">
             <div className="flex items-center gap-2">
               <Building2 className="w-4 h-4 text-slate-400" />
-              <span className="text-sm text-slate-600">임대료</span>
+              <span className="text-caption text-slate-600">임대료</span>
             </div>
-            <span className="text-sm font-semibold text-slate-700">{formatCurrency(rent)}원</span>
+            <span className="text-body font-strong text-slate-700">
+              {formatCurrency(rent)}원
+            </span>
           </div>
           {laborCost && (
             <div className="flex items-center justify-between py-2">
               <div className="flex items-center gap-2">
                 <Wallet className="w-4 h-4 text-slate-400" />
-                <span className="text-sm text-slate-600">인건비</span>
+                <span className="text-caption text-slate-600">인건비</span>
               </div>
-              <span className="text-sm font-semibold text-slate-700">{formatCurrency(laborCost)}원</span>
+              <span className="text-body font-strong text-slate-700">
+                {formatCurrency(laborCost)}원
+              </span>
             </div>
           )}
           {deposit && deposit > 0 && (
             <div className="flex items-center justify-between py-2 pt-3 border-t border-slate-100">
               <div className="flex items-center gap-2">
-                <span className="text-sm text-slate-600">보증금</span>
+                <span className="text-caption text-slate-600">보증금</span>
               </div>
-              <span className="text-sm font-semibold text-slate-700">{formatCurrency(deposit)}원</span>
+              <span className="text-body font-strong text-slate-700">
+                {formatCurrency(deposit)}원
+              </span>
             </div>
           )}
         </div>

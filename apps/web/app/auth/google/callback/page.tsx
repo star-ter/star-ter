@@ -1,14 +1,14 @@
-import { LoginPageClient } from './LoginPageClient';
 import { normalizeNextPath } from '@/lib/auth/auth-flow';
+import { GoogleCallbackClient } from './GoogleCallbackClient';
 
-type LoginSearchParams = {
+type CallbackSearchParams = {
   next?: string | string[];
 };
 
-export default async function Page({
+export default async function GoogleCallbackPage({
   searchParams,
 }: {
-  searchParams?: Promise<LoginSearchParams>;
+  searchParams?: Promise<CallbackSearchParams>;
 }) {
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const nextParam = Array.isArray(resolvedSearchParams.next)
@@ -16,5 +16,5 @@ export default async function Page({
     : resolvedSearchParams.next;
   const nextPath = normalizeNextPath(nextParam);
 
-  return <LoginPageClient nextPath={nextPath} />;
+  return <GoogleCallbackClient nextPath={nextPath} />;
 }

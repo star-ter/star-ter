@@ -14,7 +14,7 @@ function RankingTable({ data }: { data: AreaRanking[] }) {
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead>
-          <tr className="text-left text-caption text-gray-600 border-b">
+          <tr className="text-left text-caption text-muted-foreground border-b border-border">
             <th className="pb-3 pl-4 font-normal">순위/상권명</th>
             <th className="pb-3 pr-4 font-normal text-right">
               평균매출 (분기)
@@ -24,28 +24,31 @@ function RankingTable({ data }: { data: AreaRanking[] }) {
         </thead>
         <tbody>
           {data.map((area) => (
-            <tr key={area.rank} className="border-b hover:bg-gray-50">
+            <tr
+              key={area.rank}
+              className="border-b border-border hover:bg-muted font-medium transition-colors"
+            >
               <td className="p-4">
                 <div className="flex items-center gap-3">
-                  <span className="text-gray-600 w-4">{area.rank}</span>
+                  <span className="text-muted-foreground w-4">{area.rank}</span>
                   <div>
-                    <div className="text-body font-medium text-gray-900">
+                    <div className="text-body font-medium text-foreground">
                       {area.name}
                     </div>
-                    <div className="text-tiny text-gray-500">
+                    <div className="text-tiny text-muted-foreground">
                       {area.category}
                     </div>
                   </div>
                 </div>
               </td>
-              <td className="p-4 text-right text-body font-strong">
+              <td className="p-4 text-right text-body font-strong text-foreground">
                 {area.score}
               </td>
               <td
                 className={`p-4 text-right text-body font-strong ${
                   area.growth.startsWith('▲') || area.growth === 'HOT'
-                    ? 'text-red-600'
-                    : 'text-blue-800'
+                    ? 'text-destructive'
+                    : 'text-info'
                 }`}
               >
                 {area.growth}
@@ -60,7 +63,7 @@ function RankingTable({ data }: { data: AreaRanking[] }) {
 
 export function DataTable() {
   return (
-    <section className="py-16 bg-white border-t border-gray-100">
+    <section className="py-16 bg-background border-t border-border">
       <div className="max-w-[1200px] mx-auto px-4">
         <div className="grid lg:grid-cols-[2fr_1fr] gap-8">
           <div>

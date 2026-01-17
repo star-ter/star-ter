@@ -98,16 +98,12 @@ export function MapSection({
   const industryMarkersRef = useRef<KakaoCustomOverlay[]>([]); // 업종 분석 마커용
   const isDraggingRef = useRef(false); // 드래그 상태 추적
 
-
-
   // 【커스텀 훅 사용】 점포 위치 데이터 fetch
   const { stores } = useStoreLocations(
     regionCode,
     selectedAnalysisCategory,
     mode === 'analysis', // analysis 모드일 때만 활성화
   );
-
-
 
   const { map, loaded } = useKakaoMap(mapRef);
 
@@ -281,11 +277,11 @@ export function MapSection({
         const isHotspot = density >= 0.6;
 
         if (density < 0.3) {
-          fillColor = '#10B981'; // emerald
+          fillColor = '#10B981'; // emerald (Success)
         } else if (density < 0.6) {
-          fillColor = '#F59E0B'; // amber
+          fillColor = '#F59E0B'; // Amber (Accent)
         } else {
-          fillColor = '#E11D48'; // Rose-600, more professional vibrant red
+          fillColor = '#E11D48'; // Rose-600 (Danger)
         }
 
         const baseRadius = 15 + 25 * density;

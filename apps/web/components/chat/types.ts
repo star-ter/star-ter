@@ -1,9 +1,7 @@
 export interface Source {
-  id: string;
-  title: string;
-  url: string;
-  favicon?: string;
-  number: number;
+  tool: string;
+  displayName: string;
+  source: string;
 }
 
 import { type ChartAction } from './charts';

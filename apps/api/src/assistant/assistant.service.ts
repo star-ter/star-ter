@@ -13,16 +13,17 @@ import { AiRepository } from '../ai/ai.repository';
 import { AiToolsService } from '../ai/ai-tools.service';
 import { AiResponseProcessor } from '../ai/ai-response.processor';
 import { OpenAiService } from '../ai/openAI/open-ai.service';
+import { ChatRepository } from '../ai/chat.repository'; // 히스토리 저장용
 import {
   BusinessCategoryVectorDto,
   AreaVectorDto,
 } from '../ai/dto/column-vector';
+import { getToolMetadata } from '../ai/tools/tool-metadata';
 
 @Injectable()
 export class AssistantService {
-  // 히스토리 설정
-  private readonly MAX_HISTORY_LENGTH = 10;
-  private readonly ENABLE_HISTORY = true;
+  // OpenAI와 동일한 히스토리 설정
+  private readonly MAX_HISTORY_LENGTH = 50;
   // 벡터 검색 신뢰도 임계값
   private readonly DISTANCE_THRESHOLD = 0.4;
 
@@ -32,17 +33,67 @@ export class AssistantService {
     private readonly aiToolsService: AiToolsService,
     private readonly aiResponseProcessor: AiResponseProcessor,
     private readonly openAiService: OpenAiService,
+    private readonly chatRepository: ChatRepository, // 히스토리 저장용
   ) {
     console.log('[AssistantService] Claude Assistant initialized');
   }
 
   /**
    * 대화 히스토리 포함 메시지 처리 (메인 진입점)
+   *
+   * [변경사항]
+   * [변경사항]
+   * - history 파라미터 제거 → DB에서 로드
+   * - userId, conversationId로 DB 히스토리 관리
    */
   async getMessageWithHistory(
     message: string,
-    history: Array<{ role: 'user' | 'assistant'; content: string }>,
-  ): Promise<string> {
+    userId: string, // 필수로 변경
+    conversationId?: string,
+  ): Promise<{ reply: string; actions: unknown[]; sources?: { tool: string; displayName: string; source: string }[]; conversationId?: string }> {
+    // 0. conversationId 처리 (DB 저장 시 필요)
+    let currentConversationId = conversationId;
+
+    // 대화 생성 또는 조회
+    if (!currentConversationId) {
+      // 새 대화 생성
+      const conversation = await this.chatRepository.createConversation({
+        userId,
+        title: message.slice(0, 50),
+      });
+      currentConversationId = conversation.id;
+      console.log(
+        `[AssistantService] Created new conversation: ${currentConversationId}`,
+      );
+    } else {
+      // 기존 대화: 소유자 검증 (OpenAI와 동일)
+      const conversation = await this.chatRepository.getConversation(
+        currentConversationId,
+      );
+      if (!conversation || conversation.userId !== userId) {
+        throw new Error('Conversation not found or access denied');
+      }
+    }
+
+    // DB에서 히스토리 로드 (OpenAI와 동일: 50개)
+    const historyMessages =
+      await this.chatRepository.listMessagesByConversation(
+        currentConversationId,
+        { take: this.MAX_HISTORY_LENGTH, order: 'asc' },
+      );
+    const history = historyMessages.map((msg) => ({
+      role: msg.role as 'user' | 'assistant',
+      content: msg.content,
+    }));
+    console.log(`[AssistantService] Loaded ${history.length} messages from DB`);
+
+    // 사용자 메시지 저장
+    await this.chatRepository.addMessage({
+      conversationId: currentConversationId,
+      role: 'user',
+      content: message,
+    });
+
     // 1. 업종/지역 정보 수집
     const [categories, areaList] = await Promise.all([
       this.getCategories(message),
@@ -52,18 +103,15 @@ export class AssistantService {
     // 2. Claude 메시지 배열 구성
     const messages: Anthropic.MessageParam[] = [];
 
-    // 히스토리 추가
-    if (this.ENABLE_HISTORY && history && history.length > 0) {
-      const recentHistory = history.slice(-this.MAX_HISTORY_LENGTH);
-      for (const msg of recentHistory) {
+    // DB에서 로드한 히스토리 추가 (OpenAI와 동일하게 항상 사용)
+    if (history.length > 0) {
+      for (const msg of history) {
         messages.push({
           role: msg.role,
           content: msg.content,
         });
       }
-      console.log(
-        `[AssistantService] History: ${recentHistory.length} messages`,
-      );
+      console.log(`[AssistantService] History: ${history.length} messages`);
     }
 
     // 현재 사용자 메시지
@@ -110,6 +158,9 @@ export class AssistantService {
     }
 
     console.log(`[AssistantService] Tool calls: ${toolCalls.length}`);
+
+    // 사용된 Tool 이름 수집
+    const usedTools: string[] = toolCalls.map((tc) => tc.name);
 
     // 4. Tool 실행 및 결과 수집
     let breakEvenContext: {
@@ -253,6 +304,14 @@ export class AssistantService {
     // 6. 응답 파싱 및 후처리
     const parsedResponse = this.aiResponseProcessor.parseResponse(responseText);
 
+    // sources 배열 생성
+    if (usedTools.length > 0) {
+      parsedResponse.sources = usedTools.map((name) => ({
+        tool: name,
+        ...getToolMetadata(name),
+      }));
+    }
+
     // [DEBUG] 파싱된 응답 확인
     console.log('[DEBUG] Parsed Response:');
     console.log('  reply:', parsedResponse.reply?.substring(0, 100) + '...');
@@ -327,11 +386,45 @@ export class AssistantService {
       areaList,
     );
 
-    return finalJson;
+    // AI 응답을 JSON 파싱
+    const parsedResult = JSON.parse(finalJson) as {
+      reply: string;
+      actions: unknown[];
+      sources?: { tool: string; displayName: string; source: string }[];
+    };
+
+    // 매물 번호-UUID 매핑 정보를 reply에 추가 (DB 저장 시 히스토리에 포함되도록)
+    // 프론트엔드 useChat.ts와 동일한 형식 사용
+    let contentWithMarkers = parsedResult.reply;
+    const listingsAction = parsedResult.actions?.find(
+      (a: { type: string }) => a.type === 'list.listings'
+    ) as { type: string; payload?: { markers?: unknown } } | undefined;
+    
+    if (listingsAction?.payload?.markers) {
+      contentWithMarkers += `\n\n[매물 목록 참조용 - 이 메시지는 사용자에게 보이지 않습니다]\n${JSON.stringify(listingsAction.payload.markers)}`;
+      console.log(`[AssistantService] Added markers to content for DB storage`);
+    }
+
+    // AI 응답 DB 저장 (userId가 있는 경우)
+    if (userId && currentConversationId) {
+      await this.chatRepository.addMessage({
+        conversationId: currentConversationId,
+        role: 'assistant',
+        content: contentWithMarkers, // 매핑 정보 포함된 응답 저장
+      });
+      console.log(`[AssistantService] Saved AI response to DB`);
+    }
+
+    return {
+      reply: parsedResult.reply,
+      actions: parsedResult.actions,
+      sources: parsedResult.sources,
+      conversationId: currentConversationId,
+    };
   }
 
   /**
-   * OpenAI 형식의 TOOLS를 Claude 형식으로 변환
+   * OpenAI 형식의 TOOLS를 Claude 형식으로 변환(임시로, Deprecated)
    */
   private convertToolsForClaude() {
     return TOOLS.map((tool) => ({

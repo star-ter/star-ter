@@ -1,7 +1,6 @@
 'use client';
 
 import { TimeScoreData } from './types';
-import { getScoreColor } from './constants';
 
 interface TimeScoreSectionProps {
   score: TimeScoreData;
@@ -28,7 +27,6 @@ export function TimeScoreSection({
   score,
   userOperatingTime,
 }: TimeScoreSectionProps) {
-  const { text } = getScoreColor(score.score);
   const percentage = Math.round(score.score * 100);
   const { breakdown, selectedTime } = score;
 
@@ -41,11 +39,6 @@ export function TimeScoreSection({
     10, // 최소 10%로 스케일
   );
 
-  // 선택된 시간대 확인 (allday면 전체 하이라이트)
-  const isSelected = (key: string) => {
-    if (selectedTime === 'allday') return true;
-    return key === selectedTime;
-  };
 
   // 선택된 시간대 라벨
   const selectedLabel = TIME_LABEL_MAP[selectedTime] || selectedTime;
@@ -74,7 +67,7 @@ export function TimeScoreSection({
         </div>
         <div className="text-right">
           <p className="text-caption text-slate-400">적합도</p>
-          <p className={`text-h4 font-heading ${text}`}>{percentage}%</p>
+          <p className="text-h4 font-heading text-slate-900">{percentage}%</p>
         </div>
       </div>
       <p className="text-caption text-slate-400 mb-6">시간대별 매출 추이</p>
@@ -84,13 +77,21 @@ export function TimeScoreSection({
         {TIME_SLOTS.map((slot) => {
           const value = breakdown[slot.key as keyof typeof breakdown];
           const barHeight = Math.max((value / maxValue) * 100, 5);
-          const selected = isSelected(slot.key);
+          // const selected = isSelected(slot.key); // Unused for highlighting now
+          const isMax =
+            value ===
+            Math.max(
+              breakdown.morning,
+              breakdown.afternoon,
+              breakdown.evening,
+              breakdown.night,
+            );
 
           return (
             <div key={slot.key} className="flex-1 flex flex-col items-center">
               {/* 값 표시 */}
               <span
-                className={`text-body font-strong mb-2 ${selected ? 'text-emerald-600' : 'text-slate-400'}`}
+                className={`text-body font-strong mb-2 ${isMax ? 'text-info' : 'text-slate-400'}`}
               >
                 {value.toFixed(1)}%
               </span>
@@ -100,7 +101,7 @@ export function TimeScoreSection({
                 {/* 막대 (아래에서 위로) */}
                 <div
                   className={`absolute bottom-0 left-0 right-0 rounded-t-lg transition-all duration-500 ${
-                    selected ? 'bg-emerald-500' : 'bg-slate-300'
+                    isMax ? 'bg-info' : 'bg-primary'
                   }`}
                   style={{ height: `${barHeight}%` }}
                 />
@@ -109,7 +110,7 @@ export function TimeScoreSection({
               {/* 라벨 */}
               <div className="text-center mt-3">
                 <p
-                  className={`text-body font-strong ${selected ? 'text-emerald-600' : 'text-slate-600'}`}
+                  className={`text-body font-strong ${isMax ? 'text-info' : 'text-slate-600'}`}
                 >
                   {slot.label}
                 </p>
@@ -130,7 +131,7 @@ export function TimeScoreSection({
         </div>
         <div className="text-right">
           <p className="text-caption text-slate-400">선택 시간대 매출 비중</p>
-          <p className={`text-h4 font-bold ${text}`}>
+          <p className="text-h4 font-bold text-slate-900">
             {selectedRatio.toFixed(1)}%
           </p>
         </div>

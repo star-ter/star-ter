@@ -93,11 +93,11 @@ export function OnboardingPage({
   };
 
   return (
-    <div className="h-screen bg-white flex flex-col overflow-hidden">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
       <header className="relative px-8 py-6 flex items-center justify-between shrink-0">
         <button
           onClick={handleBack}
-          className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors z-10"
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors z-10"
         >
           <ArrowLeft className="w-5 h-5" />
           <span className="font-medium">뒤로</span>
@@ -110,16 +110,16 @@ export function OnboardingPage({
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-caption font-bold transition-all duration-300 shrink-0 ${
                     s <= step
-                      ? 'bg-[#2C2F6C] text-white'
-                      : 'bg-gray-200 text-gray-400'
+                      ? 'bg-primary text-white'
+                      : 'bg-muted text-muted-foreground'
                   }`}
                 >
                   {s}
                 </div>
                 {s < 5 && (
-                  <div className="flex-1 h-0.5 bg-gray-200 overflow-hidden mx-2">
+                  <div className="flex-1 h-0.5 bg-muted overflow-hidden mx-2">
                     <div
-                      className="h-full bg-[#2C2F6C] transition-all duration-500"
+                      className="h-full bg-primary transition-all duration-500"
                       style={{
                         width: s < step ? '100%' : '0%',
                       }}
@@ -186,7 +186,7 @@ export function OnboardingPage({
             <Button
               onClick={handleSkip}
               variant="ghost"
-              className="text-gray-500 hover:text-gray-900 text-lg font-medium"
+              className="text-muted-foreground hover:text-foreground text-lg font-medium"
             >
               건너뛰기
             </Button>
@@ -194,7 +194,7 @@ export function OnboardingPage({
           <Button
             onClick={handleNext}
             disabled={!isStepValid()}
-            className="bg-gray-900 hover:bg-gray-800 text-white px-12 py-7 rounded-lg text-lg font-medium disabled:bg-gray-300"
+            className="bg-primary hover:bg-primary/90 text-white px-12 py-7 rounded-lg text-lg font-medium disabled:bg-muted disabled:text-muted-foreground"
           >
             {step === 5 ? '완료' : '다음'}
           </Button>

@@ -6,11 +6,14 @@ import {
   UseGuards,
   Get,
   Param,
+  Patch,
+  Delete,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { User } from 'src/auth/decorators/user.decorator';
 import type { AuthenticatedUser } from 'src/auth/types/authenticatedUser';
 import { ChatService } from './chat.service';
+import { UpdateConversationTitleDto } from './dto/update-conversation-title.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -55,5 +58,28 @@ export class ChatController {
     @Param('id') conversationId: string,
   ) {
     return this.chatService.getConversationHistory(user.id, conversationId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('/conversation/:id/title')
+  async updateConversationTitle(
+    @User() user: AuthenticatedUser,
+    @Param('id') conversationId: string,
+    @Body() body: UpdateConversationTitleDto,
+  ) {
+    return this.chatService.updateConversationTitle(
+      user.id,
+      conversationId,
+      body.title,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('/conversation/:id')
+  async deleteConversation(
+    @User() user: AuthenticatedUser,
+    @Param('id') conversationId: string,
+  ) {
+    return this.chatService.deleteConversation(user.id, conversationId);
   }
 }

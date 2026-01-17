@@ -1,7 +1,7 @@
 'use client';
 
 import { ScoreWithExplanation } from './types';
-import { getScoreColor, formatMoney, CAPITAL_VALUES } from './constants';
+import { formatMoney, CAPITAL_VALUES } from './constants';
 
 interface CostScoreSectionProps {
   score: ScoreWithExplanation;
@@ -16,7 +16,7 @@ export function CostScoreSection({
   actualDeposit,
   actualRent,
 }: CostScoreSectionProps) {
-  const { text } = getScoreColor(score.score);
+  // const { text: _text } = getScoreColor(score.score);
   const percentage = Math.round(score.score * 100);
 
   // 사용자 예산 (숫자로 변환)
@@ -42,7 +42,7 @@ export function CostScoreSection({
         <h4 className="text-h4 font-heading text-slate-900">창업 비용</h4>
         <div className="text-right">
           <p className="text-caption text-slate-400">적합도</p>
-          <p className={`text-h4 font-heading ${text}`}>{percentage}%</p>
+          <p className="text-h4 font-heading text-slate-900">{percentage}%</p>
         </div>
       </div>
       <p className="text-caption text-slate-400 mb-6">
@@ -53,12 +53,16 @@ export function CostScoreSection({
       <div className="flex justify-center gap-12 mb-6">
         {/* 사장님 예산 */}
         <div className="flex flex-col items-center">
-          <span className="text-body font-strong text-emerald-600 mb-2">
+          <span
+            className={`text-body font-strong mb-2 ${userBudget >= estimatedCost ? 'text-info' : 'text-primary'}`}
+          >
             {formatMoney(userBudget)}
           </span>
           <div className="w-20 h-40 bg-slate-100 rounded-lg relative overflow-hidden">
             <div
-              className="absolute bottom-0 left-0 right-0 rounded-t-lg bg-emerald-500 transition-all duration-500"
+              className={`absolute bottom-0 left-0 right-0 rounded-t-lg transition-all duration-500 ${
+                userBudget >= estimatedCost ? 'bg-info' : 'bg-primary'
+              }`}
               style={{ height: `${userBarHeight}%` }}
             />
           </div>
@@ -71,14 +75,14 @@ export function CostScoreSection({
         {/* 예상 비용 */}
         <div className="flex flex-col items-center">
           <span
-            className={`text-body font-strong mb-2 ${isOverBudget ? 'text-rose-600' : 'text-blue-600'}`}
+            className={`text-body font-strong mb-2 ${estimatedCost > userBudget ? 'text-info' : 'text-primary'}`}
           >
             {formatMoney(estimatedCost)}
           </span>
           <div className="w-20 h-40 bg-slate-100 rounded-lg relative overflow-hidden">
             <div
               className={`absolute bottom-0 left-0 right-0 rounded-t-lg transition-all duration-500 ${
-                isOverBudget ? 'bg-rose-500' : 'bg-blue-500'
+                estimatedCost > userBudget ? 'bg-info' : 'bg-primary'
               }`}
               style={{ height: `${costBarHeight}%` }}
             />
@@ -103,7 +107,7 @@ export function CostScoreSection({
           </span>
         </div>
         {isOverBudget && (
-          <p className="text-caption text-rose-500 mt-2">
+          <p className="text-caption text-danger mt-2">
             예산 {formatMoney(estimatedCost - userBudget)} 초과
           </p>
         )}

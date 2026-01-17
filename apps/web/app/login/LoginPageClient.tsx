@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 
 import { LoginPage } from "@/components/LoginPage";
+import { completeClientLogin } from "@/lib/auth/auth-flow";
+import { useUserStore } from "@/store/use-user-store";
 
 type LoginPageClientProps = {
   nextPath: string;
@@ -10,11 +12,12 @@ type LoginPageClientProps = {
 
 export function LoginPageClient({ nextPath }: LoginPageClientProps) {
   const router = useRouter();
+  const setAuthUser = useUserStore((state) => state.setAuthUser);
 
   return (
     <LoginPage
-      onLogin={({ on_boarding_completed }) => {
-        router.push(on_boarding_completed ? nextPath : "/onboarding/intro");
+      onLogin={(result) => {
+        completeClientLogin({ result, setAuthUser, router, nextPath });
       }}
     />
   );

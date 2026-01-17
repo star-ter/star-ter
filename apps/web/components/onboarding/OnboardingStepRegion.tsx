@@ -29,7 +29,7 @@ export function OnboardingStepRegion({
 }: OnboardingStepRegionProps) {
   return (
     <div className="space-y-[4vh]">
-      <h1 className="text-display font-bold text-gray-900">
+      <h1 className="text-display font-bold text-foreground">
         선호하는 지역 특징을 선택하세요
       </h1>
 
@@ -38,19 +38,16 @@ export function OnboardingStepRegion({
           <button
             key={option.value}
             onClick={() => onChange(value === option.value ? '' : option.value)}
-            className={`p-[15%] border-2 rounded-2xl text-center transition-all hover:border-gray-900 hover:shadow-lg ${
+            className={`p-[15%] border-2 rounded-2xl text-center transition-all hover:border-primary hover:shadow-lg ${
               value === option.value
-                ? 'border-gray-900 bg-gray-50 shadow-lg'
-                : 'border-gray-300'
+                ? 'border-primary bg-primary/5 shadow-lg'
+                : 'border-border'
             } ${value && value !== option.value ? 'opacity-40 grayscale-[0.5]' : 'opacity-100'}`}
           >
             <div className="flex justify-center mb-[1.5vh]">
-              <option.Icon
-                size={40}
-                className="w-12 h-12 text-gray-900"
-              />
+              <option.Icon size={40} className="w-12 h-12 text-foreground" />
             </div>
-            <div className="text-h5 font-bold text-gray-900">
+            <div className="text-h5 font-bold text-foreground">
               {option.label}
             </div>
           </button>

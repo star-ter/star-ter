@@ -7,11 +7,14 @@ import Link from 'next/link';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { login } from '@/services/auth/auth.api';
-import { useUserStore } from '@/store/use-user-store';
 import { AuthLayout } from './AuthLayout';
+import type { AuthResult } from '@/lib/auth/auth-flow';
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000';
 
 interface LoginPageProps {
-  onLogin: (result: { on_boarding_completed: boolean }) => void;
+  onLogin: (result: AuthResult) => void;
 }
 
 export function LoginPage({ onLogin }: LoginPageProps) {
@@ -20,7 +23,6 @@ export function LoginPage({ onLogin }: LoginPageProps) {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const setAuthUser = useUserStore((state) => state.setAuthUser);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,12 +30,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     setIsSubmitting(true);
     try {
       const response = await login({ email, password });
-      setAuthUser({
-        id: response.id,
-        nickname: response.nickname,
-        profileImageKey: response.profile_image_key ?? null,
-      });
-      onLogin({ on_boarding_completed: response.on_boarding_completed });
+      onLogin(response);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : '로그인에 실패했습니다.';
@@ -44,7 +41,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:4000/auth/google';
+    window.location.href = `${API_BASE_URL}/auth/google`;
   };
 
   return (
@@ -52,10 +49,10 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       <div className="flex flex-col items-center w-full">
         {/* Header */}
         <div className="text-center mb-10 space-y-2">
-          <h1 className="text-h1 font-heading mb-4 text-slate-900 tracking-tight">
+          <h1 className="text-h1 font-heading mb-4 text-foreground tracking-tight">
             로그인
           </h1>
-          <p className="text-slate-500 text-body font-medium">
+          <p className="text-muted-foreground text-body font-medium">
             서비스를 이용하시려면 로그인이 필요합니다.
           </p>
         </div>
@@ -71,7 +68,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="h-12 border border-slate-200 bg-white rounded-xl px-4 pl-4 text-body placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-blue-100 focus-visible:border-blue-500 transition-all font-medium"
+                className="h-12 border border-border bg-background rounded-xl px-4 pl-4 text-body placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring/20 focus-visible:border-ring transition-all font-medium"
               />
             </div>
 
@@ -83,12 +80,12 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="h-12 border border-slate-200 bg-white rounded-xl px-4 pl-4 pr-12 text-body placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-blue-100 focus-visible:border-blue-500 transition-all font-medium"
+                className="h-12 border border-border bg-background rounded-xl px-4 pl-4 pr-12 text-body placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring/20 focus-visible:border-ring transition-all font-medium"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               >
                 {showPassword ? (
                   <EyeOff className="w-5 h-5" />
@@ -103,14 +100,14 @@ export function LoginPage({ onLogin }: LoginPageProps) {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white text-md font-bold rounded-xl shadow-md shadow-slate-200 transition-all hover:-translate-y-0.5"
+              className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground text-md font-bold rounded-xl shadow-md shadow-muted transition-all hover:-translate-y-0.5"
             >
               {isSubmitting ? '로그인 중...' : '로그인'}
             </Button>
           </div>
 
           {error && (
-            <p className="text-caption text-red-500 text-center font-medium bg-red-50 py-2 rounded-lg">
+            <p className="text-caption text-destructive text-center font-medium bg-destructive/10 py-2 rounded-lg">
               {error}
             </p>
           )}
@@ -118,18 +115,18 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
         {/* Divider */}
         <div className="w-full flex items-center gap-4 my-8">
-          <div className="h-[2px] flex-1 bg-slate-100"></div>
-          <span className="text-caption font-strong text-slate-400 uppercase tracking-wider">
+          <div className="h-[2px] flex-1 bg-muted"></div>
+          <span className="text-caption font-strong text-muted-foreground uppercase tracking-wider">
             Or Sign in with
           </span>
-          <div className="h-[2px] flex-1 bg-slate-100"></div>
+          <div className="h-[2px] flex-1 bg-muted"></div>
         </div>
 
         {/* Social Login */}
         <div className="w-full grid grid-cols-1 gap-3">
           <button
             onClick={handleGoogleLogin}
-            className="flex items-center justify-center gap-3 w-full h-12 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors text-slate-700 font-bold text-body group shadow-sm hover:shadow"
+            className="flex items-center justify-center gap-3 w-full h-12 bg-background border border-border rounded-xl hover:bg-muted transition-colors text-foreground font-bold text-body group shadow-sm hover:shadow"
           >
             <svg
               className="w-5 h-5 opacity-70 group-hover:opacity-100 transition-opacity"
@@ -146,11 +143,11 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
         {/* Footer */}
         <div className="mt-8 text-center">
-          <p className="text-caption font-medium text-slate-500">
+          <p className="text-caption font-medium text-muted-foreground">
             계정이 없으신가요?{' '}
             <Link
               href="/regist"
-              className="text-slate-900 font-bold hover:underline ml-1"
+              className="text-foreground font-bold hover:underline ml-1"
             >
               회원가입
             </Link>

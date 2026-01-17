@@ -12,10 +12,9 @@ type AiProvider = 'claude' | 'openai';
 // 클라이언트에서 await sendMessage(...) 형태로 호출 가능
 export async function sendMessage(
   message: string,
-  history: Array<{ role: 'user' | 'assistant'; content: string }>,
-  aiProvider: AiProvider = 'openai', // 런타임에 프로바이더 선택
+  aiProvider: AiProvider = 'openai',
   conversationId?: string,
-): Promise<AiChatResponse> {
+): Promise<AiChatResponse & { conversationId?: string }> {
   // 프로바이더에 따른 API 엔드포인트 결정
   const endpoint =
     aiProvider === 'claude' ? '/assistant/message' : '/chat/send';
@@ -33,12 +32,11 @@ export async function sendMessage(
         'Content-Type': 'application/json',
         ...(cookieHeader ? { Cookie: cookieHeader } : {}),
       },
-      body: JSON.stringify(
-        aiProvider === 'claude'
-          ? { message, history }
-          : { message, conversationId },
-      ),
-      // 캐싱 방지 (항상 새로운 응답 필요)
+      // history 제거 - 백엔드에서 DB로 관리
+      body: JSON.stringify({
+        message,
+        conversationId,
+      }),
       cache: 'no-store',
     });
 
@@ -55,10 +53,11 @@ export async function sendMessage(
     return {
       reply: result.reply || '',
       actions: result.actions || [],
+      sources: result.sources || [],
+      conversationId: result.conversationId,
     };
   } catch (error) {
     console.error('[Server Action] Failed:', error);
-    // 에러를 클라이언트로 전파하거나, 기본 에러 메시지 반환
     throw new Error('AI 서비스를 연결할 수 없습니다.');
   }
 }

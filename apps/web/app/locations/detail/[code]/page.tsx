@@ -11,7 +11,7 @@ interface PageProps {
 
 export default async function Page({ params }: PageProps) {
   const { code } = await params;
-  
+
   // 서버에서 데이터 가져오기 (병렬 처리됨)
   const data = await getLocationDetailData(code);
 
@@ -28,7 +28,7 @@ export default async function Page({ params }: PageProps) {
           </p>
           <Link
             href="/locations"
-            className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="inline-block px-6 py-3 bg-info text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             상권 목록으로 돌아가기
           </Link>
@@ -51,12 +51,10 @@ export default async function Page({ params }: PageProps) {
 export async function generateMetadata({ params }: PageProps) {
   const { code } = await params;
   const data = await getLocationDetailData(code);
-  
+
   return {
-    title: data.basicInfo 
-      ? `${data.basicInfo.name} - 상권 분석` 
-      : '상권 분석',
-    description: data.basicInfo 
+    title: data.basicInfo ? `${data.basicInfo.name} - 상권 분석` : '상권 분석',
+    description: data.basicInfo
       ? `${data.basicInfo.name} 상권의 매출, 유동인구, 부동산 정보를 확인하세요.`
       : '상권 상세 정보',
   };

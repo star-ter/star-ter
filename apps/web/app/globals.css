@@ -8,80 +8,123 @@
 
 :root {
   --font-size: 16px;
-  --background: #ffffff;
-  --foreground: oklch(0.145 0 0);
-  --card: #ffffff;
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: #030213;
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0.0058 264.53);
-  --secondary-foreground: #030213;
-  --muted: #ececf0;
-  --muted-foreground: #717182;
-  --accent: #e9ebef;
-  --accent-foreground: #030213;
-  --destructive: #d4183d;
+
+  /* === 기본 베이스 (Base) === */
+  --background: #ffffff; /* 전체 배경 (흰색) */
+  --foreground: #1e1e1e; /* 본문 텍스트 (눈이 편한 진한 회색) */
+
+  /* === 메인 브랜드 (Primary) === */
+  --primary: #1e3a8a; /* 딥 네이비 (브랜드 컬러, 주요 버튼) */
+  --primary-foreground: #ffffff; /* 메인 컬러 위 텍스트 (흰색) */
+
+  /* === 상태/기능 컬러 (Functional) === */
+  --destructive: #dc2626; /* 빨강 (삭제, 위험, 경쟁점) */
   --destructive-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.1);
-  --input: transparent;
-  --input-background: #f3f3f5;
-  --switch-background: #cbced4;
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+
+  --success: #16a34a; /* 초록 (성공, 상승, 안전) */
+  --success-foreground: #ffffff;
+
+  --info: #3b82f6; /* 파랑 (링크, 정보, 알림 - 메인보다 밝음) */
+  --info-foreground: #ffffff;
+
+  --danger: #e11d48; /* 로즈 (위험, 경고 - 빨강보다 부드러움) */
+  --danger-foreground: #ffffff;
+
+  --gender-male: #3b82f6; /* 파랑 (남성, 정보) */
+  --gender-female: #ec4899; /* 핑크 (여성) */
+
+  /* === 보조/배경용 (Sub/Backgrounds) === */
+  --muted: #f3f4f6; /* 연한 회색 (배경 박스, 비활성) */
+  --muted-foreground: #6b7280; /* 연한 회색 텍스트 (설명, 날짜) */
+  
+  --border: #e5e7eb; /* 테두리 선 색상 */
+  --input: #e5e7eb;  /* 입력창 테두리 */
+  --ring: #1e3a8a;   /* 포커스 링 (메인 컬러) */
+
+  /* === 호환성 유지 (Shadcn 기본 변수 매핑) === */
+  --card: #ffffff;
+  --card-foreground: #1e1e1e;
+  --popover: #ffffff;
+  --popover-foreground: #1e1e1e;
+  --secondary: #f3f4f6; /* Muted와 동일하게 처리 */
+  --secondary-foreground: #1e3a8a;
+  --accent: #f59e0b;    /* 앰버/노랑 (강조, 평균, 주의) */
+  --accent-foreground: #ffffff;
+
+  /* === 차트 (단순화된 팔레트) === */
+  --chart-1: #1e3a8a; /* 메인 (네이비) */
+  --chart-2: #3b82f6; /* 파랑 */
+  --chart-3: #16a34a; /* 초록 */
+  --chart-4: #dc2626; /* 빨강 */
+  --chart-5: #6b7280; /* 회색 */
+
+  /* === 상수 값 === */
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: #030213;
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: #f8fafc;
+  --sidebar-foreground: #1e1e1e;
+  --sidebar-primary: #1e3a8a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f3f4f6;
+  --sidebar-accent-foreground: #1e1e1e;
+  --sidebar-border: #e5e7eb;
+  --sidebar-ring: #1e3a8a;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  /* 다크모드 베이스 */
+  --background: #121212; /* 완전 검정보다는 살짝 밝은 다크 */
+  --foreground: #f3f4f6; /* 텍스트 (연한 회색) */
+
+  /* 브랜드 */
+  --primary: #3b82f6; /* 다크모드에서는 조금 더 밝은 블루가 가독성 좋음 */
+  --primary-foreground: #ffffff;
+
+  /* 상태 */
+  --destructive: #ef4444; /* 밝은 빨강 */
+  --destructive-foreground: #ffffff;
+  --success: #22c55e; /* 밝은 초록 */
+  --success-foreground: #ffffff;
+  --info: #60a5fa;    /* 밝은 파랑 */
+  --info-foreground: #ffffff;
+
+  --danger: #f43f5e; /* 밝은 로즈 */
+  --danger-foreground: #ffffff;
+  
+  --gender-male: #60a5fa;
+  --gender-female: #f472b6;
+
+  /* 보조 */
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --border: #2e3545;
+  --input: #2e3545;
+  --ring: #3b82f6;
+
+  /* 호환성 매핑 */
+  --card: #121212;
+  --card-foreground: #f3f4f6;
+  --popover: #121212;
+  --popover-foreground: #f3f4f6;
+  --secondary: #1e293b;
+  --secondary-foreground: #f3f4f6;
+  --accent: #fbbf24;
+  --accent-foreground: #1e1e1e;
+
+  /* 차트 */
+  --chart-1: #3b82f6;
+  --chart-2: #60a5fa;
+  --chart-3: #22c55e;
+  --chart-4: #ef4444;
+  --chart-5: #94a3b8;
+  
+  --sidebar: #121212;
+  --sidebar-foreground: #f3f4f6;
+  --sidebar-primary: #3b82f6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1e293b;
+  --sidebar-accent-foreground: #f3f4f6;
+  --sidebar-border: #2e3545;
+  --sidebar-ring: #3b82f6;
 }
 
 @theme inline {
@@ -101,6 +144,10 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-input-background: var(--input-background);
@@ -123,6 +170,10 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-gender-male: var(--gender-male);
+  --color-gender-female: var(--gender-female);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
 
   /* 폰트 사이즈 확립 */
   --text-display: 36px;
@@ -163,48 +214,6 @@
 
   html {
     font-size: var(--font-size);
-  }
-
-  h1 {
-    font-size: var(--text-2xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  h2 {
-    font-size: var(--text-xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  h3 {
-    font-size: var(--text-lg);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  h4 {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  label {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  button {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  input {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-normal);
-    line-height: 1.5;
   }
 }
 

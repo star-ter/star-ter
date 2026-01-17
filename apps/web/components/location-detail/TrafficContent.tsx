@@ -70,7 +70,9 @@ export function TrafficContent({ footTraffic }: TrafficContentProps) {
   return (
     <div className="space-y-8">
       <div className="grid gap-4">
-        <h2 className="text-h2 font-bold text-slate-900">유동인구 분석 결과</h2>
+        <h2 className="text-h2 font-bold text-foreground">
+          유동인구 분석 결과
+        </h2>
         {/* =====================================================
           상단 요약 카드 3개
           - 일일 유동인구
@@ -81,46 +83,46 @@ export function TrafficContent({ footTraffic }: TrafficContentProps) {
           {/* 카드 1: 일일 유동인구 */}
           <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
-                <Users className="w-4 h-4 text-blue-950" />
+              <div className="w-8 h-8 rounded-full bg-primary/5 flex items-center justify-center">
+                <Users className="w-4 h-4 text-primary" />
               </div>
-              <span className="text-body text-blue-900 font-bold">
+              <span className="text-body text-foreground font-bold">
                 일일 유동인구
               </span>
             </div>
-            <p className="text-h2 font-bold text-blue-950">
+            <p className="text-h2 font-bold text-foreground">
               {formatPopulation(footTraffic.dailyTotal)}
             </p>
             <div className="flex justify-between text-caption text-gray-500 mt-1 font-strong">
-              <span>설명이 들어가면 좋지 않을까?</span>
+              <span>일 평균 기준</span>
             </div>
           </div>
 
           {/* 카드 2: 피크 시간대 */}
           <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
-                <Clock className="w-4 h-4 text-blue-950" />
+              <div className="w-8 h-8 rounded-full bg-primary/5 flex items-center justify-center">
+                <Clock className="w-4 h-4 text-primary" />
               </div>
-              <span className="text-body text-blue-900 font-bold">
+              <span className="text-body text-foreground font-bold">
                 피크 시간대
               </span>
             </div>
-            <p className="text-h2 font-bold text-blue-950">
+            <p className="text-h2 font-bold text-foreground">
               {footTraffic.peakTimeSlot}
             </p>
             <div className="flex justify-between text-caption text-gray-500 mt-1 font-strong">
-              <span>설명이 들어가면 좋지 않을까?</span>
+              <span>유동인구 집중시간</span>
             </div>
           </div>
 
           {/* 카드 3: 성별 비율 */}
           <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
-                <Calendar className="w-4 h-4 text-blue-950" />
+              <div className="w-8 h-8 rounded-full bg-primary/5 flex items-center justify-center">
+                <Calendar className="w-4 h-4 text-primary" />
               </div>
-              <span className="text-body text-blue-900 font-bold">
+              <span className="text-body text-foreground font-bold">
                 성별 비율
               </span>
             </div>
@@ -128,24 +130,24 @@ export function TrafficContent({ footTraffic }: TrafficContentProps) {
             <div className="flex items-center gap-3">
               <div className="flex-1">
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-blue-600 font-medium text-caption">
+                  <span className="text-gender-male font-medium text-caption">
                     남성
                   </span>
-                  <span className="text-rose-500 font-medium text-caption">
+                  <span className="text-gender-female font-medium text-caption">
                     여성
                   </span>
                 </div>
                 <div className="h-2 bg-gray-100 rounded-full overflow-hidden flex">
                   <div
-                    className="h-full bg-blue-500 transition-all duration-700"
+                    className="h-full bg-gender-male transition-all duration-700"
                     style={{ width: `${footTraffic.genderRatio.male}%` }}
                   />
                   <div
-                    className="h-full bg-rose-400 transition-all duration-700"
+                    className="h-full bg-gender-female transition-all duration-700"
                     style={{ width: `${footTraffic.genderRatio.female}%` }}
                   />
                 </div>
-                <div className="flex justify-between text-caption text-blue-950 mt-1 font-semibold">
+                <div className="flex justify-between text-caption text-primary mt-1 font-semibold">
                   <span>{footTraffic.genderRatio.male}%</span>
                   <span>{footTraffic.genderRatio.female}%</span>
                 </div>
@@ -159,13 +161,13 @@ export function TrafficContent({ footTraffic }: TrafficContentProps) {
           시간대별 방문 비중 상세 (라인 차트)
           ===================================================== */}
       <div className="grid gap-4">
-        <h2 className="text-h2 font-bold text-slate-900">
+        <h2 className="text-h2 font-bold text-foreground">
           시간대별 방문 비중 상세
         </h2>
         <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-200">
           <div className="flex items-center mb-10">
             <div className="flex items-center gap-2 text-caption text-gray-500">
-              <span className="w-3 h-3 rounded-full bg-blue-950" />
+              <span className="w-3 h-3 rounded-full bg-primary" />
               방문 비중(%)
             </div>
           </div>
@@ -276,7 +278,7 @@ export function TrafficContent({ footTraffic }: TrafficContentProps) {
                 return (
                   <div
                     key={i}
-                    className="absolute w-6 h-6 bg-white border-[5px] border-blue-950 rounded-full z-10 box-border"
+                    className="absolute w-6 h-6 bg-white border-[5px] border-primary rounded-full z-10 box-border"
                     style={{
                       left: `${leftPercent}%`,
                       bottom: `${bottomPercent}%`,
@@ -315,7 +317,7 @@ export function TrafficContent({ footTraffic }: TrafficContentProps) {
           연령대별 방문 비중 상세 (막대 차트)
           ===================================================== */}
       <div className="grid gap-4">
-        <h2 className="text-h2 font-bold text-slate-900">
+        <h2 className="text-h2 font-bold text-foreground">
           연령대별 방문 비중 상세
         </h2>
         <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-200">
@@ -329,9 +331,9 @@ export function TrafficContent({ footTraffic }: TrafficContentProps) {
           {/* 막대 차트 */}
           <div className="flex items-end justify-around gap-6 h-56 px-4 mt-10">
             {ageData.map((d) => {
-              // 가장 높은 비율인 연령대는 빨간색(rose)으로 하이라이트
+              // 가장 높은 비율인 연령대는 Info(Blue), 나머지는 Primary(Navy)
               const isMax = d.ratio === maxAgeRatio;
-              const barColor = isMax ? 'bg-rose-400' : 'bg-blue-400';
+              const barColor = isMax ? 'bg-info' : 'bg-primary';
               const barHeight = (d.ratio / maxAgeRatio) * 100;
 
               return (
@@ -341,7 +343,7 @@ export function TrafficContent({ footTraffic }: TrafficContentProps) {
                 >
                   {/* 비율 텍스트 */}
                   <span
-                    className={`text-body font-strong mb-2 ${isMax ? 'text-rose-500' : 'text-blue-950'}`}
+                    className={`text-body font-strong mb-2 ${isMax ? 'text-info' : 'text-primary'}`}
                   >
                     {d.ratio}%
                   </span>
@@ -356,7 +358,7 @@ export function TrafficContent({ footTraffic }: TrafficContentProps) {
 
                   {/* 연령대 라벨 */}
                   <span
-                    className={`text-body mt-3 ${isMax ? 'font-strong text-rose-500' : 'font-bold text-blue-950'}`}
+                    className={`text-body mt-3 ${isMax ? 'font-strong text-info' : 'font-bold text-primary'}`}
                   >
                     {d.ageGroup}
                   </span>

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import React from "react";
-import { Layers, MapPin, ChevronRight } from "lucide-react";
+import React from 'react';
+import { Layers, MapPin, ChevronRight } from 'lucide-react';
 
 /**
  * SimilarAreasCard - 유사 상권 리스트 컴포넌트
- * 
+ *
  * 지역 선택지 스타일 (순위 색상 없음)
  */
 
@@ -28,10 +28,10 @@ interface SimilarAreasCardProps {
 
 // 유사도에 따른 라벨
 const getSimilarityLabel = (similarity: number) => {
-  if (similarity >= 95) return "매우 유사";
-  if (similarity >= 90) return "거의 동일";
-  if (similarity >= 85) return "유사함";
-  return "비슷함";
+  if (similarity >= 95) return '매우 유사';
+  if (similarity >= 90) return '거의 동일';
+  if (similarity >= 85) return '유사함';
+  return '비슷함';
 };
 
 export function SimilarAreasCard({ data, isLoading }: SimilarAreasCardProps) {
@@ -73,11 +73,11 @@ export function SimilarAreasCard({ data, isLoading }: SimilarAreasCardProps) {
         <div className="flex items-center gap-3">
           <Layers className="w-5 h-5 text-slate-400" />
           <div>
-            <h3 className="text-lg font-semibold text-slate-700">
+            <h3 className="text-body font-strong text-slate-700">
               {targetAreaName}
-              <span className="text-slate-400 font-normal ml-1">유사 상권</span>
+              <span className="text-slate-400 font-medium ml-1">유사 상권</span>
             </h3>
-            <p className="text-sm text-slate-400">
+            <p className="text-caption text-slate-400">
               연령대, 유동인구, 인구 구성 기준
             </p>
           </div>
@@ -94,7 +94,7 @@ export function SimilarAreasCard({ data, isLoading }: SimilarAreasCardProps) {
             {/* 지역명 */}
             <div className="flex items-center gap-3">
               <MapPin className="w-4 h-4 text-slate-300" />
-              <span className="text-base font-medium text-slate-700">
+              <span className="text-body font-medium text-slate-700">
                 {area.areaName}
               </span>
             </div>
@@ -102,10 +102,10 @@ export function SimilarAreasCard({ data, isLoading }: SimilarAreasCardProps) {
             {/* 유사도 */}
             <div className="flex items-center gap-3">
               <div className="text-right">
-                <div className="text-base font-semibold text-slate-600">
+                <div className="text-body font-storng text-slate-600">
                   {area.similarity.toFixed(0)}%
                 </div>
-                <div className="text-xs text-slate-400">
+                <div className="text-tiny text-slate-400">
                   {getSimilarityLabel(area.similarity)}
                 </div>
               </div>

@@ -178,9 +178,16 @@ export interface AiAction {
   payload?: AiActionPayload;
 }
 
+export interface SourceInfo {
+  tool: string;
+  displayName: string;
+  source: string;
+}
+
 export interface AiResponse {
   reply?: string;
   actions?: AiAction[];
+  sources?: SourceInfo[];
 }
 
 export interface AreaInfo {

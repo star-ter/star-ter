@@ -20,9 +20,11 @@ export function RealEstateContent({
   if (!items || items.length === 0) {
     return (
       <div className="space-y-8">
-        <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">부동산 정보</h2>
-          <div className="text-center py-12 text-gray-500">
+        <div className="bg-white rounded-2xl p-8 shadow-sm border border-border">
+          <h2 className="text-2xl font-bold text-foreground mb-6">
+            부동산 정보
+          </h2>
+          <div className="text-center py-12 text-muted-foreground">
             <p className="text-lg">해당 상권 주변에 등록된 매물이 없습니다.</p>
             <p className="text-sm mt-2">더 넓은 지역을 검색해보세요.</p>
           </div>
@@ -46,30 +48,34 @@ export function RealEstateContent({
   return (
     <div className="space-y-8">
       <div className="grid gap-4">
-        <h2 className="text-h2 font-bold text-gray-900">주변 부동산 정보</h2>
+        <h2 className="text-h2 font-bold text-foreground">주변 부동산 정보</h2>
         {/* 평균 통계 카드 */}
         <div className="grid md:grid-cols-2 gap-4">
-          <div className="p-6 bg-gray-50 rounded-xl">
-            <p className="text-caption text-gray-600 mb-2">평균 보증금</p>
-            <p className="text-h3 font-bold text-gray-900">
+          <div className="p-6 bg-muted/50 rounded-xl">
+            <p className="text-caption text-muted-foreground mb-2">
+              평균 보증금
+            </p>
+            <p className="text-h3 font-bold text-foreground">
               {formatToKoreaCurrency(avgDeposit)}원
             </p>
           </div>
-          <div className="p-6 bg-gray-50 rounded-xl">
-            <p className="text-caption text-gray-600 mb-2">평균 월세</p>
-            <p className="text-h3 font-bold text-gray-900">
+          <div className="p-6 bg-muted/50 rounded-xl">
+            <p className="text-caption text-muted-foreground mb-2">평균 월세</p>
+            <p className="text-h3 font-bold text-foreground">
               {formatToKoreaCurrency(avgRent)}원
             </p>
           </div>
-          <div className="p-6 bg-gray-50 rounded-xl">
-            <p className="text-caption text-gray-600 mb-2">평균 권리금</p>
-            <p className="text-h3 font-bold text-gray-900">
+          <div className="p-6 bg-muted/50 rounded-xl">
+            <p className="text-caption text-muted-foreground mb-2">
+              평균 권리금
+            </p>
+            <p className="text-h3 font-bold text-foreground">
               {formatToKoreaCurrency(avgPremium)}원
             </p>
           </div>
-          <div className="p-6 bg-gray-50 rounded-xl">
-            <p className="text-caption text-gray-600 mb-2">평균 면적</p>
-            <p className="text-h3 font-bold text-gray-900">
+          <div className="p-6 bg-muted/50 rounded-xl">
+            <p className="text-caption text-muted-foreground mb-2">평균 면적</p>
+            <p className="text-h3 font-bold text-foreground">
               {formatArea(avgSize)}
             </p>
           </div>
@@ -78,7 +84,7 @@ export function RealEstateContent({
 
       {/* 매물 목록 */}
       <div className="grid gap-4">
-        <h2 className="text-h2 font-bold text-gray-900">
+        <h2 className="text-h2 font-bold text-foreground">
           인근 매물 정보 ({items.length}개)
         </h2>
         {/* 
@@ -127,22 +133,22 @@ export function RealEstateContent({
               {/* 매물 정보 영역 */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-h3 font-bold text-gray-900">
+                  <span className="text-h3 font-bold text-foreground">
                     {formatToKoreaCurrency(item.deposit)} /
                     {' ' + formatToKoreaCurrency(item.monthlyrent)}
                   </span>
                   <span
                     className={`text-caption px-2 py-1 rounded ${
                       item.ismoveindate
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-gray-100 text-gray-600'
+                        ? 'bg-success/10 text-success'
+                        : 'bg-muted text-muted-foreground'
                     }`}
                   >
                     {item.ismoveindate ? '즉시입주' : '협의필요'}
                   </span>
                 </div>
 
-                <div className="text-caption text-gray-900 space-y-1">
+                <div className="text-caption text-foreground space-y-1">
                   <p className="truncate">
                     {item.title || item.name || item.roadaddress || '매물 정보'}
                   </p>
@@ -157,7 +163,7 @@ export function RealEstateContent({
                       </span>
                     )}
                     {item.maintenancefee && item.maintenancefee > 0 && (
-                      <span className="text-gray-900">
+                      <span className="text-foreground">
                         · 관리비 {formatToKoreaCurrency(item.maintenancefee)}
                       </span>
                     )}
@@ -165,12 +171,12 @@ export function RealEstateContent({
 
                   <div className="flex flex-wrap gap-2 mt-2">
                     {item.nearsubwaystation && (
-                      <span className="text-caption font-strong px-2 py-1 bg-blue-50 text-blue-600 rounded">
+                      <span className="text-caption font-strong px-2 py-1 bg-info/10 text-info rounded">
                         {item.nearsubwaystation}
                       </span>
                     )}
                     {item.businessmiddlecodename && (
-                      <span className="text-caption font-strong px-2 py-1 bg-purple-50 text-purple-600 rounded">
+                      <span className="text-caption font-strong px-2 py-1 bg-accent/10 text-accent rounded">
                         {item.businessmiddlecodename}
                       </span>
                     )}

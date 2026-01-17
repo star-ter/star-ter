@@ -37,12 +37,20 @@ export interface Artifact {
   spec: ArtifactSpec;
 }
 
+// 데이터 출처 정보
+export interface SourceInfo {
+  tool: string;
+  displayName: string;
+  source: string;
+}
+
 // AI 응답
 export interface AiResponse {
   reply: string;
   actions?: AiAction[];
   artifacts?: Artifact[];
   suggestedPrompts?: string[];
+  sources?: SourceInfo[];
 }
 
 export interface AiChatResponse extends AiResponse {

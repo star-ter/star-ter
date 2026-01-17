@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useRef, useEffect } from "react";
-import { Plus, ChevronDown, Map } from "lucide-react";
+import { useState, useRef, useEffect } from 'react';
+import { Plus, ChevronDown, Map } from 'lucide-react';
 
 /**
  * ChatHeader 컴포넌트 - 채팅 페이지 상단 헤더
@@ -42,14 +42,14 @@ const OpenAIIcon = () => (
 
 // AI 프로바이더 옵션 (SVG 컴포넌트 사용)
 const AI_PROVIDERS = [
-  { id: 'openai' as const, name: 'OpenAI', Icon: OpenAIIcon},
-  { id: 'claude' as const, name: 'Claude', Icon: ClaudeIcon},
+  { id: 'openai' as const, name: 'OpenAI', Icon: OpenAIIcon },
+  { id: 'claude' as const, name: 'Claude', Icon: ClaudeIcon },
 ];
 
-export function ChatHeader({ 
-  threadTitle, 
-  onNewThread, 
-  isMapOpen, 
+export function ChatHeader({
+  threadTitle,
+  onNewThread,
+  isMapOpen,
   onMapToggle,
   aiProvider = 'claude',
   onAiProviderChange,
@@ -60,7 +60,10 @@ export function ChatHeader({
   // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsDropdownOpen(false);
       }
     };
@@ -68,34 +71,37 @@ export function ChatHeader({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const currentProvider = AI_PROVIDERS.find(p => p.id === aiProvider) || AI_PROVIDERS[0];
+  const currentProvider =
+    AI_PROVIDERS.find((p) => p.id === aiProvider) || AI_PROVIDERS[0];
 
   return (
-    <header className="h-20 border-b border-gray-100 flex items-center px-8 shrink-0">
+    <header className="h-20 border-b border-border flex items-center px-8 shrink-0">
       {/* 왼쪽: AI 프로바이더 선택 드롭다운 */}
       <div className="flex items-center gap-4 flex-1 justify-start min-w-0">
         <div className="relative" ref={dropdownRef}>
           {(() => {
             const CurrentIcon = currentProvider.Icon;
             return (
-              <button 
+              <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2.5 px-4 py-2 rounded-xl hover:bg-slate-100 transition-colors shrink-0"
+                className="flex items-center gap-2.5 px-4 py-2 rounded-xl hover:bg-muted transition-colors shrink-0"
               >
                 <div className="w-5 h-5 flex items-center justify-center">
                   <CurrentIcon />
                 </div>
-                <span className="text-base font-medium text-slate-700 hidden sm:inline">
+                <span className="text-body font-medium text-foreground hidden sm:inline">
                   {currentProvider.name}
                 </span>
-                <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown
+                  className={`w-5 h-5 text-muted-foreground transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+                />
               </button>
             );
           })()}
 
           {/* 드롭다운 메뉴 */}
           {isDropdownOpen && (
-            <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
+            <div className="absolute top-full left-0 mt-2 w-48 bg-background rounded-xl shadow-lg border border-border py-2 z-50">
               {AI_PROVIDERS.map((provider) => {
                 const IconComponent = provider.Icon;
                 return (
@@ -105,16 +111,20 @@ export function ChatHeader({
                       onAiProviderChange?.(provider.id);
                       setIsDropdownOpen(false);
                     }}
-                    className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 transition-colors ${
-                      aiProvider === provider.id ? 'bg-slate-100' : ''
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-muted/50 transition-colors ${
+                      aiProvider === provider.id ? 'bg-muted' : ''
                     }`}
                   >
                     <div className="w-5 h-5 flex items-center justify-center">
                       <IconComponent />
                     </div>
-                    <span className="text-md font-medium text-slate-700">{provider.name}</span>
+                    <span className="text-body font-medium text-foreground">
+                      {provider.name}
+                    </span>
                     {aiProvider === provider.id && (
-                      <span className="ml-auto text-blue-500 text-sm">✓</span>
+                      <span className="ml-auto text-primary text-caption">
+                        ✓
+                      </span>
                     )}
                   </button>
                 );
@@ -125,8 +135,8 @@ export function ChatHeader({
       </div>
 
       {/* 가운데: 스레드 제목 */}
-      <div className="flex items-center gap-3 justify-center flex-shrink-0 mx-4">
-        <span className="text-base font-medium text-slate-700 max-w-[200px] sm:max-w-sm truncate">
+      <div className="flex items-center gap-3 justify-center shrink-0 mx-4">
+        <span className="text-body font-medium text-foreground max-w-[200px] sm:max-w-sm truncate">
           {threadTitle}
         </span>
       </div>
@@ -137,25 +147,18 @@ export function ChatHeader({
         {onMapToggle && (
           <button
             onClick={onMapToggle}
-            className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-base transition-colors whitespace-nowrap ${
-              isMapOpen 
-                ? "bg-blue-100 text-blue-700" 
-                : "text-slate-600 hover:bg-slate-100"
+            className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-body transition-colors whitespace-nowrap ${
+              isMapOpen
+                ? 'text-primary hover:text-muted-foreground'
+                : 'text-muted-foreground hover:text-primary'
             }`}
           >
             <Map className="w-5 h-5" />
-            <span className="hidden sm:inline">{isMapOpen ? "지도 닫기" : "지도 열기"}</span>
+            <span className="hidden sm:inline">
+              {isMapOpen ? '지도 닫기' : '지도 열기'}
+            </span>
           </button>
         )}
-
-        {/* 새 스레드 버튼 */}
-        <button
-          onClick={onNewThread}
-          className="flex items-center gap-2.5 px-5 py-2.5 bg-slate-900 text-white rounded-xl text-base font-medium hover:bg-slate-800 transition-colors whitespace-nowrap"
-        >
-          <Plus className="w-5 h-5" />
-          <span className="hidden sm:inline">새 대화 생성</span>
-        </button>
       </div>
     </header>
   );

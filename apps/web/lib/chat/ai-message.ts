@@ -75,12 +75,20 @@ export function buildMessageFromAiResponse(params: {
     params.chartActions ?? getChartActions(params.response.actions);
   const content = params.contentOverride ?? params.response.reply ?? "";
 
+  // sources 매핑
+  const sources = params.response.sources?.map((s) => ({
+    tool: s.tool,
+    displayName: s.displayName,
+    source: s.source,
+  }));
+
   return {
     id: params.id,
     role: "assistant",
     content,
     timestamp,
     chartActions,
+    sources,
   };
 }
 

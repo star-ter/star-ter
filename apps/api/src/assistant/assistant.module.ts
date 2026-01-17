@@ -12,6 +12,7 @@ import { AiToolsService } from '../ai/ai-tools.service';
 import { AiResponseProcessor } from '../ai/ai-response.processor';
 import { ToolsRepository } from '../ai/tools.repository';
 import { OpenAiService } from '../ai/openAI/open-ai.service';
+import { ChatRepository } from '../ai/chat.repository'; // 히스토리 저장용
 import { LocationRecommendModule } from '../location-recommend/location-recommend.module';
 
 @Module({
@@ -26,6 +27,7 @@ import { LocationRecommendModule } from '../location-recommend/location-recommen
     AiResponseProcessor,
     ToolsRepository,
     OpenAiService,
+    ChatRepository, // 히스토리 저장용
   ],
   exports: [AssistantService],
 })

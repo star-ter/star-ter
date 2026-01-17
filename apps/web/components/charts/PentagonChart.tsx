@@ -74,7 +74,7 @@ export function PentagonChart({
         <polygon
           points={bgPoints}
           fill="none"
-          stroke="#e2e8f0"
+          stroke="var(--border)"
           strokeWidth="1"
         />
 
@@ -82,7 +82,7 @@ export function PentagonChart({
         <polygon
           points={midPoints}
           fill="none"
-          stroke="#e2e8f0"
+          stroke="var(--border)"
           strokeWidth="1"
           strokeDasharray="2,2"
         />
@@ -97,7 +97,7 @@ export function PentagonChart({
               y1={center}
               x2={p.x}
               y2={p.y}
-              stroke="#e2e8f0"
+              stroke="var(--border)"
               strokeWidth="1"
             />
           );
@@ -140,7 +140,7 @@ export function PentagonChart({
         return (
           <div
             key={i}
-            className="absolute text-tiny font-strong text-slate-500 whitespace-nowrap"
+            className="absolute text-tiny font-strong text-muted-foreground whitespace-nowrap"
             style={{
               left: pos.x + xOffset,
               top: pos.y,

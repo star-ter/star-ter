@@ -54,3 +54,54 @@ export async function getConversationHistory(
 
   return response.json() as Promise<ChatHistoryMessage[]>;
 }
+
+export async function deleteConversation(
+  conversationId: string,
+): Promise<{ id: string }> {
+  const response = await fetch(
+    `${baseUrl}/chat/conversation/${encodeURIComponent(conversationId)}`,
+    {
+      method: "DELETE",
+      credentials: "include",
+    },
+  );
+
+  if (!response.ok) {
+    try {
+      const errorData = (await response.json()) as ErrorResponse;
+      throw new Error(errorData?.message || "대화 삭제에 실패했습니다.");
+    } catch {
+      throw new Error("대화 삭제에 실패했습니다.");
+    }
+  }
+
+  return response.json() as Promise<{ id: string }>;
+}
+
+export async function updateConversationTitle(
+  conversationId: string,
+  title: string,
+): Promise<{ id: string; title?: string | null }> {
+  const response = await fetch(
+    `${baseUrl}/chat/conversation/${encodeURIComponent(conversationId)}/title`,
+    {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ title }),
+    },
+  );
+
+  if (!response.ok) {
+    try {
+      const errorData = (await response.json()) as ErrorResponse;
+      throw new Error(errorData?.message || "대화 제목 수정에 실패했습니다.");
+    } catch {
+      throw new Error("대화 제목 수정에 실패했습니다.");
+    }
+  }
+
+  return response.json() as Promise<{ id: string; title?: string | null }>;
+}

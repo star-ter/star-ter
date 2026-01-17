@@ -18,11 +18,7 @@ export function RegionScoreSection({ score }: RegionScoreSectionProps) {
         <h4 className="text-h4 font-heading text-slate-900">상권 테마</h4>
         <div className="text-right">
           <p className="text-caption text-slate-400">적합도</p>
-          <p
-            className={`text-h4 font-heading ${percentage >= 80 ? 'text-emerald-600' : percentage >= 50 ? 'text-amber-600' : 'text-rose-600'}`}
-          >
-            {percentage}%
-          </p>
+          <p className="text-h4 font-heading text-slate-900">{percentage}%</p>
         </div>
       </div>
       <p className="text-caption text-slate-400 mb-8">입지 및 상권 특성</p>
@@ -51,7 +47,7 @@ export function RegionScoreSection({ score }: RegionScoreSectionProps) {
             {details.theme === 'office' && `${details.nearbySubways}개`}
             {details.theme === 'residential' && `${details.nearbySubways}개`}
           </p>
-          <p className="text-caption text-blue-600 font-medium">
+          <p className="text-caption text-info font-medium">
             {details.theme === 'university' && '도보 10분 이내'}
             {details.theme === 'station' && '도보 5분 이내'}
             {details.theme === 'tourist' && '일 평균'}
@@ -62,12 +58,12 @@ export function RegionScoreSection({ score }: RegionScoreSectionProps) {
         </div>
         <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
           <div className="flex items-center gap-2 text-slate-400 text-caption mb-2">
-            <span>유동인구 주요 연령층</span>
+            <span>주요 연령층</span>
           </div>
           <p className="text-h2 font-heading text-slate-900">
             {details.mainAgeGroup}
           </p>
-          <p className="text-caption text-blue-600 font-medium">
+          <p className="text-caption text-info font-medium">
             비중 {details.mainAgeRatio.toFixed(1)}%
           </p>
         </div>

@@ -20,7 +20,7 @@ export function OnboardingStepCapital({
 }: OnboardingStepCapitalProps) {
   return (
     <div className="space-y-[4vh]">
-      <h1 className="text-display font-bold text-gray-900">
+      <h1 className="text-display font-bold text-foreground">
         준비된 창업 자본금을 알려주세요
       </h1>
 
@@ -29,13 +29,13 @@ export function OnboardingStepCapital({
           <button
             key={option.value}
             onClick={() => onChange(value === option.value ? '' : option.value)}
-            className={`w-full px-6 py-5 border-2 rounded-2xl text-left transition-all hover:border-gray-900 hover:shadow-lg ${
+            className={`w-full px-6 py-5 border-2 rounded-2xl text-left transition-all hover:border-primary hover:shadow-lg ${
               value === option.value
-                ? 'border-gray-900 bg-gray-50 shadow-lg'
-                : 'border-gray-300'
+                ? 'border-primary bg-primary/5 shadow-lg'
+                : 'border-border'
             } ${value && value !== option.value ? 'opacity-40 grayscale-[0.5]' : 'opacity-100'}`}
           >
-            <div className="text-h4 font-bold text-gray-900">
+            <div className="text-h4 font-bold text-foreground">
               {option.label}
             </div>
           </button>

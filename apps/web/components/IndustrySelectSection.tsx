@@ -41,8 +41,8 @@ export function IndustrySelectSection({
             onClick={() => onSelectMacro(macro.code)}
             className={`min-w-35 whitespace-nowrap rounded-2xl border-2 px-[1.5vw] py-[1.2vh] text-h5 font-medium transition-all lg:w-full ${
               selectedMacro === macro.code
-                ? 'border-gray-900 bg-gray-50 text-gray-900 shadow-lg'
-                : 'border-gray-300 bg-white text-gray-700 hover:border-gray-900 hover:shadow-lg opacity-40 grayscale-[0.5]'
+                ? 'border-primary bg-primary/5 text-primary shadow-lg'
+                : 'border-border bg-card text-muted-foreground hover:border-primary hover:shadow-lg opacity-40 grayscale-[0.5]'
             }`}
           >
             {macro.name}
@@ -50,15 +50,17 @@ export function IndustrySelectSection({
         ))}
       </div>
 
-      <section className="flex h-[440px] flex-col rounded-2xl border-2 border-gray-300 bg-white p-8">
+      <section className="flex h-[440px] flex-col rounded-2xl border-2 border-border bg-card p-8">
         <div className="flex flex-wrap items-center justify-between gap-[1vw]">
           <div>
-            <h2 className="text-h2 font-bold text-gray-900">
+            <h2 className="text-h2 font-bold text-foreground">
               {selectedMacroName} 소분류
             </h2>
-            <p className="text-h4 text-gray-600">원하는 업종을 선택하세요</p>
+            <p className="text-h4 text-muted-foreground">
+              원하는 업종을 선택하세요
+            </p>
           </div>
-          <span className="text-body text-gray-500">
+          <span className="text-body text-muted-foreground">
             {selectedIndustries.length}개
           </span>
         </div>
@@ -75,20 +77,20 @@ export function IndustrySelectSection({
                       : industry.code,
                   )
                 }
-                className={`group rounded-2xl border-2 px-6 py-4 text-left transition-all hover:border-gray-900 hover:shadow-lg ${
+                className={`group rounded-2xl border-2 px-6 py-4 text-left transition-all hover:border-primary hover:shadow-lg ${
                   selectedIndustryCode === industry.code
-                    ? 'border-gray-900 bg-gray-50 shadow-lg'
-                    : 'border-gray-300 bg-white'
+                    ? 'border-primary bg-primary/5 shadow-lg'
+                    : 'border-border bg-card'
                 } ${selectedIndustryCode && selectedIndustryCode !== industry.code ? 'opacity-40 grayscale-[0.5]' : 'opacity-100'}`}
               >
-                <div className="text-h5 font-bold text-gray-900">
+                <div className="text-h5 font-bold text-foreground">
                   {industry.name}
                 </div>
               </button>
             ))}
           </div>
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-6 bg-linear-to-b from-white to-transparent" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-linear-to-t from-white to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-6 bg-linear-to-b from-card to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-linear-to-t from-card to-transparent" />
         </div>
       </section>
     </div>

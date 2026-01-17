@@ -44,10 +44,15 @@ export const CAPITAL_VALUES: Record<string, number> = {
 
 // 점수에 따른 색상
 export const getScoreColor = (score: number) => {
-  if (score >= 0.8) return { text: 'text-emerald-600', bg: 'bg-emerald-500' };
-  if (score >= 0.6) return { text: 'text-blue-600', bg: 'bg-blue-500' };
-  if (score >= 0.4) return { text: 'text-amber-600', bg: 'bg-amber-500' };
-  return { text: 'text-rose-600', bg: 'bg-rose-500' };
+  // 1등급 (80점 이상): 성공/안전 (초록)
+  if (score >= 0.8) return { text: 'text-success', bg: 'bg-success/10' };
+  // 2등급 (60점 이상): 양호/정보 (파랑)
+  if (score >= 0.6)
+    return { text: 'text-gender-male', bg: 'bg-gender-male/10' };
+  // 3등급 (40점 이상): 보통/주의 (보라 - 주황 대신 사용)
+  if (score >= 0.4) return { text: 'text-accent', bg: 'bg-accent/10' };
+  // 4등급 (40점 미만): 위험/저조 (빨강)
+  return { text: 'text-danger', bg: 'bg-danger/10' };
 };
 
 // 금액 포맷

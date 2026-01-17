@@ -93,25 +93,28 @@ export function PriceFilterBar({
       {isExpanded && (
         <div
           ref={panelRef}
-          className="absolute bottom-20 left-1/2 -translate-x-1/2 z-20 pointer-events-auto bg-white rounded-2xl shadow-sm border border-gray-200 p-5 w-95"
+          className="absolute bottom-20 left-1/2 -translate-x-1/2 z-20 pointer-events-auto bg-white rounded-2xl shadow-sm border border-border p-5 w-95"
         >
           {/* 보증금 슬라이더 */}
           <div className="mb-5">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-caption font-medium text-gray-600">보증금</span>
-              <span className="text-caption font-bold text-blue-950">
-                {formatToKoreaCurrency(depositRange[0])} ~ {formatToKoreaCurrency(depositRange[1])}
+              <span className="text-caption font-medium text-muted-foreground">
+                보증금
+              </span>
+              <span className="text-caption font-bold text-primary">
+                {formatToKoreaCurrency(depositRange[0])} ~{' '}
+                {formatToKoreaCurrency(depositRange[1])}
               </span>
             </div>
             <div className="relative h-6 flex items-center">
               {/* 트랙 배경 */}
-              <div className="absolute left-0 right-0 h-1.5 bg-gray-100 rounded-full" />
+              <div className="absolute left-0 right-0 h-1.5 bg-muted rounded-full" />
               {/* 활성 트랙 */}
               <div
-                className="absolute h-1.5 bg-blue-950 rounded-full"
+                className="absolute h-1.5 bg-primary rounded-full"
                 style={{
                   left: `${depositLeftPercent}%`,
-                  width: `${depositRightPercent - depositLeftPercent}%`
+                  width: `${depositRightPercent - depositLeftPercent}%`,
                 }}
               />
               {/* 왼쪽 슬라이더 (최소값) */}
@@ -126,8 +129,13 @@ export function PriceFilterBar({
                     onDepositChange([val, depositRange[1]]);
                   }
                 }}
-                className="dual-slider absolute w-full h-full appearance-none bg-transparent pointer-events-none text-blue-950"
-                style={{ zIndex: depositRange[0] > (maxDeposit - minDeposit) / 2 + minDeposit ? 5 : 3 }}
+                className="dual-slider absolute w-full h-full appearance-none bg-transparent pointer-events-none text-primary"
+                style={{
+                  zIndex:
+                    depositRange[0] > (maxDeposit - minDeposit) / 2 + minDeposit
+                      ? 5
+                      : 3,
+                }}
               />
               {/* 오른쪽 슬라이더 (최대값) */}
               <input
@@ -141,8 +149,13 @@ export function PriceFilterBar({
                     onDepositChange([depositRange[0], val]);
                   }
                 }}
-                className="dual-slider absolute w-full h-full appearance-none bg-transparent pointer-events-none text-blue-950"
-                style={{ zIndex: depositRange[1] < (maxDeposit - minDeposit) / 2 + minDeposit ? 5 : 4 }}
+                className="dual-slider absolute w-full h-full appearance-none bg-transparent pointer-events-none text-primary"
+                style={{
+                  zIndex:
+                    depositRange[1] < (maxDeposit - minDeposit) / 2 + minDeposit
+                      ? 5
+                      : 4,
+                }}
               />
             </div>
           </div>
@@ -150,20 +163,23 @@ export function PriceFilterBar({
           {/* 월세 슬라이더 */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-caption font-medium text-gray-600">월세</span>
-              <span className="text-caption font-bold text-blue-700">
-                {formatToKoreaCurrency(rentRange[0])} ~ {formatToKoreaCurrency(rentRange[1])}
+              <span className="text-caption font-medium text-muted-foreground">
+                월세
+              </span>
+              <span className="text-caption font-bold text-info">
+                {formatToKoreaCurrency(rentRange[0])} ~{' '}
+                {formatToKoreaCurrency(rentRange[1])}
               </span>
             </div>
             <div className="relative h-6 flex items-center">
               {/* 트랙 배경 */}
-              <div className="absolute left-0 right-0 h-1.5 bg-gray-100 rounded-full" />
+              <div className="absolute left-0 right-0 h-1.5 bg-muted rounded-full" />
               {/* 활성 트랙 */}
               <div
-                className="absolute h-1.5 bg-blue-600 rounded-full"
+                className="absolute h-1.5 bg-info rounded-full"
                 style={{
                   left: `${rentLeftPercent}%`,
-                  width: `${rentRightPercent - rentLeftPercent}%`
+                  width: `${rentRightPercent - rentLeftPercent}%`,
                 }}
               />
               {/* 왼쪽 슬라이더 (최소값) */}
@@ -178,8 +194,11 @@ export function PriceFilterBar({
                     onRentChange([val, rentRange[1]]);
                   }
                 }}
-                className="dual-slider absolute w-full h-full appearance-none bg-transparent pointer-events-none text-blue-600"
-                style={{ zIndex: rentRange[0] > (maxRent - minRent) / 2 + minRent ? 5 : 3 }}
+                className="dual-slider absolute w-full h-full appearance-none bg-transparent pointer-events-none text-info"
+                style={{
+                  zIndex:
+                    rentRange[0] > (maxRent - minRent) / 2 + minRent ? 5 : 3,
+                }}
               />
               {/* 오른쪽 슬라이더 (최대값) */}
               <input
@@ -193,8 +212,11 @@ export function PriceFilterBar({
                     onRentChange([rentRange[0], val]);
                   }
                 }}
-                className="dual-slider absolute w-full h-full appearance-none bg-transparent pointer-events-none text-blue-600"
-                style={{ zIndex: rentRange[1] < (maxRent - minRent) / 2 + minRent ? 5 : 4 }}
+                className="dual-slider absolute w-full h-full appearance-none bg-transparent pointer-events-none text-info"
+                style={{
+                  zIndex:
+                    rentRange[1] < (maxRent - minRent) / 2 + minRent ? 5 : 4,
+                }}
               />
             </div>
           </div>
@@ -203,36 +225,41 @@ export function PriceFilterBar({
 
       {/* 하단 바 */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 pointer-events-auto">
-        <div className="flex items-center gap-3 bg-white rounded-full px-4 py-2.5 shadow-sm border border-gray-200 w-95 justify-between">
+        <div className="flex items-center gap-3 bg-white rounded-full px-4 py-2.5 shadow-sm border border-border w-95 justify-between">
           {/* 아이콘 */}
-          <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-            <Building2 className="w-4 h-4 text-blue-950" />
+          <div className="w-9 h-9 rounded-full bg-primary/5 flex items-center justify-center shrink-0">
+            <Building2 className="w-4 h-4 text-primary" />
           </div>
 
           {/* 매물 정보 */}
           <div className="flex items-center gap-2">
-            <span className="text-caption font-bold text-blue-950">
+            <span className="text-caption font-bold text-primary">
               {filteredCount.toLocaleString()}개
             </span>
-            <span className="text-caption font-medium text-gray-500">
+            <span className="text-caption font-medium text-muted-foreground">
               / {totalCount.toLocaleString()}개 매물
             </span>
           </div>
 
-          <div className="w-px h-6 bg-gray-200 ml-2" />
+          <div className="w-px h-6 bg-border ml-2" />
 
           {/* 필터 버튼 */}
           <button
             data-toggle-price-panel
-            onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsExpanded(!isExpanded);
+            }}
             className={`flex items-center gap-1.5 px-2 py-1 rounded-lg transition-all ${
-              isExpanded ? 'bg-blue-50' : 'hover:bg-gray-50'
+              isExpanded ? 'bg-primary/5' : 'hover:bg-muted'
             }`}
           >
-            <span className="text-caption font-medium text-blue-900 whitespace-nowrap">
+            <span className="text-caption font-medium text-primary whitespace-nowrap">
               가격 필터
             </span>
-            <Settings2 className={`w-4 h-4 transition-colors ${isExpanded ? 'text-blue-950' : 'text-gray-400'}`} />
+            <Settings2
+              className={`w-4 h-4 transition-colors ${isExpanded ? 'text-primary' : 'text-muted-foreground'}`}
+            />
           </button>
         </div>
       </div>
