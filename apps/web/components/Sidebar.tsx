@@ -33,6 +33,7 @@ import {
 import type { OnboardingData } from './onboarding/onboarding-options';
 import { Logo } from './landing/header/Logo';
 import { SidebarChatHistory } from './SidebarChatHistory';
+import { ImUser } from 'react-icons/im';
 
 interface SidebarProps {
   activeMenu: string;
@@ -54,14 +55,10 @@ type ChatHistoryItem = {
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000';
-const DEFAULT_PROFILE_IMAGE =
-  'https://images.unsplash.com/photo-1649433658557-54cf58577c68?q=80&w=200&h=200&auto=format&fit=crop';
 const LAYOUT_SWITCH_DELAY_MS = 180;
 
-const getProfileImageUrl = (profileImageKey?: string | null) =>
-  profileImageKey
-    ? `${API_BASE_URL}/image/${encodeURIComponent(profileImageKey)}`
-    : DEFAULT_PROFILE_IMAGE;
+const getProfileImageUrl = (profileImageKey: string) =>
+  `${API_BASE_URL}/image/${encodeURIComponent(profileImageKey)}`;
 
 export function Sidebar({
   activeMenu,
@@ -437,16 +434,19 @@ export function Sidebar({
                         aria-label="Open profile settings"
                       >
                         <div className="relative shrink-0">
-                          <div className="w-8 h-8 rounded-full overflow-hidden border border-border">
-                            <ImageWithFallback
-                              src={getProfileImageUrl(
-                                authUser?.profileImageKey,
-                              )}
-                              alt="Profile"
-                              className="w-full h-full object-cover"
-                            />
+                          <div className="w-8 h-8 rounded-full overflow-hidden border border-border bg-muted flex items-center justify-center">
+                            {authUser?.profileImageKey ? (
+                              <ImageWithFallback
+                                src={getProfileImageUrl(
+                                  authUser.profileImageKey,
+                                )}
+                                alt="Profile"
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <ImUser className="w-full h-full text-muted-foreground p-1.5" />
+                            )}
                           </div>
-                          <div className="absolute bottom-0 right-0 w-3 h-3 bg-success border-2 border-background rounded-full shadow-sm" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-body font-strong text-foreground truncate">
@@ -510,12 +510,16 @@ export function Sidebar({
                     className="relative rounded-full border border-border"
                     aria-label="Open profile settings"
                   >
-                    <div className="w-9 h-9 rounded-full overflow-hidden">
-                      <ImageWithFallback
-                        src={getProfileImageUrl(authUser?.profileImageKey)}
-                        alt="Profile"
-                        className="w-full h-full object-cover"
-                      />
+                    <div className="w-9 h-9 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+                      {authUser?.profileImageKey ? (
+                        <ImageWithFallback
+                          src={getProfileImageUrl(authUser.profileImageKey)}
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <ImUser className="w-full h-full text-muted-foreground p-1.5" />
+                      )}
                     </div>
                     <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-success border-2 border-background rounded-full" />
                   </button>

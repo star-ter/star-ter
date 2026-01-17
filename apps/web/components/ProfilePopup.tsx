@@ -11,6 +11,7 @@ import {
 import { motion } from 'motion/react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { ProfileImageCropModal } from './ProfileImageCropModal';
+import { ImUser } from 'react-icons/im';
 
 type SettingsGroup = {
   title: string;
@@ -55,11 +56,9 @@ export function ProfilePopup({
 
   const API_BASE_URL =
     process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000';
-  const fallbackImage =
-    'https://images.unsplash.com/photo-1649433658557-54cf58577c68?q=80&w=200&h=200&auto=format&fit=crop';
   const profileImageUrl = profileImageKey
     ? `${API_BASE_URL}/image/${encodeURIComponent(profileImageKey)}`
-    : fallbackImage;
+    : '';
   const popupPositionClass = isSidebarOpen
     ? 'bottom-24 left-4 w-[calc(320px-2rem)]'
     : 'bottom-20 left-4 w-[calc(320px-2rem)]';
@@ -120,12 +119,16 @@ export function ProfilePopup({
         <div className="p-6 border-b border-border bg-muted/30">
           <div className="flex items-center gap-4">
             <div className="relative">
-              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-background shadow-md">
-                <ImageWithFallback
-                  src={profileImageUrl}
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
+              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-background shadow-md bg-muted flex items-center justify-center">
+                {profileImageKey ? (
+                  <ImageWithFallback
+                    src={profileImageUrl}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <ImUser className="w-full h-full text-muted-foreground p-3" />
+                )}
               </div>
               <button
                 type="button"
