@@ -66,7 +66,7 @@ export function RegisterPage({ onRegister }: RegisterPageProps) {
             회원가입
           </h1>
           <p className="text-muted-foreground text-body font-medium">
-            지리응답 가입을 환영합니다!
+            Alley 가입을 환영합니다!
           </p>
         </div>
 

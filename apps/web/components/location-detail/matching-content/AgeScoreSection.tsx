@@ -65,15 +65,13 @@ export function AgeScoreSection({ score, userAge }: AgeScoreSectionProps) {
               strokeDasharray={circumference}
               strokeDashoffset={selectedOffset}
               strokeLinecap="round"
-              className={`transition-all duration-700 ${chartColorClass}`}
+              className={`transition-all duration-700 text-primary`}
             />
           </svg>
 
           {/* 중앙 라벨 */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span
-              className={`text-h3 font-heading ${chartColorClass.replace('stroke-', 'text-')}`}
-            >
+            <span className={`text-h3 font-heading text-primary`}>
               {selected.toFixed(1)}%
             </span>
             <span className="text-caption text-slate-400">{userLabel}</span>
@@ -83,9 +81,7 @@ export function AgeScoreSection({ score, userAge }: AgeScoreSectionProps) {
         {/* 범례 (차트 아래) */}
         <div className="flex items-center gap-4 text-sm">
           <div className="flex items-center gap-2">
-            <div
-              className={`w-3 h-3 rounded-full ${chartColorClass.replace('stroke-', 'bg-')}`}
-            />
+            <div className={`w-3 h-3 rounded-full bg-primary`} />
             <span className="text-slate-600">{userLabel}</span>
           </div>
           <div className="flex items-center gap-2">

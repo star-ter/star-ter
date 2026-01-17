@@ -7,11 +7,10 @@ export function Footer() {
       <div className="max-w-[1200px] mx-auto px-4">
         <div className="grid grid-cols-1 gap-12 mb-16">
           <div className="space-y-6">
-            <Logo />
+            <Logo width={160} />
             <br />
             <p className="text-muted-foreground text-body leading-relaxed">
-              지리응답은 빅데이터와 AI 기술을 활용하여 예비 창업자와
-              소상공인에게
+              Alley는 빅데이터와 AI 기술을 활용하여 예비 창업자와 소상공인에게
               <br />
               가장 정밀한 상권 분석 정보를 제공합니다.
             </p>
@@ -19,7 +18,7 @@ export function Footer() {
         </div>
 
         <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4 text-caption text-muted-foreground">
-          <p>© 2026 지리응답 Inc. All rights reserved.</p>
+          <p>© 2026 Alley Inc. All rights reserved.</p>
         </div>
       </div>
     </footer>

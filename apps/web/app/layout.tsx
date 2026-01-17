@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: '지리응답',
-  description: '지리응답:상권을 묻고, 데이터로 답한다.',
+  title: 'Alley',
+  description: 'Alley:상권을 묻고, 데이터로 답한다.',
 };
 
 export default function RootLayout({

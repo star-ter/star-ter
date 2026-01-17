@@ -1,15 +1,20 @@
+'use client';
+
 import Link from 'next/link';
+import { useUserStore } from '@/store/use-user-store';
 import { Button } from '../../ui/button';
 import { ImageWithFallback } from '../../figma/ImageWithFallback';
 import dummyMap from './img/dummy_map.png';
 import authBg from '../../img/auth_bg.png';
+import { Logo } from '../header/Logo';
 
 export function HeroSection() {
+  const { authUser } = useUserStore();
   return (
     <section>
       <div className="w-screen h-screen flex items-center justify-center px-4 relative bg-muted/30">
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat blur-[2px] opacity-70"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat blur-[2px] opacity-40"
           style={{ backgroundImage: `url(${authBg.src})` }}
         />
         <div className="grid lg:grid-cols-2 gap-16 items-center relative z-10 w-full max-w-[1200px]">
@@ -17,7 +22,7 @@ export function HeroSection() {
             <h1 className="text-display font-heading text-foreground mb-6 leading-[1.15]">
               상권을 묻고, 데이터로 답한다
               <br />
-              <span className="text-primary">지리응답</span>
+              <Logo className="mt-4" width={240}></Logo>
             </h1>
             <p className="text-h5 text-foreground mb-12 font-medium leading-relaxed">
               빅데이터와 AI가 분석하는 가장 정밀한 상권 리포트.
@@ -29,7 +34,7 @@ export function HeroSection() {
                 asChild
                 className="bg-primary hover:bg-primary/90 text-primary-foreground px-10 py-7 text-lg rounded-2xl shadow-xl hover:shadow-2xl transition-all"
               >
-                <Link href="/login">시작하기</Link>
+                <Link href={authUser ? '/locations' : '/login'}>시작하기</Link>
               </Button>
             </div>
           </div>

@@ -275,7 +275,7 @@ export function Sidebar({
       <div className={sidebarContainerClass}>
         <div className="bg-background rounded-2xl shadow-lg h-full flex flex-col overflow-hidden border border-border">
           <header className={sidebarHeaderClass}>
-            {!useCompactLayout && isOpen ? <Logo></Logo> : null}
+            {!useCompactLayout && isOpen ? <Logo width={72}></Logo> : null}
             <button
               onClick={handleSidebarToggle}
               className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"

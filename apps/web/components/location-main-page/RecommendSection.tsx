@@ -52,7 +52,7 @@ const getScoreBadge = (score: number) => {
     };
   return {
     text: '참고',
-    badgeColor: 'bg-muted',
+    badgeColor: 'bg-muted-foreground',
     textColor: 'text-muted-foreground',
     chartColor: 'var(--muted-foreground)',
   };

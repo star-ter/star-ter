@@ -268,7 +268,9 @@ export function MatchingContent({
                         />
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-h3 font-heading text-slate-900">
+                        <span
+                          className={`text-h3 font-heading ${content.color}`}
+                        >
                           {scoreData.totalScore}%
                         </span>
                       </div>
