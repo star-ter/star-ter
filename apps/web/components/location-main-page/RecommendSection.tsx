@@ -2,14 +2,19 @@
 
 import { useEffect, useMemo, useState, useRef } from 'react';
 import Link from 'next/link';
+import { createPortal } from 'react-dom';
+import { AnimatePresence } from 'motion/react';
+import { Settings2 } from 'lucide-react';
 import {
   getRecommendations,
   ScoredLocation,
 } from '@/services/location/locationRecommend.service';
-import { getOnboarding } from '@/services/user/user.api';
+import { getOnboarding, getPersonalization, updateOnboarding } from '@/services/user/user.api';
 import { useUserStore } from '@/store/use-user-store';
 import { useRecommendStore } from '@/store/use-recommend-store';
 import { PentagonChart } from '@/components/charts/PentagonChart';
+import { StartupPreferencesPopup } from '@/components/StartupPreferencesPopup';
+import type { OnboardingData } from '@/components/onboarding/onboarding-options';
 
 type DisplayLocation = {
   id: string;
@@ -63,11 +68,61 @@ export function RecommendSection() {
   const [isLoading, setIsLoading] = useState(true);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const prefetchConsumed = useRef(false);
+  const [refreshToken, setRefreshToken] = useState(0); // 추천 새로고침용
+
+  // 설정 팝업 관련 상태
+  const [isMounted, setIsMounted] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingPrefs, setIsLoadingPrefs] = useState(false);
+  const [prefsError, setPrefsError] = useState<string | null>(null);
+  const [preferencesData, setPreferencesData] = useState<OnboardingData | null>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const handleOpenPopup = async () => {
+    setPrefsError(null);
+    setIsLoadingPrefs(true);
+    setShowPopup(true);
+    try {
+      const data = await getPersonalization();
+      setPreferencesData(data);
+    } catch {
+      setPreferencesData(null);
+    } finally {
+      setIsLoadingPrefs(false);
+    }
+  };
+
+  const handleSavePreferences = async (data: OnboardingData) => {
+    setIsSaving(true);
+    setPrefsError(null);
+    try {
+      await updateOnboarding(data);
+      setPreferencesData(data);
+      setShowPopup(false);
+      // 저장 후 추천 다시 불러오기 (새로고침 없이)
+      prefetchConsumed.current = false;
+      setRefreshToken((prev) => prev + 1);
+    } catch (err) {
+      setPrefsError(err instanceof Error ? err.message : '저장에 실패했습니다.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   useEffect(() => {
     if (!authUser) {
       setRecommendedLocations([]);
       setIsLoading(false);
+      return;
+    }
+
+    // refreshToken이 변경되면 pre-fetch 무시하고 새로 fetch
+    if (refreshToken > 0) {
+      fetchRecommendations();
       return;
     }
 
@@ -81,7 +136,7 @@ export function RecommendSection() {
     }
 
     // 이미 pre-fetch 데이터를 사용했거나, 스토어에 데이터가 없는 경우 fetch
-    if (prefetchConsumed.current) {
+    if (prefetchConsumed.current && refreshToken === 0) {
       return; // 이미 데이터 있음
     }
 
@@ -112,7 +167,7 @@ export function RecommendSection() {
       }
     }
     fetchRecommendations();
-  }, [authUser, isLoaded, recommendResult, clearRecommendResult]);
+  }, [authUser, isLoaded, recommendResult, clearRecommendResult, refreshToken]);
 
   const displayLocations: DisplayLocation[] = useMemo(() => {
     if (recommendedLocations.length > 0) {
@@ -212,12 +267,23 @@ export function RecommendSection() {
   }
 
   return (
+    <>
     <section className="px-8 py-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-h3 font-heading text-foreground">
-          {authUser?.nickname ? `${authUser.nickname}님` : '사장님'}께 추천하는
-          상권
-        </h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-h3 font-heading text-foreground">
+            {authUser?.nickname ? `${authUser.nickname}님` : '사장님'}께 추천하는
+            상권
+          </h2>
+          {/* 설정 버튼 */}
+          <button
+            onClick={handleOpenPopup}
+            className="w-9 h-9 rounded-xl bg-muted border border-border hover:bg-primary/10 hover:border-primary/30 flex items-center justify-center transition-all"
+            title="창업 조건 설정"
+          >
+            <Settings2 className="w-4.5 h-4.5 text-muted-foreground" />
+          </button>
+        </div>
         <Link
           href="/locations/search?tab=맞춤 추천"
           className="text-body font-strong text-muted-foreground hover:text-foreground transition-colors"
@@ -306,5 +372,24 @@ export function RecommendSection() {
         </div>
       </div>
     </section>
+
+    {/* 창업 조건 설정 팝업 */}
+    {isMounted &&
+      createPortal(
+        <AnimatePresence>
+          {showPopup && (
+            <StartupPreferencesPopup
+              initialData={preferencesData ?? undefined}
+              onClose={() => setShowPopup(false)}
+              onSave={handleSavePreferences}
+              isSaving={isSaving}
+              isLoading={isLoadingPrefs}
+              error={prefsError}
+            />
+          )}
+        </AnimatePresence>,
+        document.body,
+      )}
+    </>
   );
 }

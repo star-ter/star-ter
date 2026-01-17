@@ -19,18 +19,12 @@ import { logout } from '@/services/auth/auth.api';
 import { useUserStore } from '@/store/use-user-store';
 import { useChatStore } from '@/store/use-chat-store';
 import { ProfilePopup } from './ProfilePopup';
-import { StartupPreferencesPopup } from './StartupPreferencesPopup';
-import {
-  getPersonalization,
-  updateOnboarding,
-  updateProfile,
-} from '@/services/user/user.api';
+import { updateProfile } from '@/services/user/user.api';
 import {
   deleteConversation,
   getChatConversations,
   updateConversationTitle,
 } from '@/services/chat/chat.api';
-import type { OnboardingData } from './onboarding/onboarding-options';
 import { Logo } from './landing/header/Logo';
 import { SidebarChatHistory } from './SidebarChatHistory';
 import { ImUser } from 'react-icons/im';
@@ -78,18 +72,11 @@ export function Sidebar({
   );
   const currentConversationId = useChatStore((state) => state.conversationId);
   const [showProfilePopup, setShowProfilePopup] = useState(false);
-  const [showPreferencesPopup, setShowPreferencesPopup] = useState(false);
   const [nickname, setNickname] = useState(authUser?.nickname ?? '사용자');
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState<string | null>(null);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
-  const [isSavingPreferences, setIsSavingPreferences] = useState(false);
-  const [preferencesError, setPreferencesError] = useState<string | null>(null);
-  const [isLoadingPreferences, setIsLoadingPreferences] = useState(false);
-  const [initialPreferences, setInitialPreferences] = useState<
-    OnboardingData | undefined
-  >();
   const [chatHistory, setChatHistory] = useState<ChatHistoryItem[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [historyError, setHistoryError] = useState<string | null>(null);
@@ -123,7 +110,6 @@ export function Sidebar({
   useEffect(() => {
     if (!isOpen) {
       setShowProfilePopup(false);
-      setShowPreferencesPopup(false);
     }
   }, [isOpen]);
 
@@ -242,41 +228,7 @@ export function Sidebar({
     );
   };
 
-  const handleOpenPreferences = () => {
-    setShowProfilePopup(false);
-    setPreferencesError(null);
-    setShowPreferencesPopup(true);
-    setIsLoadingPreferences(true);
-    getPersonalization()
-      .then((data) => {
-        setInitialPreferences(data);
-      })
-      .catch((err) => {
-        const message =
-          err instanceof Error
-            ? err.message
-            : '개인화 정보 조회에 실패했습니다.';
-        setPreferencesError(message);
-      })
-      .finally(() => {
-        setIsLoadingPreferences(false);
-      });
-  };
 
-  const handleSavePreferences = async (data: OnboardingData) => {
-    setIsSavingPreferences(true);
-    setPreferencesError(null);
-    try {
-      await updateOnboarding(data);
-      setShowPreferencesPopup(false);
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : '설정 저장에 실패했습니다.';
-      setPreferencesError(message);
-    } finally {
-      setIsSavingPreferences(false);
-    }
-  };
 
   const handleSaveProfile = async () => {
     if (!authUser) return;
@@ -553,7 +505,6 @@ export function Sidebar({
                 nickname={nickname}
                 onNicknameChange={handleNicknameChange}
                 onClose={() => setShowProfilePopup(false)}
-                onOpenPreferences={handleOpenPreferences}
                 onLogout={handleLogout}
                 isLoggingOut={isLoggingOut}
                 logoutError={logoutError}
@@ -568,22 +519,7 @@ export function Sidebar({
           </AnimatePresence>,
           document.body,
         )}
-      {isMounted &&
-        createPortal(
-          <AnimatePresence>
-            {showPreferencesPopup && (
-              <StartupPreferencesPopup
-                initialData={initialPreferences}
-                onClose={() => setShowPreferencesPopup(false)}
-                onSave={handleSavePreferences}
-                isSaving={isSavingPreferences}
-                isLoading={isLoadingPreferences}
-                error={preferencesError}
-              />
-            )}
-          </AnimatePresence>,
-          document.body,
-        )}
+
     </>
   );
 }

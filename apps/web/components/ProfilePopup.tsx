@@ -1,22 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import {
-  Camera,
-  ChevronRight,
-  LogOut,
-  SlidersHorizontal,
-  type LucideIcon,
-} from 'lucide-react';
+import { Camera, LogOut } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { ProfileImageCropModal } from './ProfileImageCropModal';
 import { ImUser } from 'react-icons/im';
 
-type SettingsGroup = {
-  title: string;
-  items: { label: string; icon: LucideIcon; onClick?: () => void }[];
-};
 
 type ProfilePopupProps = {
   nickname: string;
@@ -25,7 +15,6 @@ type ProfilePopupProps = {
   onLogout: () => void;
   isLoggingOut: boolean;
   logoutError: string | null;
-  onOpenPreferences: () => void;
   onSaveProfile: () => void;
   isSavingProfile: boolean;
   profileError: string | null;
@@ -41,7 +30,6 @@ export function ProfilePopup({
   onLogout,
   isLoggingOut,
   logoutError,
-  onOpenPreferences,
   onSaveProfile,
   isSavingProfile,
   profileError,
@@ -86,18 +74,7 @@ export function ProfilePopup({
     setIsCropOpen(true);
   };
 
-  const settingsGroups: SettingsGroup[] = [
-    {
-      title: 'Account',
-      items: [
-        {
-          label: '창업 조건 설정',
-          icon: SlidersHorizontal,
-          onClick: onOpenPreferences,
-        },
-      ],
-    },
-  ];
+
 
   return (
     <>
@@ -162,32 +139,7 @@ export function ProfilePopup({
           )}
         </div>
 
-        <div className="p-2">
-          {settingsGroups.map((group) => (
-            <div key={group.title} className="mb-2">
-              <p className="px-3 py-2 text-tiny font-medium text-muted-foreground uppercase tracking-wider">
-                {group.title}
-              </p>
-              {group.items.map((item) => (
-                <button
-                  key={item.label}
-                  onClick={item.onClick}
-                  className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-muted rounded-xl transition-all group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-background border border-border flex items-center justify-center text-muted-foreground group-hover:text-primary shadow-sm">
-                      <item.icon className="w-4 h-4" />
-                    </div>
-                    <span className="text-caption font-strong text-foreground">
-                      {item.label}
-                    </span>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </button>
-              ))}
-            </div>
-          ))}
-        </div>
+
 
         <div className="p-2 bg-muted/50 border-t border-border">
           <button
