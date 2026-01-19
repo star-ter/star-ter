@@ -6,7 +6,7 @@ interface PageProps {
 
 export default async function Page({ searchParams }: PageProps) {
   const params = await searchParams;
-  const initialTab = params.tab || '평균 매출 순';
+  const initialTab = params.tab || '맞춤 추천';
 
   return <LocationSearchPage initialTab={initialTab} />;
 }

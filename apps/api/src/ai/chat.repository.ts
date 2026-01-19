@@ -67,8 +67,9 @@ export class ChatRepository {
     conversationId: string;
     role: MessageRole;
     content: string;
+    metadata?: Prisma.InputJsonValue;
   }) {
-    const { conversationId, role, content } = params;
+    const { conversationId, role, content, metadata } = params;
 
     return this.prisma.$transaction(async (tx) => {
       const message = await tx.message.create({
@@ -76,6 +77,7 @@ export class ChatRepository {
           conversationId: conversationId,
           role: role,
           content: content,
+          ...(metadata !== undefined ? { metadata } : {}),
         },
       });
 

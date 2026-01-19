@@ -13,6 +13,7 @@ export interface Message {
   timestamp: Date;
   sources?: Source[];
   chartItems?: ChartItem[];
+  isStreaming?: boolean;
 }
 
 export interface Thread {

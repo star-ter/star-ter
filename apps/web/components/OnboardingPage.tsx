@@ -94,7 +94,7 @@ export function OnboardingPage({
 
   return (
     <div className="h-screen bg-background flex flex-col overflow-hidden">
-      <header className="relative px-8 py-6 flex items-center justify-between shrink-0">
+      <header className="relative px-8 py-10 flex items-center justify-between shrink-0">
         <button
           onClick={handleBack}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors z-10"
@@ -105,23 +105,43 @@ export function OnboardingPage({
 
         <div className="absolute inset-0 flex items-center justify-center z-0">
           <div className="w-full mx-auto px-8 flex items-center justify-between max-w-300">
-            {[1, 2, 3, 4, 5].map((s) => (
-              <div key={s} className="flex-1 last:flex-none flex items-center">
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-caption font-bold transition-all duration-300 shrink-0 ${
-                    s <= step
-                      ? 'bg-primary text-white'
-                      : 'bg-muted text-muted-foreground'
-                  }`}
-                >
-                  {s}
+            {[
+              { num: 1, label: '연령층' },
+              { num: 2, label: '상권 테마' },
+              { num: 3, label: '운영 시간' },
+              { num: 4, label: '창업 비용' },
+              { num: 5, label: '업종' },
+            ].map(({ num, label }) => (
+              <div
+                key={num}
+                className="flex-1 last:flex-none flex items-center"
+              >
+                <div className="flex flex-col items-center">
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-caption font-bold transition-all duration-300 shrink-0 ${
+                      num <= step
+                        ? 'bg-primary text-white'
+                        : 'bg-muted text-muted-foreground'
+                    }`}
+                  >
+                    {num}
+                  </div>
+                  <span
+                    className={`text-caption mt-1 whitespace-nowrap transition-colors duration-300 ${
+                      num <= step
+                        ? 'text-primary font-medium'
+                        : 'text-muted-foreground'
+                    }`}
+                  >
+                    {label}
+                  </span>
                 </div>
-                {s < 5 && (
-                  <div className="flex-1 h-0.5 bg-muted overflow-hidden mx-2">
+                {num < 5 && (
+                  <div className="flex-1 h-0.5 bg-muted overflow-hidden mx-2 mb-5">
                     <div
                       className="h-full bg-primary transition-all duration-500"
                       style={{
-                        width: s < step ? '100%' : '0%',
+                        width: num < step ? '100%' : '0%',
                       }}
                     />
                   </div>
@@ -176,20 +196,17 @@ export function OnboardingPage({
         </div>
       </div>
 
-      <div className="px-8 py-4 border-t shrink-0">
+      <div className="px-4 py-4 border-t shrink-0">
         <div
-          className={`max-w-4xl mx-auto flex items-center ${
-            step === 5 && onSkip ? 'justify-between' : 'justify-end'
-          }`}
+          className={`max-w-7xl mx-auto flex justify-end items-center gap-4`}
         >
           {step === 5 && onSkip && (
-            <Button
+            <button
               onClick={handleSkip}
-              variant="ghost"
-              className="text-muted-foreground hover:text-foreground text-lg font-medium"
+              className="px-6 py-3 text-muted-foreground hover:text-foreground font-medium transition-colors"
             >
               건너뛰기
-            </Button>
+            </button>
           )}
           <Button
             onClick={handleNext}

@@ -16,7 +16,7 @@ import { RealEstateContent } from './location-detail/RealEstateContent';
 import { MapSection } from './location-detail/MapSection';
 import { RealEstateDetailPanel } from './location-detail/RealEstateDetailPanel';
 import NewsSection from '@/components/NewsSection';
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { Resizable } from 're-resizable';
 import Link from 'next/link';
 import type {
@@ -200,6 +200,15 @@ export function LocationDetailPage({
     }
   }, [basicInfo?.code]);
 
+  // 탭 변경 시 스크롤 맨 위로 이동
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
+  }, [activeTab]);
+
   return (
     <div className="h-full bg-[#f7f7f8]">
       {/* 사이드바와 맞춤: 상하좌 p-4, 오른쪽만 pr-8 추가 */}
@@ -308,8 +317,11 @@ export function LocationDetailPage({
             </div>
 
             <div className="flex-1 min-h-0">
-              <div className="h-full bg-white rounded-4xl border border-border overflow-hidden flex flex-col">
-                <div className="flex-1 overflow-y-auto no-scrollbar">
+              <div className="h-full bg-white rounded-4xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                <div
+                  ref={scrollContainerRef}
+                  className="flex-1 overflow-y-auto no-scrollbar"
+                >
                   <div className="p-8">
                     {activeTab === 'matching' && (
                       <MatchingContent

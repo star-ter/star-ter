@@ -26,6 +26,24 @@ export class ChatService {
     );
   }
 
+  async handleChatMessageStream(
+    userId: string,
+    conversationId: string | null,
+    message: string,
+    options: AiChatOptions,
+    onEvent: (event: string, data: Record<string, unknown>) => void,
+    signal?: AbortSignal,
+  ) {
+    return this.aiChatOrchestrator.handleMessageStream(
+      userId,
+      conversationId,
+      message,
+      options,
+      onEvent,
+      signal,
+    );
+  }
+
   async getUserConversations(userId: string) {
     return this.chatRepository
       .listConversationsByUser(userId)
@@ -50,6 +68,7 @@ export class ChatService {
         messages.map((msg) => ({
           role: msg.role,
           content: msg.content,
+          metadata: msg.metadata ?? null,
         })),
       );
   }

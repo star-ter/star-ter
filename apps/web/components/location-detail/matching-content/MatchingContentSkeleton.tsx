@@ -3,6 +3,26 @@
 export function MatchingContentSkeleton() {
   return (
     <div className="space-y-4 animate-pulse">
+      {/* 종합 점수 카드 스켈레톤 */}
+      <div className="bg-slate-50 rounded-3xl p-8 border border-slate-100 mb-10">
+        <div className="flex flex-col lg:flex-row items-center gap-10">
+          {/* 원형 그래프 스켈레톤 */}
+          <div className="relative shrink-0">
+            <div className="w-32 h-32 rounded-full border-8 border-slate-200" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="h-8 w-16 bg-slate-200 rounded" />
+            </div>
+          </div>
+
+          {/* 텍스트 설명 스켈레톤 */}
+          <div className="space-y-3 text-center lg:text-left flex-1">
+            <div className="h-8 w-64 bg-slate-200 rounded mx-auto lg:mx-0" />
+            <div className="h-5 w-full max-w-md bg-slate-200 rounded mx-auto lg:mx-0" />
+            <div className="h-5 w-3/4 max-w-sm bg-slate-200 rounded mx-auto lg:mx-0" />
+          </div>
+        </div>
+      </div>
+
       {/* 헤더 스켈레톤 */}
       <div className="flex items-center gap-2 mb-4">
         <div className="h-6 w-48 bg-slate-200 rounded" />

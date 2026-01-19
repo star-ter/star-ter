@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useState, useRef } from 'react';
+import { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { createPortal } from 'react-dom';
 import { AnimatePresence } from 'motion/react';
-import { Settings2, ArrowRight } from 'lucide-react';
+import { Settings2, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   getRecommendations,
   ScoredLocation,
@@ -89,6 +89,54 @@ export function RecommendSection() {
     null,
   );
 
+  // 스크롤 관련 상태 및 ref
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  // 스크롤 위치 체크
+  const checkScroll = useCallback(() => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } =
+        scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      // 여유분 1px를 둬서 부동소수점 오차 방지
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    }
+  }, []);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', checkScroll);
+      // 초기 체크
+      checkScroll();
+      window.addEventListener('resize', checkScroll);
+      return () => {
+        container.removeEventListener('scroll', checkScroll);
+        window.removeEventListener('resize', checkScroll);
+      };
+    }
+  }, [checkScroll, recommendedLocations]); // recommendedLocations가 바뀌면 다시 체크
+
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({
+        left: -800, // 카드 너비(384) + 갭(20) 정도
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({
+        left: 800,
+        behavior: 'smooth',
+      });
+    }
+  };
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -144,7 +192,7 @@ export function RecommendSection() {
     // 스토어에 pre-fetched 데이터가 있고, 아직 사용하지 않은 경우
     if (isLoaded && recommendResult && !prefetchConsumed.current) {
       prefetchConsumed.current = true;
-      setRecommendedLocations(recommendResult.locations.slice(0, 5));
+      setRecommendedLocations(recommendResult.locations.slice(0, 10));
       setIsOnboardingCompleted(true);
       setIsLoading(false);
       clearRecommendResult(); // 스토어 클리어
@@ -185,7 +233,7 @@ export function RecommendSection() {
         });
 
         if (response) {
-          setRecommendedLocations(response.locations.slice(0, 5));
+          setRecommendedLocations(response.locations.slice(0, 10));
         }
       } catch (error) {
         console.error('Failed to fetch recommendations:', error);
@@ -319,84 +367,109 @@ export function RecommendSection() {
           </Link>
         </div>
 
-        <div className="overflow-x-auto pt-2 pb-4 no-scrollbar">
-          <div className="flex gap-5">
-            {isLoading || displayLocations.length === 0
-              ? Array.from({ length: 5 }).map((_, index) => (
-                  <div
-                    key={`loading-${index}`}
-                    className="w-96 shrink-0 rounded-2xl bg-background shadow-sm border border-border p-6 animate-pulse flex flex-col justify-between h-96"
-                  >
-                    <div className="space-y-3">
-                      <div className="h-5 w-16 rounded-full bg-muted" />
-                      <div className="h-5 w-40 rounded bg-muted" />
-                      <div className="h-4 w-24 rounded bg-muted" />
-                    </div>
-                    <div className="flex items-end justify-between gap-6">
-                      <div>
-                        <div className="mb-3 h-3 w-14 rounded bg-muted" />
-                        <div className="flex items-end gap-2">
-                          <div className="h-8 w-16 rounded bg-muted" />
-                          <div className="h-4 w-6 rounded bg-muted" />
-                        </div>
-                      </div>
-                      <div className="h-40 w-40 rounded-full bg-muted" />
-                    </div>
-                  </div>
-                ))
-              : displayLocations.map((location) => {
-                  const badge = getScoreBadge(location.score);
-                  return (
-                    <Link
-                      key={location.id}
-                      href={location.href}
-                      className="w-96 shrink-0 rounded-2xl bg-background shadow-sm border border-border p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg flex flex-col justify-between h-96"
-                    >
-                      <div className="space-y-1.5">
-                        <div
-                          className={`inline-flex items-center rounded-full px-3 py-1 text-tiny font-heading text-white ${badge.badgeColor}`}
-                        >
-                          {badge.text}
-                        </div>
-                        <h3 className="mt-2 text-h4 font-heading text-foreground">
-                          {location.name}
-                        </h3>
-                        <p className="text-h5 font-strong text-muted-foreground">
-                          {location.region}
-                        </p>
-                      </div>
+        <div className="relative group">
+          {/* 왼쪽 화살표 */}
+          <button
+            onClick={scrollLeft}
+            disabled={!canScrollLeft}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-background/80 backdrop-blur-sm border border-border shadow-md rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-background transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-background/80 disabled:hover:text-muted-foreground -ml-5"
+            aria-label="이전 추천 상권"
+          >
+            <ChevronLeft className="w-8 h-8" />
+          </button>
 
+          <div
+            ref={scrollContainerRef}
+            className="overflow-x-auto pt-2 pb-4 no-scrollbar scroll-smooth"
+          >
+            <div className="flex gap-5">
+              {isLoading || displayLocations.length === 0
+                ? Array.from({ length: 10 }).map((_, index) => (
+                    <div
+                      key={`loading-${index}`}
+                      className="w-96 shrink-0 rounded-2xl bg-background shadow-sm border border-border p-6 animate-pulse flex flex-col justify-between h-96"
+                    >
+                      <div className="space-y-3">
+                        <div className="h-5 w-16 rounded-full bg-muted" />
+                        <div className="h-5 w-40 rounded bg-muted" />
+                        <div className="h-4 w-24 rounded bg-muted" />
+                      </div>
                       <div className="flex items-end justify-between gap-6">
                         <div>
-                          <p className="text-caption font-strong text-muted-foreground mb-1">
-                            매칭 점수
-                          </p>
-                          <div className="flex items-end gap-1">
-                            <span
-                              className={`text-h1 font-heading ${badge.textColor}`}
-                            >
-                              {formatScore(location.score)}
-                            </span>
-                            <span
-                              className={`text-h5 font-heading ${badge.textColor}`}
-                            >
-                              점
-                            </span>
+                          <div className="mb-3 h-3 w-14 rounded bg-muted" />
+                          <div className="flex items-end gap-2">
+                            <div className="h-8 w-16 rounded bg-muted" />
+                            <div className="h-4 w-6 rounded bg-muted" />
                           </div>
                         </div>
-
-                        <div className="relative right-6">
-                          <PentagonChart
-                            metrics={location.metrics}
-                            size={200}
-                            color={badge.chartColor}
-                          />
-                        </div>
+                        <div className="h-40 w-40 rounded-full bg-muted" />
                       </div>
-                    </Link>
-                  );
-                })}
+                    </div>
+                  ))
+                : displayLocations.map((location) => {
+                    const badge = getScoreBadge(location.score);
+                    return (
+                      <Link
+                        key={location.id}
+                        href={location.href}
+                        className="w-96 shrink-0 rounded-2xl bg-background shadow-sm border border-border p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg flex flex-col justify-between h-96"
+                      >
+                        <div className="space-y-1.5">
+                          <div
+                            className={`inline-flex items-center rounded-full px-3 py-1 text-tiny font-heading text-white ${badge.badgeColor}`}
+                          >
+                            {badge.text}
+                          </div>
+                          <h3 className="mt-2 text-h4 font-heading text-foreground">
+                            {location.name}
+                          </h3>
+                          <p className="text-h5 font-strong text-muted-foreground">
+                            {location.region}
+                          </p>
+                        </div>
+
+                        <div className="flex items-end justify-between gap-6">
+                          <div>
+                            <p className="text-caption font-strong text-muted-foreground mb-1">
+                              매칭 점수
+                            </p>
+                            <div className="flex items-end gap-1">
+                              <span
+                                className={`text-h1 font-heading ${badge.textColor}`}
+                              >
+                                {formatScore(location.score)}
+                              </span>
+                              <span
+                                className={`text-h5 font-heading ${badge.textColor}`}
+                              >
+                                점
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="relative right-6">
+                            <PentagonChart
+                              metrics={location.metrics}
+                              size={200}
+                              color={badge.chartColor}
+                            />
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+            </div>
           </div>
+
+          {/* 오른쪽 화살표 */}
+          <button
+            onClick={scrollRight}
+            disabled={!canScrollRight}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-background/80 backdrop-blur-sm border border-border shadow-md rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-background transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-background/80 disabled:hover:text-muted-foreground -mr-5"
+            aria-label="다음 추천 상권"
+          >
+            <ChevronRight className="w-8 h-8" />
+          </button>
         </div>
       </section>
 

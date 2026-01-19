@@ -41,22 +41,13 @@ export function ChatInput({
   return (
     <div className="relative">
       <div className="flex items-center gap-4 rounded-3xl border border-border px-2 py-1 focus-within:border-primary focus-within:ring-2 focus-within:ring-ring/20 transition-all">
-        {/* 파일 첨부 버튼 */}
-        <button
-          type="button"
-          className="p-3 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl border border-border transition-colors shrink-0"
-          aria-label="Attach file"
-        >
-          <Paperclip className="w-4 h-4" />
-        </button>
-
         {/* 텍스트 입력 영역 */}
         <textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="무엇이든 물어보세요..."
-          className="flex-1 bg-transparent text-h5 text-foreground placeholder-muted-foreground resize-none focus:outline-none max-h-52 py-3"
+          className="flex-1 bg-transparent text-h5 text-foreground placeholder-muted-foreground resize-none focus:outline-none max-h-52 py-3 ml-4 no-scrollbar"
           rows={1}
           disabled={isLoading}
         />

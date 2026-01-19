@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Copy, MoreHorizontal, Bot, Database } from 'lucide-react';
 import { ChartRenderer, type ChartItem } from './charts';
-import type { Source } from './types';
+import type { Message, Source } from './types';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -19,12 +19,12 @@ import remarkGfm from 'remark-gfm';
  * - AI 메시지에서 chartItems가 있으면 말풍선 안에 차트 표시
  */
 
-interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-}
+// interface Message {
+//   id: string;
+//   role: 'user' | 'assistant';
+//   content: string;
+//   timestamp: Date;
+// }
 
 interface ChatMessageProps {
   message: Message;
@@ -99,84 +99,103 @@ export function ChatMessage({ message, chartItems, sources }: ChatMessageProps) 
         ) : (
           // AI 메시지: 마크다운 렌더링
           <div className="prose prose-slate max-w-none text-body text-foreground leading-relaxed font-medium">
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              components={{
-                // 굵은 텍스트
-                strong: ({ children }) => (
-                  <strong className="font-bold text-foreground">
-                    {children}
-                  </strong>
-                ),
-                // 제목
-                h1: ({ children }) => (
-                  <h1 className="text-h4 font-bold text-foreground mt-4 mb-2">
-                    {children}
-                  </h1>
-                ),
-                h2: ({ children }) => (
-                  <h2 className="text-h5 font-bold text-foreground mt-3 mb-2">
-                    {children}
-                  </h2>
-                ),
-                h3: ({ children }) => (
-                  <h3 className="text-body font-bold text-foreground mt-2 mb-1">
-                    {children}
-                  </h3>
-                ),
-                // 목록
-                ul: ({ children }) => (
-                  <ul className="list-disc pl-4 space-y-1 mb-2 text-foreground">
-                    {children}
-                  </ul>
-                ),
-                ol: ({ children }) => (
-                  <ol className="list-decimal pl-4 space-y-1 mb-2 text-foreground">
-                    {children}
-                  </ol>
-                ),
-                li: ({ children }) => (
-                  <li className="text-foreground">{children}</li>
-                ),
-                // 단락
-                p: ({ children }) => (
-                  <p className="text-foreground leading-relaxed mb-2">
-                    {children}
-                  </p>
-                ),
-                // 테이블 스타일 (GFM Tables)
-                table: ({ children }) => (
-                  <div className="overflow-x-auto my-4">
-                    <table className="min-w-full border-collapse border border-border rounded-lg overflow-hidden">
+            {!displayContent && message.isStreaming ? (
+              <div className="flex items-center gap-3 py-1">
+                <div className="flex gap-1.5">
+                  <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" />
+                  <span
+                    className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
+                    style={{ animationDelay: '0.1s' }}
+                  />
+                  <span
+                    className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
+                    style={{ animationDelay: '0.2s' }}
+                  />
+                </div>
+                <span className="text-body text-muted-foreground">
+                  AI가 응답을 생성하고 있습니다...
+                </span>
+              </div>
+            ) : (
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  // 굵은 텍스트
+                  strong: ({ children }) => (
+                    <strong className="font-bold text-foreground">
                       {children}
-                    </table>
-                  </div>
-                ),
-                thead: ({ children }) => (
-                  <thead className="bg-muted">{children}</thead>
-                ),
-                tbody: ({ children }) => (
-                  <tbody className="divide-y divide-border">{children}</tbody>
-                ),
-                tr: ({ children }) => (
-                  <tr className="hover:bg-muted/50 transition-colors">
-                    {children}
-                  </tr>
-                ),
-                th: ({ children }) => (
-                  <th className="px-4 py-3 text-left text-md font-semibold text-foreground border-b border-border">
-                    {children}
-                  </th>
-                ),
-                td: ({ children }) => (
-                  <td className="px-4 py-3 text-md text-muted-foreground border-b border-border">
-                    {children}
-                  </td>
-                ),
-              }}
-            >
-              {displayContent}
-            </ReactMarkdown>
+                    </strong>
+                  ),
+                  // 제목
+                  h1: ({ children }) => (
+                    <h1 className="text-h4 font-bold text-foreground mt-4 mb-2">
+                      {children}
+                    </h1>
+                  ),
+                  h2: ({ children }) => (
+                    <h2 className="text-h5 font-bold text-foreground mt-3 mb-2">
+                      {children}
+                    </h2>
+                  ),
+                  h3: ({ children }) => (
+                    <h3 className="text-body font-bold text-foreground mt-2 mb-1">
+                      {children}
+                    </h3>
+                  ),
+                  // 목록
+                  ul: ({ children }) => (
+                    <ul className="list-disc pl-4 space-y-1 mb-2 text-foreground">
+                      {children}
+                    </ul>
+                  ),
+                  ol: ({ children }) => (
+                    <ol className="list-decimal pl-4 space-y-1 mb-2 text-foreground">
+                      {children}
+                    </ol>
+                  ),
+                  li: ({ children }) => (
+                    <li className="text-foreground">{children}</li>
+                  ),
+                  // 단락
+                  p: ({ children }) => (
+                    <p className="text-foreground leading-relaxed mb-2">
+                      {children}
+                    </p>
+                  ),
+                  // 테이블 스타일 (GFM Tables)
+                  table: ({ children }) => (
+                    <div className="overflow-x-auto my-4">
+                      <table className="min-w-full border-collapse border border-border rounded-lg overflow-hidden">
+                        {children}
+                      </table>
+                    </div>
+                  ),
+                  thead: ({ children }) => (
+                    <thead className="bg-muted">{children}</thead>
+                  ),
+                  tbody: ({ children }) => (
+                    <tbody className="divide-y divide-border">{children}</tbody>
+                  ),
+                  tr: ({ children }) => (
+                    <tr className="hover:bg-muted/50 transition-colors">
+                      {children}
+                    </tr>
+                  ),
+                  th: ({ children }) => (
+                    <th className="px-4 py-3 text-left text-md font-semibold text-foreground border-b border-border">
+                      {children}
+                    </th>
+                  ),
+                  td: ({ children }) => (
+                    <td className="px-4 py-3 text-md text-muted-foreground border-b border-border">
+                      {children}
+                    </td>
+                  ),
+                }}
+              >
+                {displayContent}
+              </ReactMarkdown>
+            )}
           </div>
         )}
 

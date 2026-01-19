@@ -40,4 +40,9 @@ export interface ToolPlanner {
 
 export interface AnswerProvider {
   analyze(ctx: AnswerContext): Promise<string>;
+  stream(
+    ctx: AnswerContext,
+    onDelta: (text: string) => void,
+    signal?: AbortSignal,
+  ): Promise<string>;
 }

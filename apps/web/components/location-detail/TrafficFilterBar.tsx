@@ -130,7 +130,23 @@ export function TrafficFilterBar({
               max="23"
               value={currentHour}
               onChange={(e) => onHourChange(parseInt(e.target.value))}
-              className="w-28 h-1 bg-gray-200 rounded-full appearance-none cursor-pointer accent-blue-950"
+              className="w-28 h-1.5 bg-gray-200 rounded-full appearance-none cursor-pointer
+                [&::-webkit-slider-thumb]:appearance-none
+                [&::-webkit-slider-thumb]:w-4
+                [&::-webkit-slider-thumb]:h-4
+                [&::-webkit-slider-thumb]:bg-blue-950
+                [&::-webkit-slider-thumb]:rounded
+                [&::-webkit-slider-thumb]:cursor-pointer
+                [&::-webkit-slider-thumb]:shadow-md
+                [&::-webkit-slider-thumb]:transition-transform
+                [&::-webkit-slider-thumb]:hover:scale-110
+                [&::-moz-range-thumb]:w-4
+                [&::-moz-range-thumb]:h-4
+                [&::-moz-range-thumb]:bg-blue-950
+                [&::-moz-range-thumb]:rounded
+                [&::-moz-range-thumb]:border-0
+                [&::-moz-range-thumb]:cursor-pointer
+                [&::-moz-range-thumb]:shadow-md"
             />
           </div>
 

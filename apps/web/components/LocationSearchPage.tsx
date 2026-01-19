@@ -57,7 +57,7 @@ interface LocationSearchPageProps {
 }
 
 export function LocationSearchPage({
-  initialTab = '평균 매출 순',
+  initialTab = '맞춤 추천',
 }: LocationSearchPageProps) {
   const router = useRouter();
 

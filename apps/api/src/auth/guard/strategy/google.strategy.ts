@@ -7,7 +7,7 @@ import { ConfigService } from '@nestjs/config';
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(configService: ConfigService) {
     const apiBaseUrl =
-      configService.get<string>('API_BASE_URL') ||
+      configService.get<string>('NEXT_PUBLIC_API_BASE_URL') ||
       `http://localhost:${configService.get<string>('PORT') || '4000'}`;
     super({
       clientID: configService.get<string>('GOOGLE_CLIENT_ID') || '',

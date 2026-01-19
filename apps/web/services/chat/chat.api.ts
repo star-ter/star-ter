@@ -1,3 +1,5 @@
+import type { AiAction, SourceInfo } from "@/lib/api/ai";
+
 type ChatConversation = {
   id: string;
   title?: string | null;
@@ -27,9 +29,17 @@ export async function getChatConversations(): Promise<ChatConversation[]> {
   return response.json() as Promise<ChatConversation[]>;
 }
 
+type ChatHistoryMetadata = {
+  actions?: AiAction[];
+  sources?: SourceInfo[];
+  markers?: unknown[];
+  streamAborted?: boolean;
+};
+
 type ChatHistoryMessage = {
   role: "user" | "assistant";
   content: string;
+  metadata?: ChatHistoryMetadata | null;
 };
 
 export async function getConversationHistory(

@@ -33,9 +33,7 @@ export function ChatWelcome({ onSuggestionClick }: ChatWelcomeProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-4xl">
         <button
-          onClick={() =>
-            onSuggestionClick('강남구 역세권 치킨집 상권 분석해줘')
-          }
+          onClick={() => onSuggestionClick('홍대 주변의 상권 분석해줘')}
           className="text-left p-7 rounded-3xl bg-background border border-border hover:border-primary/50 hover:shadow-xl transition-all group flex flex-col items-start"
         >
           <div className="flex items-center gap-3 mb-2">
@@ -63,7 +61,9 @@ export function ChatWelcome({ onSuggestionClick }: ChatWelcomeProps) {
           </span>
         </button>
         <button
-          onClick={() => onSuggestionClick('마포구 유동인구 많은 곳 알려줘')}
+          onClick={() =>
+            onSuggestionClick('강남역 주변에 장사하면 살아남을 수 있을까?')
+          }
           className="text-left p-7 rounded-3xl bg-background border border-border hover:border-primary/50 hover:shadow-xl transition-all group flex flex-col items-start"
         >
           <div className="flex items-center gap-3 mb-2">

@@ -90,95 +90,75 @@ export class ClaudeService {
 
   /**
    * 결과 분석 및 최종 응답 생성 (2차 호출)
-   * output_format을 사용하여 JSON 출력을 강제 (Structured Outputs)
    */
   async analyzeResults(
     messages: Anthropic.MessageParam[],
     systemPrompt: string,
   ): Promise<string> {
-    // Structured Outputs를 위한 JSON 스키마 정의
-    const responseSchema = {
-      type: 'object' as const,
-      properties: {
-        reply: {
-          type: 'string',
-          description: '사용자에게 보여줄 응답 텍스트 (마크다운 가능)',
-        },
-        actions: {
-          type: 'array',
-          description: '호출된 Tool에 따라 필수로 추가해야 하는 UI 액션',
-          items: {
-            type: 'object',
-            properties: {
-              type: {
-                type: 'string',
-                enum: [
-                  'chart.survival',
-                  'chart.revenue',
-                  'chart.breakeven',
-                  'list.similar_areas',
-                  'list.listings',
-                  'ui.open_panel',
-                ],
-                description: 'action 타입',
-              },
-              payload: {
-                type: 'object',
-                properties: {
-                  areaCode: {
-                    type: 'string',
-                    description: 'Tool의 areaCd 값 복사',
-                  },
-                  industryCode: {
-                    type: 'string',
-                    description: 'Tool의 categoryCode 값 복사',
-                  },
-                  lat: { type: 'number', description: '위도' },
-                  lng: { type: 'number', description: '경도' },
-                },
-                additionalProperties: false,
-              },
-            },
-            required: ['type', 'payload'],
-            additionalProperties: false,
-          },
-        },
-      },
-      required: ['reply', 'actions'],
-      additionalProperties: false,
-    };
-
-    // beta API 사용 (structured-outputs)
-    const response = await this.client.beta.messages.create({
+    const response = await this.client.messages.create({
       model: this.MODEL,
       max_tokens: 2000,
-      betas: ['structured-outputs-2025-11-13'],
       system: systemPrompt,
       messages,
-      output_format: {
-        type: 'json_schema',
-        schema: responseSchema,
-      },
     });
 
     console.log(`[ClaudeService] Analyze stop_reason: ${response.stop_reason}`);
     console.log(`[ClaudeService] Usage:`, response.usage);
 
-    // output_format 사용 시 응답은 text 블록에 JSON으로 반환됨
-    const textBlock = response.content.find(
+    const textBlocks = response.content.filter(
       (block): block is Anthropic.TextBlock => block.type === 'text',
     );
 
-    if (textBlock?.text) {
+    if (textBlocks.length > 0) {
+      const combined = textBlocks.map((block) => block.text).join('');
       console.log(
-        '[ClaudeService] Structured output received:',
-        textBlock.text.substring(0, 200),
+        '[ClaudeService] Text output received:',
+        combined.substring(0, 200),
       );
-      return textBlock.text;
+      return combined;
     }
 
     // Fallback
-    return JSON.stringify({ reply: '응답을 생성할 수 없습니다.', actions: [] });
+    return '응답을 생성할 수 없습니다.';
+  }
+
+  /**
+   * 결과 분석 및 최종 응답 생성 (스트리밍)
+   */
+  async streamAnalyzeResults(
+    messages: Anthropic.MessageParam[],
+    systemPrompt: string,
+    onDelta: (text: string) => void,
+    signal?: AbortSignal,
+  ): Promise<string> {
+    const stream = this.client.messages.stream(
+      {
+        model: this.MODEL,
+        max_tokens: 2000,
+        system: systemPrompt,
+        messages,
+      },
+      signal ? { signal } : undefined,
+    );
+
+    let fullText = '';
+    stream.on('text', (text) => {
+      if (!text) return;
+      onDelta(text);
+      fullText += text;
+    });
+
+    await stream.done();
+
+    if (!fullText) {
+      try {
+        fullText = await stream.finalText();
+      } catch {
+        // ignore
+      }
+    }
+
+    return fullText;
   }
 
   /**

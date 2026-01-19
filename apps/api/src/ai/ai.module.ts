@@ -11,6 +11,7 @@ import { ChatRepository } from './chat.repository';
 import { ChatService } from './chat.service';
 import { AiChatOrchestrator } from './core/ai-chat-orchestrator.service';
 import { AiContextService } from './core/ai-context.service';
+import { ActionMapperService } from './core/action-mapper.service';
 import { OpenAiToolPlanner } from './providers/openai.tool-planner';
 import { ClaudeToolPlanner } from './providers/claude.tool-planner';
 import { OpenAiAnswerProvider } from './providers/openai.answer-provider';
@@ -28,6 +29,7 @@ import { ClaudeService } from './providers/claude/claude.service';
     OpenAiService,
     ClaudeService,
     AiContextService,
+    ActionMapperService,
     OpenAiToolPlanner,
     ClaudeToolPlanner,
     OpenAiAnswerProvider,

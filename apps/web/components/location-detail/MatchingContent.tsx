@@ -369,7 +369,7 @@ export function MatchingContent({
                 {loading ? (
                   <div className="h-9 w-32 bg-slate-200 animate-pulse rounded" />
                 ) : (
-                  <span className="text-h3 font-black text-primary">
+                  <span className="text-h3 font-heading text-foreground">
                     {metrics
                       ? metrics.industryRevenue === 0
                         ? '데이터 없음'

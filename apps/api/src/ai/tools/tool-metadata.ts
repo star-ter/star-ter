@@ -108,7 +108,7 @@ export const TOOL_METADATA: Record<string, ToolMetadata> = {
   // === 부동산/기타 ===
   recommend_real_estate: {
     displayName: '매물 추천',
-    source: '네이버 부동산',
+    source: '부동산서비스 네모',
   },
   get_funding_programs: {
     displayName: '정책자금 안내',
