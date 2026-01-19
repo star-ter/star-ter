@@ -19,6 +19,7 @@ import { useRecommendStore } from '@/store/use-recommend-store';
 import { PentagonChart } from '@/components/charts/PentagonChart';
 import { StartupPreferencesPopup } from '@/components/StartupPreferencesPopup';
 import type { OnboardingData } from '@/components/onboarding/onboarding-options';
+import { AuthRequiredBox } from '@/components/ui/AuthRequiredBox';
 
 type DisplayLocation = {
   id: string;
@@ -240,11 +241,10 @@ export function RecommendSection() {
             더보기 <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
-        <div className="bg-muted/30 rounded-2xl p-6 border border-border">
-          <p className="text-muted-foreground">
-            로그인하고 온보딩을 완료하면 맞춤 추천을 받을 수 있어요!
-          </p>
-        </div>
+        <AuthRequiredBox
+          variant="login"
+          description="로그인하고 온보딩을 완료하면 맞춤 추천을 받을 수 있어요!"
+        />
       </section>
     );
   }
@@ -266,23 +266,10 @@ export function RecommendSection() {
               더보기 <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-          <div className="bg-muted/30 rounded-2xl p-8 border border-border flex flex-col items-center text-center">
-            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
-              <Settings2 className="w-8 h-8 text-muted-foreground" />
-            </div>
-            <h3 className="text-h4 font-strong text-foreground mb-2">
-              창업 조건을 설정해주세요
-            </h3>
-            <p className="text-body text-muted-foreground mb-6">
-              맞춤 상권 추천을 받으려면 창업 조건을 입력해야 합니다.
-            </p>
-            <button
-              onClick={handleOpenPopup}
-              className="px-6 py-3 bg-primary text-primary-foreground font-bold rounded-xl hover:bg-primary/90 transition-colors"
-            >
-              창업 조건 설정하기
-            </button>
-          </div>
+          <AuthRequiredBox
+            variant="onboarding"
+            onAction={handleOpenPopup}
+          />
         </section>
 
         {/* 창업 조건 설정 팝업 */}

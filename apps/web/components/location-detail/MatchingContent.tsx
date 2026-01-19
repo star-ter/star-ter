@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { AnimatePresence } from 'motion/react';
 import {
   AgeScoreSection,
   RegionScoreSection,
@@ -11,6 +13,15 @@ import {
   formatMoney,
 } from './matching-content';
 import type { ScoreData } from './matching-content';
+import { useUserStore } from '@/store/use-user-store';
+import {
+  getOnboarding,
+  getPersonalization,
+  updateOnboarding,
+} from '@/services/user/user.api';
+import { StartupPreferencesPopup } from '@/components/StartupPreferencesPopup';
+import type { OnboardingData } from '@/components/onboarding/onboarding-options';
+import { AuthRequiredBox } from '@/components/ui/AuthRequiredBox';
 
 interface MatchingContentProps {
   locationName: string;
@@ -21,9 +32,46 @@ export function MatchingContent({
   locationName,
   trdarCd,
 }: MatchingContentProps) {
+  const authUser = useUserStore((state) => state.authUser);
+  const [isOnboardingCompleted, setIsOnboardingCompleted] = useState<
+    boolean | null
+  >(null);
   const [scoreData, setScoreData] = useState<ScoreData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // 팝업 관련 상태
+  const [isMounted, setIsMounted] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingPrefs, setIsLoadingPrefs] = useState(false);
+  const [prefsError, setPrefsError] = useState<string | null>(null);
+  const [preferencesData, setPreferencesData] = useState<OnboardingData | null>(
+    null,
+  );
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // 온보딩 완료 여부 체크
+  useEffect(() => {
+    if (!authUser) {
+      setIsOnboardingCompleted(false);
+      return;
+    }
+
+    async function checkOnboarding() {
+      try {
+        const data = await getOnboarding();
+        setIsOnboardingCompleted(data?.completed ?? false);
+      } catch (e) {
+        setIsOnboardingCompleted(false);
+      }
+    }
+    checkOnboarding();
+  }, [authUser]);
+
+  // 데이터 페칭
   useEffect(() => {
     async function fetchData() {
       try {
@@ -47,10 +95,45 @@ export function MatchingContent({
       }
     }
 
-    if (trdarCd) {
+    if (trdarCd && authUser && isOnboardingCompleted) {
       fetchData();
+    } else if (!authUser || isOnboardingCompleted === false) {
+      setLoading(false);
     }
-  }, [trdarCd]);
+  }, [trdarCd, authUser, isOnboardingCompleted]);
+
+  // 팝업 핸들러
+  const handleOpenPopup = async () => {
+    setPrefsError(null);
+    setIsLoadingPrefs(true);
+    setShowPopup(true);
+    try {
+      const data = await getPersonalization();
+      setPreferencesData(data);
+    } catch {
+      setPreferencesData(null);
+    } finally {
+      setIsLoadingPrefs(false);
+    }
+  };
+
+  const handleSavePreferences = async (data: OnboardingData) => {
+    setIsSaving(true);
+    setPrefsError(null);
+    try {
+      await updateOnboarding(data);
+      setPreferencesData(data);
+      setShowPopup(false);
+      setIsOnboardingCompleted(true);
+      setLoading(true); // 다시 로딩 시작
+    } catch (err) {
+      setPrefsError(
+        err instanceof Error ? err.message : '저장에 실패했습니다.',
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   // locationName 사용하지 않아도 lint 경고 방지
   void locationName;
@@ -65,6 +148,43 @@ export function MatchingContent({
         <div className="space-y-6">
           <MatchingContentSkeleton />
         </div>
+      </div>
+    );
+  }
+
+  // 로그인 안됨 or 온보딩 안됨 -> 심플한 안내 UI
+  if (!authUser || isOnboardingCompleted === false) {
+    return (
+      <div className="space-y-10">
+        <div className="space-y-4">
+          <h2 className="text-h2 font-bold text-slate-900">
+            업종 정밀 매칭 결과
+          </h2>
+          <AuthRequiredBox
+            variant={!authUser ? 'login' : 'onboarding'}
+            onAction={handleOpenPopup}
+            description={!authUser ? '로그인하고 나에게 딱 맞는 상권 매칭 분석 결과를 확인하세요.' : '나의 상황에 맞는 분석 결과를 보려면 간단한 창업 조건을 입력해야 합니다.'}
+            className="rounded-3xl p-12 bg-slate-50 border-slate-100"
+          />
+        </div>
+
+        {/* 팝업 */}
+        {isMounted &&
+          createPortal(
+            <AnimatePresence>
+              {showPopup && (
+                <StartupPreferencesPopup
+                  initialData={preferencesData ?? undefined}
+                  onClose={() => setShowPopup(false)}
+                  onSave={handleSavePreferences}
+                  isSaving={isSaving}
+                  isLoading={isLoadingPrefs}
+                  error={prefsError}
+                />
+              )}
+            </AnimatePresence>,
+            document.body,
+          )}
       </div>
     );
   }
@@ -280,6 +400,24 @@ export function MatchingContent({
           </div>
         </div>
       </div>
+      
+      {/* 팝업 포탈 (정상 렌더링 시에도 팝업 필요할 수 있음) */}
+      {isMounted &&
+          createPortal(
+            <AnimatePresence>
+              {showPopup && (
+                <StartupPreferencesPopup
+                  initialData={preferencesData ?? undefined}
+                  onClose={() => setShowPopup(false)}
+                  onSave={handleSavePreferences}
+                  isSaving={isSaving}
+                  isLoading={isLoadingPrefs}
+                  error={prefsError}
+                />
+              )}
+            </AnimatePresence>,
+            document.body,
+          )}
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronDown, X, Settings2 } from 'lucide-react';
+import { ChevronDown, X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence } from 'motion/react';
 
@@ -33,6 +33,7 @@ import {
 import { useUserStore } from '@/store/use-user-store';
 import { StartupPreferencesPopup } from '@/components/StartupPreferencesPopup';
 import type { OnboardingData } from '@/components/onboarding/onboarding-options';
+import { AuthRequiredBox } from '@/components/ui/AuthRequiredBox';
 
 // 맞춤 추천 탭 에러 타입
 type RecommendErrorType =
@@ -605,52 +606,12 @@ export function LocationSearchPage({
               ))}
             </div>
           ) : error ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-2">
-                {recommendErrorType === 'onboarding_incomplete' ? (
-                  <Settings2 className="w-8 h-8 text-muted-foreground" />
-                ) : (
-                  <svg
-                    className="w-8 h-8 text-muted-foreground"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                )}
-              </div>
-              <p className="text-h4 font-strong text-foreground">
-                {recommendErrorType === 'onboarding_incomplete'
-                  ? '창업 조건을 설정해주세요'
-                  : error}
-              </p>
-              <p className="text-body text-muted-foreground">
-                {recommendErrorType === 'onboarding_incomplete'
-                  ? '맞춤 상권 추천을 받으려면 창업 조건을 입력해야 합니다.'
-                  : '맞춤 추천을 받으려면 로그인이 필요합니다.'}
-              </p>
-              {recommendErrorType === 'onboarding_incomplete' ? (
-                <button
-                  onClick={handleOpenPopup}
-                  className="mt-2 px-6 py-2.5 bg-primary text-primary-foreground font-bold rounded-xl hover:bg-primary/90 transition-colors"
-                >
-                  창업 조건 설정하기
-                </button>
-              ) : (
-                <button
-                  onClick={() => router.push('/login')}
-                  className="mt-2 px-6 py-2.5 bg-info text-white font-bold rounded-xl hover:bg-info/90 transition-colors"
-                >
-                  로그인하기
-                </button>
-              )}
-            </div>
+            <AuthRequiredBox
+              variant={recommendErrorType === 'onboarding_incomplete' ? 'onboarding' : 'login'}
+              onAction={recommendErrorType === 'onboarding_incomplete' ? handleOpenPopup : undefined}
+              title={recommendErrorType === 'onboarding_incomplete' ? undefined : error}
+              description={recommendErrorType === 'onboarding_incomplete' ? undefined : '맞춤 추천을 받으려면 로그인이 필요합니다.'}
+            />
           ) : currentData.length === 0 ? (
             <div className="flex items-center justify-center py-20 text-muted-foreground">
               데이터가 없습니다.
