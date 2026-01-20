@@ -65,6 +65,10 @@
         {
           "name": "ANTHROPIC_API_KEY",
           "valueFrom": "${AWS_ARN_ANTHROPIC_API_KEY}"
+        },
+        {
+          "name": "NEXT_PUBLIC_API_BASE_URL",
+          "valueFrom": "${AWS_ARN_API_BASE_URL}"
         }
       ],
       "essential": true,

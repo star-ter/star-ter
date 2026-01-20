@@ -12,6 +12,7 @@ import {
   useKakaoMap,
   type KakaoCustomOverlay,
   type KakaoPolygon,
+  type KakaoBounds,
 } from '../../hooks/useKakaoMap';
 import { type MapCommand } from './actions/commandTypes';
 import { usePopulationLayer } from '../location-detail/hooks/usePopulationLayer';
@@ -43,16 +44,57 @@ interface ChatMapSectionProps {
 // [설정] 최소/최대 너비 상수
 const MIN_WIDTH = 400;
 const MAX_WIDTH = 800;
+const FIT_BOUNDS_MIN_WIDTH = 320;
 // ----------------------------------------------------------------------
 
 export const ChatMapSection = forwardRef<
   ChatMapSectionRef,
   ChatMapSectionProps
 >(({ isOpen }, ref) => {
+  useEffect(() => {
+    const styleId = 'chat-map-pin-style';
+    if (typeof document === 'undefined') return;
+    if (document.getElementById(styleId)) return;
+
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.textContent = `
+      .chat-map-pin-drop {
+        animation: chatMapPinDrop 680ms cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+      @keyframes chatMapPinDrop {
+        0% {
+          transform: translateY(-24px) scale(0.9);
+          opacity: 0;
+        }
+        55% {
+          transform: translateY(2px) scale(1.02);
+          opacity: 1;
+        }
+        75% {
+          transform: translateY(-2px) scale(0.99);
+        }
+        100% {
+          transform: translateY(0) scale(1);
+          opacity: 1;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+
+    return () => {
+      style.remove();
+    };
+  }, []);
+
   // 지도 DOM 참조
   const mapRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<KakaoCustomOverlay[]>([]);
   const commercialPolygonRef = useRef<KakaoPolygon | null>(null);
+  const pendingCommandsRef = useRef<MapCommand[]>([]);
+  const pendingBoundsRef = useRef<{
+    bounds: KakaoBounds;
+  } | null>(null);
 
   // 카카오맵 훅 사용
   const { map, loaded, error } = useKakaoMap(mapRef, {
@@ -151,39 +193,74 @@ export const ChatMapSection = forwardRef<
       const funcName = `__chatMarkerClick_${item.id.replace(/[^a-zA-Z0-9]/g, '_')}`;
       globalFunctionNames.push(funcName);
       (window as unknown as Record<string, () => void>)[funcName] = () => {
-        console.log('Marker clicked:', item.id);
+        const focusLevel = 4;
+        if (map && map.getLevel() >= focusLevel) {
+          map.setLevel(focusLevel, { animate: true });
+          map.panTo(position, { animate: true });
+        }
         item.onClick?.();
       };
 
       // 마커 스타일 결정
       const isCompetitor = item.type === 'competitor';
       const bgColor = isCompetitor ? '#EF4444' : '#2563EB';
-      const markerLabel = item.label || (isCompetitor ? '경쟁점' : '마커');
+      const markerLabel = item.label ? String(item.label) : '';
 
       const content = `
-          <div 
-            onclick="window.${funcName}()" 
+          <div
+            class="chat-map-pin-drop"
+            onclick="window.${funcName}()"
             style="
-              padding: 4px 8px; 
-              background: ${bgColor}; 
-              color: #FFFFFF; 
-              font-size: 14px; 
-              font-weight: bold; 
-              border: 1px solid #FFFFFF; 
-              border-radius: 6px; 
-              white-space: nowrap; 
-              box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+              position: relative;
+              width: 40px;
+              height: 40px;
               cursor: pointer;
             "
           >
-            ${markerLabel}
+            <div
+              style="
+                position: absolute;
+                left: 50%;
+                top: 0;
+                width: 28px;
+                height: 28px;
+                background: ${bgColor};
+                border: 2px solid #FFFFFF;
+                border-radius: 50% 50% 50% 0;
+                transform: translateX(-50%) rotate(-45deg);
+                box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              "
+            >
+              <div
+                style="
+                  width: 18px;
+                  height: 18px;
+                  border-radius: 50%;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  transform: rotate(45deg);
+                  color: #FFFFFF;
+                  font-size: 12px;
+                  font-weight: 700;
+                  font-family: 'SF Pro Text', -apple-system, 'Segoe UI', sans-serif;
+                  line-height: 1;
+                "
+              >
+                ${markerLabel}
+              </div>
+            </div>
           </div>
         `;
 
       const overlay = new window.kakao.maps.CustomOverlay({
         position: position,
         content: content,
-        yAnchor: 1.2,
+        xAnchor: 0.5,
+        yAnchor: 1,
         zIndex: 10,
       });
 
@@ -265,15 +342,9 @@ export const ChatMapSection = forwardRef<
     [map, loaded, clearCommercialPolygon],
   );
 
-  // 부모 컴포넌트에 메서드 노출
-  useImperativeHandle(ref, () => ({
-    executeCommand: (command: MapCommand) => {
-      if (!map || !loaded) {
-        console.warn('Map is not ready yet.');
-        return;
-      }
-
-      console.log('[ChatMapSection] Executing command:', command);
+  const runMapCommand = useCallback(
+    (command: MapCommand) => {
+      if (!map || !loaded) return;
 
       try {
         if (command.type === 'map.pan_to') {
@@ -281,10 +352,11 @@ export const ChatMapSection = forwardRef<
             command.payload.lat,
             command.payload.lng,
           );
-          map.panTo(moveLatLon);
-
           if (command.payload.zoom) {
-            map.setLevel(command.payload.zoom);
+            map.setLevel(command.payload.zoom, { animate: false });
+            map.setCenter(moveLatLon);
+          } else {
+            map.panTo(moveLatLon);
           }
           return;
         }
@@ -293,13 +365,33 @@ export const ChatMapSection = forwardRef<
           if (command.payload.layer === 'footTraffic') {
             const visible = command.payload.visible !== false;
             setIsHeatmapVisible(visible);
-            console.log(`Heatmap visibility set to ${visible}`);
           }
           return;
         }
 
         if (command.type === 'map.setMarkers') {
           setMarkers(command.payload.markers);
+          if (command.payload.fitBounds && command.payload.markers.length > 0) {
+            const bounds = new window.kakao.maps.LatLngBounds();
+            command.payload.markers.forEach((marker) => {
+              bounds.extend(
+                new window.kakao.maps.LatLng(marker.lat, marker.lng),
+              );
+            });
+            const container = mapRef.current?.getBoundingClientRect();
+            if (
+              container &&
+              Math.round(container.width) < FIT_BOUNDS_MIN_WIDTH
+            ) {
+              pendingBoundsRef.current = { bounds };
+              return;
+            }
+            pendingBoundsRef.current = null;
+            map.relayout();
+            map.setBounds(bounds);
+          } else {
+            pendingBoundsRef.current = null;
+          }
           return;
         }
 
@@ -312,6 +404,26 @@ export const ChatMapSection = forwardRef<
       } catch (e) {
         console.error('Failed to execute map command:', e);
       }
+    },
+    [map, loaded, drawCommercialPolygon],
+  );
+
+  useEffect(() => {
+    if (!map || !loaded || pendingCommandsRef.current.length === 0) return;
+    const queued = [...pendingCommandsRef.current];
+    pendingCommandsRef.current = [];
+    queued.forEach((command) => runMapCommand(command));
+  }, [map, loaded, runMapCommand]);
+
+  // 부모 컴포넌트에 메서드 노출
+  useImperativeHandle(ref, () => ({
+    executeCommand: (command: MapCommand) => {
+      if (!map || !loaded) {
+        pendingCommandsRef.current.push(command);
+        return;
+      }
+
+      runMapCommand(command);
     },
   }));
 
@@ -329,6 +441,17 @@ export const ChatMapSection = forwardRef<
         map.setCenter(center);
       } catch {
         // ignore
+      }
+      const container = mapRef.current?.getBoundingClientRect();
+      const pending = pendingBoundsRef.current;
+      if (
+        pending &&
+        container &&
+        Math.round(container.width) >= FIT_BOUNDS_MIN_WIDTH
+      ) {
+        pendingBoundsRef.current = null;
+        map.relayout();
+        map.setBounds(pending.bounds);
       }
     });
 

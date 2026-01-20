@@ -36,12 +36,7 @@ export class RegionScoreCalculator {
     RESIDENTIAL: 0.12, // 거주인 12% 이상이면 만점 (평균 6.0%)
     COMMERCIAL: 0.9, // 유동인구 90% 이상이면 만점 (평균 86.6%)
     UNIVERSITY: 0.3, // 20대 30% 이상이면 만점
-    TOURIST_FACILITIES: 5, // 관광/숙박 시설 5개 이상이면 만점
-  };
-
-  // 보너스 점수
-  private readonly BONUSES = {
-    APT_WEIGHT: 0.15, // 아파트 세대 많으면 +0.15 (최대)
+    TOURIST_FACILITIES: 40, // 집객시설 40개 이상이면 만점 (평균 20개)
   };
 
   // 가중치 (필수/지배 조건)
@@ -79,19 +74,9 @@ export class RegionScoreCalculator {
       }
 
       case 'residential': {
-        // 거주인 비중: 8% 이상이면 만점 (평균 6.0%)
+        // 거주인 비중: 12% 이상이면 만점 (평균 6.0%)
         const residentialRatio = data.tot_repop_co / totalPop;
-        const baseScore = Math.min(
-          residentialRatio / this.THRESHOLDS.RESIDENTIAL,
-          1,
-        );
-
-        // 아파트 보너스: 세대수가 많으면 최대 +0.15
-        // 기준: 1000세대 이상이면 최대 보너스
-        const aptBonus =
-          Math.min(data.apt_hshld_co / 1000, 1) * this.BONUSES.APT_WEIGHT;
-
-        return Math.min(baseScore + aptBonus, 1);
+        return Math.min(residentialRatio / this.THRESHOLDS.RESIDENTIAL, 1);
       }
 
       case 'commercial': {
@@ -103,7 +88,7 @@ export class RegionScoreCalculator {
 
       case 'university': {
         // 20대 비중으로 기본 점수 계산
-        // 대학이 없으면 점수에 강한 패널티 적용 (최대 40%)
+        // 대학이 없으면 점수에 패널티 적용 (최대 40%)
         const twentiesRatio =
           data.tot_flpop_co > 0
             ? data.agrde_20_flpop_co / data.tot_flpop_co
@@ -124,13 +109,12 @@ export class RegionScoreCalculator {
 
       case 'station': {
         // 지하철역 존재 여부 (binary)
-        // v1: 단순 존재 여부, v2에서 역 개수/거리 반영 가능
         return data.subway_statn_co > 0 ? 1 : 0;
       }
 
       case 'tourist': {
-        // 관광/숙박 시설 수: 5개 이상이면 만점
-        const facilityCount = data.viatr_fclty_co + data.stayng_fclty_co;
+        // 집객시설 수: 40개 이상이면 만점 (평균 20개)
+        const facilityCount = data.viatr_fclty_co;
         return Math.min(facilityCount / this.THRESHOLDS.TOURIST_FACILITIES, 1);
       }
 
@@ -215,18 +199,13 @@ export class RegionScoreCalculator {
 
       case 'residential': {
         const residentialRatio = data.tot_repop_co / totalPop;
-        const baseScore = Math.min(
+        const score = Math.min(
           residentialRatio / this.THRESHOLDS.RESIDENTIAL,
           1,
         );
-        const aptBonus =
-          Math.min(data.apt_hshld_co / 1000, 1) * this.BONUSES.APT_WEIGHT;
-        const score = Math.min(baseScore + aptBonus, 1);
-        const aptInfo =
-          data.apt_hshld_co > 0 ? `, 아파트 ${data.apt_hshld_co}세대` : '';
         return {
           score,
-          explanation: `거주 인구 비중 ${(residentialRatio * 100).toFixed(1)}%${aptInfo}`,
+          explanation: `거주 인구 비중 ${(residentialRatio * 100).toFixed(1)}%`,
           details,
         };
       }
@@ -277,14 +256,14 @@ export class RegionScoreCalculator {
       }
 
       case 'tourist': {
-        const facilityCount = data.viatr_fclty_co + data.stayng_fclty_co;
+        const facilityCount = data.viatr_fclty_co;
         const score = Math.min(
           facilityCount / this.THRESHOLDS.TOURIST_FACILITIES,
           1,
         );
         return {
           score,
-          explanation: `관광/숙박 시설 ${facilityCount}개`,
+          explanation: `집객시설 ${facilityCount}개`,
           details,
         };
       }

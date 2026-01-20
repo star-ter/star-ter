@@ -115,7 +115,7 @@ export const PROMPTS = {
             1. 이전 대화의 **recommend_real_estate 도구 결과**에서 data 배열을 확인하세요.
             2. 각 매물에는 **listingNumber** (번호)와 **listingId** (UUID)가 있습니다.
             3. 사용자가 말한 번호와 일치하는 매물의 **listingId (UUID)**를 찾으세요.
-            4. **listingId 파라미터에는 반드시 UUID를 전달**하세요. (예: "3"이 아니라 "40979e93-0417-4b19-a22d-78b1af9c84fb")
+            4. **listingId 파라미터에는 반드시 UUID를 전달**하세요. (예: "3"이 아니라 "UUID_FROM_MARKERS")
             
             예시:
             - 이전 대화 recommend_real_estate 결과:

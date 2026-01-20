@@ -133,6 +133,8 @@ export class AiController {
           areaCode: item.areaCd, // areaCd -> areaCode로 변환
           areaName: item.areaName,
           similarity: item.similarity * 100, // 0-1 → 0-100
+          lat: typeof item.lat === 'number' ? item.lat : null,
+          lng: typeof item.lng === 'number' ? item.lng : null,
         })),
       },
     };

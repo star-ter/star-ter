@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Layers, MapPin, ChevronRight } from 'lucide-react';
+import { Layers, ChevronRight } from 'lucide-react';
 
 /**
  * SimilarAreasCard - 유사 상권 리스트 컴포넌트
@@ -93,7 +93,9 @@ export function SimilarAreasCard({ data, isLoading }: SimilarAreasCardProps) {
           >
             {/* 지역명 */}
             <div className="flex items-center gap-3">
-              <MapPin className="w-4 h-4 text-slate-300" />
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-600 text-[12px] font-semibold text-white">
+                {index + 1}
+              </div>
               <span className="text-body font-medium text-slate-700">
                 {area.areaName}
               </span>

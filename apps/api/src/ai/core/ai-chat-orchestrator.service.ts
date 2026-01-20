@@ -293,9 +293,6 @@ export class AiChatOrchestrator {
         { messages, toolCalls, toolResults },
         (chunk) => {
           if (!chunk || signal?.aborted) return;
-          console.log(
-            `[AiChatOrchestrator] Delta chunk: ${chunk.slice(0, 50)}...`,
-          );
           reply += chunk;
           onEvent('delta', { text: chunk });
         },
@@ -403,6 +400,19 @@ export class AiChatOrchestrator {
           this.aiResponseProcessor.safeBigIntStringify(k, v),
         ),
       });
+
+      if (toolCall.name === 'calc_break_even_with_listing') {
+        console.log(
+          `[Debug] Calc_break_even_with_listing Args: ${toolCall.argsJson}`,
+        );
+        console.log(
+          `[Debug] Calc_break_even_with_listing Result: ${JSON.stringify(
+            toolResult,
+            (k, v) => this.aiResponseProcessor.safeBigIntStringify(k, v),
+            2,
+          )}`,
+        );
+      }
     }
 
     return toolResults;

@@ -35,12 +35,12 @@ export class TimeScoreCalculator {
    * 시간대 점수 계산 (0~1)
    *
    * 캡핑 기반 정규화:
-   * - 30% 이상의 시간대 매출 비율 = 만점 (1.0)
-   * - 그 이하는 선형 증가 (ratio / 0.30)
+   * - 50% 이상의 시간대 매출 비율 = 만점 (1.0)
+   * - 그 이하는 선형 증가 (ratio / 0.50)
    *
-   * 이유: 대부분의 시간대에서 30%면 충분히 집중된 상권을 의미.
+   * 이유: 대부분의 시간대에서 50%면 충분히 집중된 상권을 의미.
    */
-  private readonly MAX_RATIO = 0.3;
+  private readonly MAX_RATIO = 0.5;
 
   calculate(salesData: TimeSalesData, targetTime: string): number {
     if (targetTime === 'allday') return 1; // 전체 시간대는 항상 1점
@@ -55,7 +55,7 @@ export class TimeScoreCalculator {
 
     const ratio = timeAmount / total;
 
-    // 캡핑 기반 정규화: 30% 이상이면 만점
+    // 캡핑 기반 정규화: 50% 이상이면 만점
     return Math.min(ratio / this.MAX_RATIO, 1);
   }
 

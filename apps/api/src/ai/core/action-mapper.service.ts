@@ -38,7 +38,7 @@ export class ActionMapperService {
       case 'calc_break_even_with_listing':
         return this.buildBreakEvenWithListingAction(toolCall.args);
       case 'find_similar_commercial_areas':
-        return this.buildAction('list.similar_areas', toolCall.args);
+        return this.buildSimilarAreasAction(toolCall.args, toolResult);
       case 'recommend_real_estate':
         return this.buildListingAction(toolCall.args, toolResult);
       case 'get_store':
@@ -144,6 +144,24 @@ export class ActionMapperService {
     return { type: 'list.listings', payload };
   }
 
+  private buildSimilarAreasAction(
+    args: Record<string, unknown>,
+    toolResult?: ToolResult,
+  ): AiAction | null {
+    const action = this.buildAction('list.similar_areas', args);
+    if (!action) return null;
+
+    const markers = this.extractSimilarAreaMarkers(toolResult);
+    if (markers.length > 0) {
+      action.payload = {
+        ...(action.payload ?? {}),
+        markers,
+      };
+    }
+
+    return action;
+  }
+
   private extractListingMarkers(toolResult?: ToolResult): ListingMarker[] {
     if (!toolResult) return [];
 
@@ -180,6 +198,40 @@ export class ActionMapperService {
         };
       })
       .filter((marker): marker is ListingMarker => marker !== null);
+  }
+
+  private extractSimilarAreaMarkers(
+    toolResult?: ToolResult,
+  ): SimilarAreaMarker[] {
+    if (!toolResult) return [];
+
+    const parsed = this.parseResult(toolResult);
+    if (!parsed || typeof parsed !== 'object') return [];
+
+    const data = (parsed as { data?: unknown }).data;
+    if (!Array.isArray(data)) return [];
+
+    return data
+      .map((item, index): SimilarAreaMarker | null => {
+        if (!item || typeof item !== 'object') return null;
+        const record = item as Record<string, unknown>;
+
+        const lat = this.pickNumber(record.lat, record.latitude);
+        const lng = this.pickNumber(record.lng, record.longitude);
+        if (lat === null || lng === null) return null;
+
+        const idValue = record.areaCd ?? record.areaCode ?? record.id ?? null;
+        if (!idValue) return null;
+
+        return {
+          id: String(idValue),
+          lat,
+          lng,
+          label: String(index + 1),
+          type: 'default' as const,
+        };
+      })
+      .filter((marker): marker is SimilarAreaMarker => marker !== null);
   }
 
   private parseResult(toolResult: ToolResult): unknown {
@@ -221,4 +273,12 @@ interface ListingMarker {
   type: 'listing';
   listingNumber?: number;
   title?: string;
+}
+
+interface SimilarAreaMarker {
+  id: string;
+  lat: number;
+  lng: number;
+  label?: string;
+  type: 'default';
 }

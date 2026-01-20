@@ -75,7 +75,6 @@ async function streamChatResponse(params: {
       console.error('[Stream] JSON parse error:', e, dataText);
       return;
     }
-    console.log('[Stream] Event:', eventName, payload);
     params.onEvent(eventName, payload);
   };
 
@@ -151,7 +150,10 @@ export function useChat(aiProvider: AiProvider = 'openai') {
   );
 
   const sendMessage = useCallback(
-    async (text: string, onDispatch?: (payload: ActionDispatchPayload) => void) => {
+    async (
+      text: string,
+      onDispatch?: (payload: ActionDispatchPayload) => void,
+    ) => {
       if (!text.trim()) return;
 
       const userMessage: Message = {
@@ -182,9 +184,8 @@ export function useChat(aiProvider: AiProvider = 'openai') {
       }
 
       try {
-        let pendingActionPlan:
-          | ReturnType<typeof processAiActions>
-          | null = null;
+        let pendingActionPlan: ReturnType<typeof processAiActions> | null =
+          null;
         let pendingSources: Message['sources'] | undefined;
         let hasAppliedActions = false;
 
@@ -241,7 +242,10 @@ export function useChat(aiProvider: AiProvider = 'openai') {
           onEvent: (event, data) => {
             if (event === 'meta') {
               const nextConversationId = data.conversationId;
-              if (typeof nextConversationId === 'string' && nextConversationId) {
+              if (
+                typeof nextConversationId === 'string' &&
+                nextConversationId
+              ) {
                 setConversationId(nextConversationId);
                 setCurrentThread((prev) => ({
                   ...prev,

@@ -29,6 +29,7 @@ env:
   AWS_ARN_NAVER_CLIENT_ID: ${{ secrets.AWS_ARN_NAVER_CLIENT_ID }}
   AWS_ARN_NAVER_CLIENT_SECRET: ${{ secrets.AWS_ARN_NAVER_CLIENT_SECRET }}
   AWS_ARN_ANTHROPIC_API_KEY: ${{ secrets.AWS_ARN_ANTHROPIC_API_KEY }}
+  AWS_ARN_API_BASE_URL: ${{ secrets.AWS_ARN_API_BASE_URL }}
 
   # 비민감 값들은 vars 유지
   ECR_WEB_REPO: ${{ vars.ECR_WEB_REPO }}
@@ -126,6 +127,7 @@ jobs:
             --arg NAVER_ID_ARN "$AWS_ARN_NAVER_CLIENT_ID" \
             --arg NAVER_SECRET_ARN "$AWS_ARN_NAVER_CLIENT_SECRET" \
             --arg ANTHROPIC_KEY_ARN "$AWS_ARN_ANTHROPIC_API_KEY" \
+            --arg API_BASE_URL_ARN "$AWS_ARN_API_BASE_URL" \
             '
             .executionRoleArn = $ROLE_ARN
             | (.containerDefinitions[] | select(.name=="api") | .secrets[] | select(.name=="PORT") | .valueFrom) = $PORT_ARN
@@ -140,7 +142,8 @@ jobs:
             | (.containerDefinitions[] | select(.name=="api") | .secrets[] | select(.name=="GOOGLE_CLIENT_SECRET") | .valueFrom) = $GOOGLE_SECRET_ARN
             | (.containerDefinitions[] | select(.name=="api") | .secrets[] | select(.name=="NAVER_CLIENT_ID") | .valueFrom) = $NAVER_ID_ARN
             | (.containerDefinitions[] | select(.name=="api") | .secrets[] | select(.name=="NAVER_CLIENT_SECRET") | .valueFrom) = $NAVER_SECRET_ARN
-            | (.containerDefinitions[] | select(.name=="api") | .secrets[] | select(.name=="ANTHROPIC_API_KEY") | .valueFrom) = $ANTHROPIC_KEY_ARN            
+            | (.containerDefinitions[] | select(.name=="api") | .secrets[] | select(.name=="ANTHROPIC_API_KEY") | .valueFrom) = $ANTHROPIC_KEY_ARN
+            | (.containerDefinitions[] | select(.name=="api") | .secrets[] | select(.name=="NEXT_PUBLIC_API_BASE_URL") | .valueFrom) = $API_BASE_URL_ARN
             ' \
             infra/ecs/taskdef-api.json > infra/ecs/taskdef-api.rendered.json
 

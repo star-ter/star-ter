@@ -22,6 +22,7 @@ export type MapCommand =
       type: 'map.setMarkers';
       payload: {
         markers: MarkerData[];
+        fitBounds?: boolean;
       };
     }
   | {

@@ -1542,6 +1542,12 @@ export class ToolsRepository {
     // categoryCode는 params에서 optional로 처리되므로 명시적 추출 안함 (필요 시 destructuring)
 
     try {
+      console.log(
+        `[Debug] calcBreakEvenWithListing listingId=${listingId}, params=${JSON.stringify(
+          params,
+        )}`,
+      );
+
       // 1. 매물 정보 조회 (raw query for convenience with snake_case mapping)
       // Note: listingId comes as string (UUID) from tool
       // const listingIdNum = Number(listingId); // DO NOT CONVERT UUID TO NUMBER
@@ -1563,6 +1569,7 @@ export class ToolsRepository {
       `;
 
       if (!listings || listings.length === 0) {
+        console.warn(`[Debug] Listing not found for id=${listingId}`);
         return {
           summary: '해당 매물 정보를 찾을 수 없습니다.',
           data: null,
@@ -1575,6 +1582,10 @@ export class ToolsRepository {
       const deposit = Number(listing.deposit || 0) / 10;
       const size = Number(listing.size || 0);
 
+      console.log(
+        `[Debug] Found listing: monthlyRent=${monthlyRent}(만원), deposit=${deposit}(만원), size=${size}`,
+      );
+
       // params를 그대로 전달하면서 rent 정보만 덮어씀.
       const newParams = {
         ...params,
@@ -1585,6 +1596,10 @@ export class ToolsRepository {
       };
 
       const result = await this.calcBreakEven(newParams);
+      console.log(
+        `[Debug] calcBreakEven result summary: ${result.summary.slice(0, 100)}...`,
+      );
+
       // listingId를 결과에 포함시켜 AI가 액션을 생성할 때 참조할 수 있게 함
       return {
         ...result,
@@ -1630,6 +1645,8 @@ export class ToolsRepository {
         area_cd: string;
         area_name: string;
         similarity: number;
+        lat: number | null;
+        lng: number | null;
       }
 
       const rows = await this.prisma.$queryRaw<SimilarAreaRow[]>`
@@ -1643,8 +1660,12 @@ export class ToolsRepository {
           t.area_name as target_name,
           cfv.area_cd,
           cfv.area_name,
-          ROUND((1 - (cfv.feature_vector <=> t.feature_vector))::numeric, 4) as similarity
-        FROM commercial_feature_vector cfv, target t
+          ROUND((1 - (cfv.feature_vector <=> t.feature_vector))::numeric, 4) as similarity,
+          ST_X(ST_Transform(ST_Centroid(a.geom), 4326)) as lng,
+          ST_Y(ST_Transform(ST_Centroid(a.geom), 4326)) as lat
+        FROM commercial_feature_vector cfv
+        LEFT JOIN seoul_commercial_area_grid a ON a.trdar_cd = cfv.area_cd,
+        target t
         WHERE cfv.area_cd != t.area_cd
         ORDER BY cfv.feature_vector <=> t.feature_vector
         LIMIT ${limit}
@@ -1658,6 +1679,11 @@ export class ToolsRepository {
       }
 
       const targetName = rows[0]?.target_name || areaCd;
+      const toCoordinate = (value: unknown): number | null => {
+        if (value === null || value === undefined) return null;
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : null;
+      };
 
       return {
         summary: `'${targetName}'과(와) 유사한 상권 Top ${rows.length}입니다.`,
@@ -1666,6 +1692,8 @@ export class ToolsRepository {
           areaName: row.area_name,
           similarity: Number(row.similarity),
           similarityPercent: `${Math.round(Number(row.similarity) * 100)}%`,
+          lat: toCoordinate(row.lat),
+          lng: toCoordinate(row.lng),
         })),
         meta: {
           targetAreaCd: areaCd,

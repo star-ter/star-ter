@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { MessageSquare } from 'lucide-react';
 import { ChatHeader, type AiProvider } from './ChatHeader';
 import { ChatMessage } from './ChatMessage';
 import { ChatInput } from './ChatInput';
@@ -11,6 +13,7 @@ import { useChat } from './hooks/useChat';
 import { useActionDispatcher } from './hooks/useActionDispatcher';
 import { getConversationHistory } from '@/services/chat/chat.api';
 import { useChatStore } from '@/store/use-chat-store';
+import { useUserStore } from '@/store/use-user-store';
 import {
   buildMessageFromAiText,
   parseAiResponseText,
@@ -28,7 +31,9 @@ import {
  * ChatPage 컴포넌트 - AI 챗봇의 메인 페이지
  */
 export function ChatPage() {
-  // 로그인된 사용자 ID 가져오기 (개인화 추천에 사용)
+  const router = useRouter();
+  // 로그인된 사용자 확인
+  const authUser = useUserStore((state) => state.authUser);
 
   // AI 프로바이더 상태 (claude | openai)
   const [aiProvider, setAiProvider] = useState<AiProvider>('openai');
@@ -95,6 +100,15 @@ export function ChatPage() {
   const historyRequestId = useRef(0);
   const prevConversationId = useRef<string | null>(null);
 
+  // Use refs to access latest state inside effect without adding dependencies
+  const latestMessagesRef = useRef(messages);
+  const latestCurrentThreadRef = useRef(currentThread);
+
+  useEffect(() => {
+    latestMessagesRef.current = messages;
+    latestCurrentThreadRef.current = currentThread;
+  });
+
   useEffect(() => {
     if (!conversationId) {
       if (prevConversationId.current) {
@@ -104,12 +118,17 @@ export function ChatPage() {
       hasLoadedHistory.current = null;
       return;
     }
-    if (messages.length > 0 && currentThread.id === conversationId) {
+    // Check against refs to avoid adding dependencies
+    if (
+      latestMessagesRef.current.length > 0 &&
+      latestCurrentThreadRef.current.id === conversationId
+    ) {
       return;
     }
     if (hasLoadedHistory.current === conversationId) return;
 
     let cancelled = false;
+    const messageCountAtStart = latestMessagesRef.current.length;
     const requestId = historyRequestId.current + 1;
     historyRequestId.current = requestId;
     prevConversationId.current = conversationId;
@@ -117,6 +136,9 @@ export function ChatPage() {
     getConversationHistory(conversationId)
       .then((history) => {
         if (cancelled || historyRequestId.current !== requestId) return;
+        if (latestMessagesRef.current.length !== messageCountAtStart) {
+          return;
+        }
         const chartUpdateQueue: Array<
           Promise<{ messageId: string; update: ChartItemUpdate }>
         > = [];
@@ -236,7 +258,30 @@ export function ChatPage() {
   ]);
 
   return (
-    <div className="flex h-full">
+    <div className="relative flex h-full">
+      {/* 🔒 로그인 필요 모달 오버레이 (비로그인 시 표시) */}
+      {!authUser && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-md rounded-2xl">
+          <div className="bg-background rounded-3xl shadow-xl border border-border p-10 w-80 text-center">
+            <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-5">
+              <MessageSquare className="w-7 h-7 text-gray-400" />
+            </div>
+            <h2 className="text-h4 font-heading text-foreground mb-2">
+              로그인이 필요합니다.
+            </h2>
+            <p className="text-caption text-muted-foreground mb-6">
+              AI 채팅 기능은 로그인한<br />회원만 이용할 수 있습니다.
+            </p>
+            <button
+              onClick={() => router.push('/login?next=/chat')}
+              className="w-full py-3 bg-info text-white font-bold text-body rounded-xl hover:bg-info/90 transition-colors"
+            >
+              로그인하기
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 지도 영역 (왼쪽) */}
       <ChatMapSection ref={mapSectionRef} isOpen={isMapOpen} />
 
@@ -267,25 +312,6 @@ export function ChatPage() {
                   />
                 ))
               )}
-
-              {/* {isLoading && (
-                <div className="flex items-center gap-4 text-muted-foreground pl-2">
-                  <div className="flex gap-1.5">
-                    <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" />
-                    <span
-                      className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
-                      style={{ animationDelay: '0.1s' }}
-                    />
-                    <span
-                      className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
-                      style={{ animationDelay: '0.2s' }}
-                    />
-                  </div>
-                  <span className="text-h5">
-                    AI가 응답을 생성하고 있습니다...
-                  </span>
-                </div>
-              )} */}
 
               <div ref={messagesEndRef} />
             </div>

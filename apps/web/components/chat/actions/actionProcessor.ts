@@ -69,6 +69,18 @@ export function processAiActions(params: {
           openMapPanel = true;
         }
       }
+      if (action.type === 'list.similar_areas') {
+        if (Array.isArray(payload.markers)) {
+          const markers = normalizeMarkers(payload.markers);
+          if (markers.length > 0) {
+            mapCommands.push({
+              type: 'map.setMarkers',
+              payload: { markers, fitBounds: true },
+            });
+            openMapPanel = true;
+          }
+        }
+      }
       continue;
     }
 
@@ -365,6 +377,8 @@ function normalizeMarkerType(type: string): MarkerData['type'] {
   }
   return 'default';
 }
+
+
 
 type PanPayload = {
   lat?: unknown;

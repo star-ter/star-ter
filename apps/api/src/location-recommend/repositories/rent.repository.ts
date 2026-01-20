@@ -20,25 +20,21 @@ export class RentRepository {
    */
   async getAllCommercialRents(): Promise<CommercialRentData[]> {
     const result = await this.prisma.$queryRaw<CommercialRentData[]>`
-      SELECT
-        ca.trdar_cd,
-        ca.trdar_cd_n,
-        AVG(re.deposit)::float AS avg_deposit,
-        AVG(re.monthlyrent)::float AS avg_rent,
-        AVG(re.premium)::float AS avg_premium,
-        COUNT(*)::int AS building_count
-      FROM seoul_commercial_area_grid ca
-      JOIN real_estate_info re
-        ON ST_Contains(
-             ca.geom,
-             ST_SetSRID(
-               ST_MakePoint(re.centerlongitude, re.centerlatitude),
-               4326
-             )
-           )
-      WHERE re.deposit IS NOT NULL
-        AND re.monthlyrent IS NOT NULL
-      GROUP BY ca.trdar_cd, ca.trdar_cd_n
+    SELECT ca.trdar_cd,
+          ca.trdar_cd_n,
+          AVG(re.deposit)::float     AS avg_deposit,
+          AVG(re.monthlyrent)::float AS avg_rent,
+          AVG(re.premium)::float     AS avg_premium,
+          COUNT(*)::int              AS building_count
+    FROM seoul_commercial_area_grid ca
+            JOIN real_estate_info re
+                  ON ST_Contains(
+                          ca.geom,
+                          re.geom
+                    )
+    WHERE re.deposit IS NOT NULL
+      AND re.monthlyrent IS NOT NULL
+    GROUP BY ca.trdar_cd, ca.trdar_cd_n;
     `;
 
     return result;

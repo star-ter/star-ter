@@ -4,7 +4,13 @@ import { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { createPortal } from 'react-dom';
 import { AnimatePresence } from 'motion/react';
-import { Settings2, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  Settings2,
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  HelpCircle,
+} from 'lucide-react';
 import {
   getRecommendations,
   ScoredLocation,
@@ -18,6 +24,7 @@ import { useUserStore } from '@/store/use-user-store';
 import { useRecommendStore } from '@/store/use-recommend-store';
 import { PentagonChart } from '@/components/charts/PentagonChart';
 import { StartupPreferencesPopup } from '@/components/StartupPreferencesPopup';
+import { ScoreExplanationPopup } from '@/components/ScoreExplanationPopup';
 import type { OnboardingData } from '@/components/onboarding/onboarding-options';
 import { AuthRequiredBox } from '@/components/ui/AuthRequiredBox';
 
@@ -87,6 +94,9 @@ export function RecommendSection() {
   const [preferencesData, setPreferencesData] = useState<OnboardingData | null>(
     null,
   );
+
+  // 점수 계산 방식 팝업 상태
+  const [showScorePopup, setShowScorePopup] = useState(false);
 
   // 스크롤 관련 상태 및 ref
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -470,6 +480,17 @@ export function RecommendSection() {
             <ChevronRight className="w-8 h-8" />
           </button>
         </div>
+
+        {/* 점수 계산 방식 버튼 */}
+        <div className="flex justify-end mt-1">
+          <button
+            onClick={() => setShowScorePopup(true)}
+            className="flex items-center gap-1.5 text-caption text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <HelpCircle className="w-4 h-4" />
+            점수 계산 방식
+          </button>
+        </div>
       </section>
 
       {/* 창업 조건 설정 팝업 */}
@@ -485,6 +506,17 @@ export function RecommendSection() {
                 isLoading={isLoadingPrefs}
                 error={prefsError}
               />
+            )}
+          </AnimatePresence>,
+          document.body,
+        )}
+
+      {/* 점수 계산 방식 팝업 */}
+      {isMounted &&
+        createPortal(
+          <AnimatePresence>
+            {showScorePopup && (
+              <ScoreExplanationPopup onClose={() => setShowScorePopup(false)} />
             )}
           </AnimatePresence>,
           document.body,
