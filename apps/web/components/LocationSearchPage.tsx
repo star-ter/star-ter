@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronDown, X } from 'lucide-react';
+import { ChevronDown, X, HelpCircle } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence } from 'motion/react';
 
@@ -542,7 +542,46 @@ export function LocationSearchPage({
           {isRecommendTab(subTab) ? (
             <>
               <div className="text-left pl-6">순위 / 상권명</div>
-              <div className="text-center">매칭 점수</div>
+              <div className="text-center">
+                <span className="inline-flex items-center gap-1">
+                  매칭 점수
+                  <span className="relative group/score">
+                    <HelpCircle className="w-3.5 h-3.5 text-muted-foreground hover:text-foreground cursor-help" />
+                    {/* 툴팁 */}
+                    <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-64 bg-white rounded-xl shadow-xl border border-border p-3 opacity-0 invisible group-hover/score:opacity-100 group-hover/score:visible transition-all z-50 text-left">
+                      {/* 화살표 */}
+                      <div className="absolute -top-2 left-1/2 -translate-x-1/2">
+                        <div className="w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-border" style={{ position: 'absolute', top: '-1px', left: '-1px' }} />
+                        <div className="w-0 h-0 border-l-7 border-r-7 border-b-7 border-l-transparent border-r-transparent border-b-white" style={{ position: 'absolute', top: '1px', left: '0px' }} />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2">
+                          <span className="px-1.5 py-0.5 rounded-full text-[11px] font-bold text-white bg-success">90+</span>
+                          <span className="text-tiny text-foreground">최적 매칭 - 매우 적합한 상권</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-1.5 py-0.5 rounded-full text-[11px] font-bold text-white bg-info">70-89</span>
+                          <span className="text-tiny text-foreground">추천 - 좋은 조건의 상권</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-1.5 py-0.5 rounded-full text-[11px] font-bold text-white bg-primary">50-69</span>
+                          <span className="text-tiny text-foreground">적합 - 고려해볼 만한 상권</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-muted text-muted-foreground">50 미만</span>
+                          <span className="text-tiny text-muted-foreground">참고 - 조건 불일치</span>
+                        </div>
+                      </div>
+                      <div className="mt-2 pt-2 border-t border-border">
+                        <p className="text-[11px] text-muted-foreground leading-relaxed">
+                          점수는 타깃 연령, 창업 비용, 상권 테마, 운영 시간, 업종 적합도를 종합한 결과입니다.
+                        </p>
+                      </div>
+                    </div>
+                  </span>
+                </span>
+              </div>
               <div className="text-center">상세 점수</div>
             </>
           ) : isPopulationTab(subTab) ? (
@@ -649,7 +688,7 @@ export function LocationSearchPage({
                             : 'bg-muted text-muted-foreground'
                     }`}
                   >
-                    {item.totalScore.toFixed(1)}점
+                    {Math.round(item.totalScore)}점
                   </span>
                 </div>
 

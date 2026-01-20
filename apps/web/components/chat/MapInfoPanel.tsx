@@ -86,7 +86,7 @@ export function MapInfoPanel({
               등록된 점포 정보가 없습니다.
             </p>
           ) : (
-            <div className="space-y-2 max-h-75 overflow-y-auto">
+            <div className="space-y-2">
               {selectedBuilding.stores.map((store, idx) => (
                 <StoreItem key={idx} store={store} />
               ))}

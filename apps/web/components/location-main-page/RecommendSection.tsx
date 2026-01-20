@@ -30,8 +30,7 @@ type DisplayLocation = {
   href: string;
 };
 
-const formatScore = (score: number) =>
-  Number.isInteger(score) ? `${score}` : score.toFixed(1);
+const formatScore = (score: number) => `${Math.round(score)}`;
 
 const getScoreBadge = (score: number) => {
   if (score >= 90)
