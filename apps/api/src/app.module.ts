@@ -25,7 +25,7 @@ import { NewsModule } from './news/news.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ envFilePath: '.env' }),
+    ConfigModule.forRoot({ envFilePath: ['.env.local', '.env'] }),
     ScheduleModule.forRoot(),
     PrismaModule,
     PolygonModule,

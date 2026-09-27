@@ -25,9 +25,8 @@ WORKDIR /app
 COPY --from=installer /app/ .
 COPY --from=pruner /app/out/full/ .
 # Prisma client generation (NestJS에서 사용하는 경우 필수)
-RUN cat apps/api/prisma/models/*.prisma apps/api/prisma/introspected.prisma >> apps/api/prisma/schema.prisma
 RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" \
-    pnpm --filter api exec prisma generate --schema=prisma/schema.prisma
+    pnpm --filter api exec prisma generate --schema=prisma
 RUN pnpm turbo run build --filter=api
 
 # 5. Runner stage (실행 환경 최적화)

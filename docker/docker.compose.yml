@@ -1,20 +1,19 @@
-version: "3.9"
-
 services:
   postgres:
-    image: postgres:16
-    container_name: local-postgres
+    build:
+      context: ./postgres
+    container_name: alley-local-postgres
     restart: unless-stopped
     ports:
-      - "55432:5432"
+      - '55433:5432'
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: root
-      POSTGRES_DB: dev_board
+      POSTGRES_DB: alley
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - recovery_pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d alley']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -30,5 +29,6 @@ services:
       - 'valkey_data:/bitnami/valkey/data'
 
 volumes:
-  pgdata:
+  recovery_pgdata:
+    name: alley_recovery_pgdata
   valkey_data:
