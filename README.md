@@ -268,20 +268,14 @@ AI 액션 결과를 지도에 반영합니다.
 - (권장) Docker
 - (권장) PostgreSQL에 `pgvector`/지리 확장(PostGIS 등)이 준비된 환경
 
-### 1) 로컬 DB 실행
+### 1) DB/캐시 실행(선택, Docker)
 
 ```bash
-pnpm db:up
-pnpm db:init
-pnpm db:generate
+docker compose -f docker/docker.compose.yml up -d
 ```
 
-복구용 PostgreSQL은 `localhost:55433`에서 실행되며 PostGIS, pgvector,
-pg_trgm 확장을 자동으로 활성화합니다. 기존 로컬 DB와 데이터 볼륨은 사용하지
-않습니다.
-
-> **주의**: 위 명령은 빈 스키마만 생성합니다. 실제 상권 데이터는 이후
-> `db:seed` 단계에서 별도로 적재합니다.
+> ⚠️ **주의**: docker-compose는 빈 데이터베이스만 생성합니다.  
+> 실제 상권 데이터(매출, 유동인구, 점포 등)는 **별도 DB 덤프 파일** 또는 **운영 RDS 연결**이 필요합니다.
 
 ### 2) 환경변수 설정
 
@@ -292,14 +286,12 @@ NEXT_PUBLIC_API_BASE_URL=
 NEXT_PUBLIC_KAKAO_MAP_API_KEY=
 ```
 
-백엔드 로컬 설정 (`apps/api/.env.local`)
+백엔드 (`apps/api/.env`)
 
 ```bash
-PORT=4000
-ALLOW_ORIGIN=http://localhost:3000
-DATABASE_URL=postgresql://postgres:root@localhost:55433/alley
-NEXT_PUBLIC_API_BASE_URL=http://localhost:4000
-JWT_SECRET=
+PORT=
+ALLOW_ORIGIN=
+DATABASE_URL=
 OPENAI_API_KEY=
 ANTHROPIC_API_KEY=
 
@@ -353,11 +345,6 @@ pnpm build       # 전체(터보) 빌드
 pnpm lint        # 전체(터보) 린트
 pnpm check-types # 전체(터보) 타입체크
 pnpm format      # prettier
-pnpm db:up       # 복구용 PostgreSQL 실행
-pnpm db:init     # 새 로컬 DB에 전체 Prisma 스키마 최초 생성
-pnpm db:push     # Prisma 스키마를 로컬 DB에 반영
-pnpm db:generate # Prisma Client 생성
-pnpm db:down     # 로컬 컨테이너 종료(볼륨 유지)
 ```
 
 ---
